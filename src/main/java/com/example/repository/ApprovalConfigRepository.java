@@ -1,0 +1,13 @@
+package com.example.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+import com.example.entity.ApprovalConfig;
+
+@Repository
+public interface ApprovalConfigRepository extends
+        JpaRepository<ApprovalConfig, Long>,
+        JpaSpecificationExecutor<ApprovalConfig> {
+}
