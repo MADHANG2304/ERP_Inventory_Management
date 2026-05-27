@@ -35,6 +35,7 @@ public class ApprovalProgressService {
                                 approval.getRequest()
                                         .getRequestId()
                                         .equals(requestId)
+
                         )
 
                         .sorted((a, b) ->
@@ -50,8 +51,7 @@ public class ApprovalProgressService {
         return approvals.stream()
                 .map(approval -> {
 
-                    ApprovalProgressDTO dto =
-                            new ApprovalProgressDTO();
+                    ApprovalProgressDTO dto = new ApprovalProgressDTO();
 
                     dto.setRequestNumber(
                             approval.getRequest()

@@ -19,6 +19,9 @@ public class ReturnedItem extends BaseEntity {
     @JoinColumn(name = "issued_item_id")
     private IssuedItem issuedItem;
 
+    @Column(name = "return_reference_number")
+    private String returnReferenceNumber;
+
     @Column(name = "returned_quantity")
     private Integer returnedQuantity;
 
@@ -35,15 +38,21 @@ public class ReturnedItem extends BaseEntity {
     public ReturnedItem() {
     }
 
-    public ReturnedItem(Long returnedItemId, IssuedItem issuedItem, Integer returnedQuantity,
-            ReturnCondition returnCondition, String returnRemarks, LocalDateTime returnedDate) {
+    
+
+    public ReturnedItem(Long returnedItemId, IssuedItem issuedItem, String returnReferenceNumber,
+            Integer returnedQuantity, ReturnCondition returnCondition, String returnRemarks,
+            LocalDateTime returnedDate) {
         this.returnedItemId = returnedItemId;
         this.issuedItem = issuedItem;
+        this.returnReferenceNumber = returnReferenceNumber;
         this.returnedQuantity = returnedQuantity;
         this.returnCondition = returnCondition;
         this.returnRemarks = returnRemarks;
         this.returnedDate = returnedDate;
     }
+
+
 
     public Long getReturnedItemId() {
         return returnedItemId;
@@ -91,6 +100,18 @@ public class ReturnedItem extends BaseEntity {
 
     public void setReturnedDate(LocalDateTime returnedDate) {
         this.returnedDate = returnedDate;
+    }
+
+
+
+    public String getReturnReferenceNumber() {
+        return returnReferenceNumber;
+    }
+
+
+
+    public void setReturnReferenceNumber(String returnReferenceNumber) {
+        this.returnReferenceNumber = returnReferenceNumber;
     }
 
     

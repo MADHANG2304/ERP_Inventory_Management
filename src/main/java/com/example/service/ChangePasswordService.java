@@ -17,9 +17,12 @@ public class ChangePasswordService {
     private final PasswordEncoder
             passwordEncoder;
 
+    private final AuditLogService auditLogService;
+
     public ChangePasswordService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AuditLogService auditLogService
     ) {
 
         this.userRepository =
@@ -27,6 +30,9 @@ public class ChangePasswordService {
 
         this.passwordEncoder =
                 passwordEncoder;
+
+        this.auditLogService = 
+                auditLogService;
     }
 
     public void changePassword(
@@ -72,12 +78,32 @@ public class ChangePasswordService {
             );
         }
 
-        if(dto.getNewPassword()
-                .length() < 6) {
+        String password = dto.getNewPassword();
 
-            throw new RuntimeException(
-                    "Password must contain minimum 6 characters"
-            );
+        String passwordPattern =
+                "^(?=.*[0-9])" +          // at least one number
+                "(?=.*[a-z])" +          // at least one small letter
+                "(?=.*[A-Z])" +          // at least one capital letter
+                "(?=.*[@#$%^&+=!])" +   // at least one special character
+                "(?=\\S+$)" +           // no spaces
+                ".{6,}$";               // minimum 6 characters
+
+        if(!password.matches(passwordPattern)) {
+
+        throw new RuntimeException(
+
+                "Password must contain:\n" +
+
+                "• One uppercase letter\n" +
+
+                "• One lowercase letter\n" +
+
+                "• One number\n" +
+
+                "• One special character\n" +
+
+                "• Minimum 6 characters"
+        );
         }
 
         user.setPassword(
@@ -88,5 +114,15 @@ public class ChangePasswordService {
         );
 
         userRepository.save(user);
+
+        auditLogService.logAction(
+
+                "USER_MODULE",
+
+                "PASSWORD_CHANGE",
+
+                "Password changed for : "
+                        + user.getUsername()
+        );
     }
 }

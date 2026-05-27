@@ -37,6 +37,10 @@ public class RequestApproval extends BaseEntity {
     @Column(name = "approval_role")
     private ApprovalRole approvalRole;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "approver_employee_id")
+    private Employee approver;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_status")
     private ApprovalStatus approvalStatus;
@@ -117,5 +121,13 @@ public class RequestApproval extends BaseEntity {
         this.comments = comments;
     }
 
+    public Employee getApprover() {
+        return approver;
+    }
+
+    public void setApprover(Employee approver) {
+        this.approver = approver;
+    }
+    
     
 }

@@ -6,7 +6,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class AppHeader extends HorizontalLayout {
@@ -15,64 +14,57 @@ public class AppHeader extends HorizontalLayout {
 
         setWidthFull();
 
-        setPadding(true);
+        setPadding(false);
+
+        setMargin(false);
 
         setSpacing(true);
 
         setAlignItems(Alignment.CENTER);
 
-        getStyle()
+        // getStyle()
 
-                .set("background",
-                        "rgba(255,255,255,0.88)")
+        //         .set("background", "#ffffff")
 
-                .set("backdrop-filter",
-                        "blur(14px)")
+        //         .set("padding", "14px 24px")
 
-                .set("border-bottom",
-                        "1px solid #e2e8f0")
+        //         .set("margin", "0")
 
-                .set("padding",
-                        "18px 32px")
+        //         .set("border-bottom",
+        //                 "1px solid #dbe2ea")
 
-                .set("box-shadow",
-                        "0 2px 10px rgba(15,23,42,0.05)");
+        //         .set("box-shadow",
+        //                 "0 1px 4px rgba(0,0,0,0.04)");
 
-        // DRAWER TOGGLE
 
-        DrawerToggle toggle =
-                new DrawerToggle();
+        DrawerToggle toggle = new DrawerToggle();
 
         toggle.getStyle()
 
-                .set("border-radius", "14px")
-
                 .set("background", "white")
 
-                .set("padding", "10px")
+                .set("border-radius", "12px")
 
-                .set("box-shadow",
-                        "0 4px 14px rgba(0,0,0,0.08)")
+                .set("padding", "8px")
 
                 .set("border",
-                        "2px solid #2563eb");
+                        "1px solid #dbe2ea")
 
-        // TITLE
+                .set("box-shadow",
+                        "0 2px 6px rgba(0,0,0,0.06)");
 
-        H2 title =
-                new H2("ERP Inventory System");
+
+        H2 title = new H2("ERP Inventory System");
 
         title.getStyle()
 
                 .set("margin", "0")
 
-                .set("font-size", "26px")
+                .set("font-size", "22px")
 
-                .set("font-weight", "800")
+                .set("font-weight", "700")
 
-                .set("color", "#0f172a")
-
-                .set("letter-spacing", "-0.7px");
+                .set("color", "#0f172a");
 
         // LOGOUT BUTTON
 
@@ -82,27 +74,17 @@ public class AppHeader extends HorizontalLayout {
                         VaadinIcon.SIGN_OUT.create()
                 );
 
-        logoutButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY
-        );
+        logoutButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         logoutButton.getStyle()
 
-                .set("border-radius", "14px")
+                .set("border-radius", "12px")
 
-                .set("padding", "12px 20px")
+                .set("padding", "10px 18px")
 
-                .set("font-size", "15px")
+                .set("font-size", "14px")
 
-                .set("font-weight", "700")
-
-                .set("background",
-                        "linear-gradient(135deg, #2563eb, #4f46e5)")
-
-                .set("color", "white")
-
-                .set("box-shadow",
-                        "0 8px 18px rgba(37,99,235,0.25)");
+                .set("font-weight", "600");
 
         logoutButton.addClickListener(event ->
                 securityService.logout()

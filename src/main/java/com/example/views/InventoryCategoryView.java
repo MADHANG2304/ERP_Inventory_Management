@@ -231,7 +231,7 @@ public class InventoryCategoryView extends VerticalLayout{
         HorizontalLayout buttonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        clearButton,
+                        // clearButton,
                         deleteButton,
                         cancelButton
                 );

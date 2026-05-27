@@ -227,8 +227,8 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout buttonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        clearButton,
-                        deleteButton,
+                        // clearButton,
+                        // deleteButton,
                         cancelButton
                 );
 

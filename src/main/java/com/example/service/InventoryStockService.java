@@ -21,9 +21,12 @@ public class InventoryStockService {
 
     private final InventoryItemRepository inventoryItemRepository;
 
-    public InventoryStockService(InventoryStockRepository inventoryStockRepository, InventoryItemRepository inventoryItemRepository) {
+    private final AuditLogService auditLogService;
+
+    public InventoryStockService(InventoryStockRepository inventoryStockRepository, InventoryItemRepository inventoryItemRepository, AuditLogService auditLogService) {
         this.inventoryStockRepository = inventoryStockRepository;
         this.inventoryItemRepository = inventoryItemRepository;
+        this.auditLogService = auditLogService;
     }
 
     public InventoryStockDTO saveStock(InventoryStockDTO dto) {
@@ -58,6 +61,16 @@ public class InventoryStockService {
         stock.setDamagedQuantity(dto.getDamagedQuantity());
 
         InventoryStock savedStock = inventoryStockRepository.save(stock);
+
+        auditLogService.logAction(
+
+                "STOCK_MODULE",
+
+                "STOCK_UPDATE",
+
+                "Stock updated for item : "
+                        + item.getItemName()
+        );
 
         return convertToDTO(savedStock);
     }

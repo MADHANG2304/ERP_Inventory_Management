@@ -23,6 +23,7 @@ import com.example.repository.InventoryTransactionRepository;
 import com.example.repository.IssuedItemRepository;
 import com.example.repository.RequestItemRepository;
 import com.example.repository.UserRepository;
+import com.example.security.SecurityService;
 
 @Service
 public class IssueService {
@@ -44,6 +45,11 @@ public class IssueService {
 
     private final UserRepository
             userRepository;
+    
+    private final SecurityService securityService;
+
+
+    private final AuditLogService auditLogService;
 
     public IssueService(
             InventoryRequestRepository inventoryRequestRepository,
@@ -51,7 +57,9 @@ public class IssueService {
             InventoryTransactionRepository inventoryTransactionRepository,
             IssuedItemRepository issuedItemRepository,
             RequestItemRepository requestItemsRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            AuditLogService auditLogService,
+            SecurityService securityService
     ) {
 
         this.inventoryRequestRepository =
@@ -71,24 +79,22 @@ public class IssueService {
 
         this.userRepository =
                 userRepository;
+
+        this.auditLogService =
+                auditLogService;
+
+        this.securityService = 
+                securityService;
     }
 
-    public List<IssuedItemDTO>
-    getApprovedRequests() {
+    public List<IssuedItemDTO> getApprovedRequests() {
 
         return inventoryRequestRepository
                 .findAll()
                 .stream()
 
                 .filter(request ->
-
-                        request.getRequestStatus()
-                                == RequestStatus.APPROVED
-
-                        ||
-
-                        request.getRequestStatus()
-                                == RequestStatus.ISSUED
+                        request.getRequestStatus() == RequestStatus.APPROVED ||  request.getRequestStatus() == RequestStatus.ISSUED
                 )
 
                 .flatMap(request ->
@@ -103,57 +109,34 @@ public class IssueService {
                                                     .findAll()
                                                     .stream()
                                                     .anyMatch(issued ->
-
                                                             issued
                                                                     .getRequestItem()
                                                                     .getRequestItemId()
-                                                                    .equals(
-                                                                            item.getRequestItemId()
-                                                                    )
-                                                    );
+                                                                    .equals(item.getRequestItemId())
+                                                     );
 
                                     return !alreadyIssued;
                                 })
 
                                 .map(item -> {
 
-                                    IssuedItemDTO dto =
-                                            new IssuedItemDTO();
+                                    IssuedItemDTO dto = new IssuedItemDTO();
 
-                                    dto.setRequestId(
-                                            request.getRequestId()
-                                    );
+                                    dto.setRequestId(request.getRequestId());
 
-                                    dto.setRequestItemId(
-                                            item.getRequestItemId()
-                                    );
+                                    dto.setRequestItemId(item.getRequestItemId());
 
-                                    dto.setRequestNumber(
-                                            request.getRequestNumber()
-                                    );
+                                    dto.setRequestNumber(request.getRequestNumber());
 
-                                    dto.setEmployeeName(
-                                            request.getEmployee()
-                                                    .getEmployeeName()
-                                    );
+                                    dto.setEmployeeName(request.getEmployee().getEmployeeName());
 
-                                    dto.setItemName(
-                                            item.getItem()
-                                                    .getItemName()
-                                    );
+                                    dto.setItemName(item.getItem().getItemName());
 
-                                    dto.setItemCode(
-                                            item.getItem()
-                                                    .getItemCode()
-                                    );
+                                    dto.setItemCode(item.getItem().getItemCode());
 
-                                    dto.setRequestedQuantity(
-                                            item.getRequestedQuantity()
-                                    );
+                                    dto.setRequestedQuantity(item.getRequestedQuantity());
 
-                                    dto.setIssuedQuantity(
-                                            item.getRequestedQuantity()
-                                    );
+                                    dto.setIssuedQuantity(item.getRequestedQuantity());
 
                                     return dto;
                                 })
@@ -255,7 +238,6 @@ public class IssueService {
                 request.getRequestItems()
                         .stream()
                         .filter(item ->
-
                                 issuedItemRepository
                                         .findAll()
                                         .stream()
@@ -276,14 +258,107 @@ public class IssueService {
         }
 
         inventoryRequestRepository.save(request);
+
+        auditLogService.logAction(
+                "ISSUE_MODULE",
+                "ISSUE",
+                "Issued item : " + requestItem.getItem().getItemName()
+        );
     }
+
+    public List<IssuedItemDTO> getIssuedHistory() {
+
+        String username =
+                securityService.getAuthenticatedUser();
+
+        String role =
+                securityService.getAuthenticatedRole();
+
+        User loggedInUser =
+                userRepository
+                        .findAll()
+                        .stream()
+
+                        .filter(user ->
+                                user.getUsername()
+                                        .equals(username)
+                        )
+
+                        .findFirst()
+
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+        return issuedItemRepository
+                .findAll()
+                .stream()
+
+                .filter(item ->
+
+                        // Boolean.TRUE.equals(item.getRequestItem().getItem().getAllowReturn()) 
+                        //                 && 
+                                        item.getIssueStatus() != IssueStatus.RETURNED
+                )
+
+                .filter(item -> {
+
+                        if(role.equals("ROLE_SUPER_ADMIN")
+                                || role.equals("ROLE_INVENTORY_ADMIN")) {
+
+                                return true;
+                        }
+
+                        return item.getIssuedToEmployee() != null
+                                && loggedInUser.getEmployee() != null
+                                && item.getIssuedToEmployee()
+                                        .getEmployeeId()
+                                        .equals(loggedInUser.getEmployee().getEmployeeId());
+                }) 
+
+                .map(item -> {
+
+                        IssuedItemDTO dto =
+                                new IssuedItemDTO();
+
+                        dto.setIssueReferenceNumber(
+                                item.getIssueReferenceNumber()
+                        );
+
+                        dto.setEmployeeName(
+                                item.getIssuedToEmployee()
+                                        .getEmployeeName()
+                        );
+
+                        dto.setItemName(
+                                item.getRequestItem()
+                                        .getItem()
+                                        .getItemName()
+                        );
+
+                        dto.setItemCode(
+                                item.getRequestItem()
+                                        .getItem()
+                                        .getItemCode()
+                        );
+
+                        dto.setIssuedQuantity(
+                                item.getIssuedQuantity()
+                        );
+
+                        return dto;
+                })
+
+                .toList();
+}
 
     private String generateReferenceNumber() {
 
         return "ISSUE-"
                 + UUID.randomUUID()
                         .toString()
-                        .substring(0, 8)
-                        .toUpperCase();
+                        .substring(0, 8);
     }
 }

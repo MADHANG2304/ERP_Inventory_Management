@@ -1,14 +1,14 @@
 package com.example.views;
 
+import com.example.base.ui.MainLayout;
 import com.example.dto.ReturnedItemDTO;
 import com.example.enums.ReturnCondition;
 import com.example.service.ReturnService;
 import com.example.utils.ConfirmDialogUtil;
 import com.example.utils.NotificationUtil;
-import com.example.base.ui.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -19,8 +19,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "return-items", layout = MainLayout.class)
@@ -34,378 +36,367 @@ public class ReturnView extends VerticalLayout {
 
     private final ReturnService returnService;
 
-    private final Grid<ReturnedItemDTO> grid = new Grid<>(ReturnedItemDTO.class, false);
-
-    private final IntegerField returnQuantity = new IntegerField("Return Quantity");
-
-    private final ComboBox<ReturnCondition> returnCondition = new ComboBox<>("Return Condition");
-
-    private final TextArea remarks = new TextArea("Remarks");
-
-    private ReturnedItemDTO selectedItem;
-
-    private final Span selectedInfo = new Span("No item selected");
-
-    private final Button clearSelectionButton = new Button("Clear Selection");
-
+    private final Grid<ReturnedItemDTO> grid =
+            new Grid<>(ReturnedItemDTO.class, false);
 
     public ReturnView(ReturnService returnService) {
 
-            this.returnService = returnService;
+        this.returnService = returnService;
 
-            setSizeFull();
+        setSizeFull();
 
-            setPadding(true);
+        setPadding(true);
 
-            setSpacing(true);
+        setSpacing(true);
 
-            getStyle()
+        getStyle()
 
-                    .set("background", "#f4f7fb")
+                .set("background", "#f4f6f9")
 
-                    .set("padding", "24px");
+                .set("padding", "20px");
 
-            H2 heading = new H2("Return Management Center");
 
-            heading.getStyle()
+        H2 heading =
+                new H2("Return Items");
 
-                    .set("margin", "0")
+        heading.getStyle()
 
-                    .set("font-size", "34px")
+                .set("margin", "0")
 
-                    .set("font-weight", "700")
+                .set("font-size", "32px")
 
-                    .set("color", "#0f172a");
+                .set("font-weight", "700")
 
-            Span subHeading = new Span("Manage issued inventory returns and reverse logistics operations");
+                .set("color", "#0f172a");
 
-            subHeading.getStyle()
-
-                    .set("font-size", "15px")
-
-                    .set("color", "#64748b");
-
-            VerticalLayout headingSection =
-                    new VerticalLayout(
-                            heading,
-                            subHeading
-                    );
-
-            headingSection.setPadding(true);
-
-            headingSection.setSpacing(true);
-
-            configureGrid();
-
-            returnCondition.setItems(ReturnCondition.values());
-
-            returnCondition.setWidthFull();
-
-            returnQuantity.setMin(1);
-
-            returnQuantity.setWidthFull();
-
-            remarks.setWidthFull();
-
-            remarks.setHeight("70px");
-
-            remarks.getStyle().set("border-radius", "12px");
-
-            Button returnButton = new Button("Return Item", VaadinIcon.ROTATE_LEFT.create());
-
-            returnButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
-
-            returnButton.getStyle()
-
-                    .set("border-radius", "12px")
-
-                    .set("font-weight", "600")
-
-                    .set("padding", "10px 18px");
-
-            returnButton.addClickListener(event -> {
-
-                ConfirmDialogUtil.showConfirmDialog(
-
-                        "Return",
-
-                        "Are you sure you want to return the item?",
-
-                        this::returnItem
+        Span subHeading =
+                new Span(
+                        "Return issued inventory items"
                 );
-            });
 
-            Button refreshButton = new Button("Refresh", VaadinIcon.REFRESH.create());
+        subHeading.getStyle()
 
-            refreshButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                .set("font-size", "15px")
 
-            refreshButton.getStyle().set("border-radius", "12px");
+                .set("color", "#64748b");
 
-            refreshButton.addClickListener(event -> {
-
-                refreshGrid();
-
-                NotificationUtil.success(
-                        "Data refreshed"
+        VerticalLayout headerLayout =
+                new VerticalLayout(
+                        heading,
+                        subHeading
                 );
-            });
 
-            clearSelectionButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        headerLayout.setPadding(true);
 
-            clearSelectionButton.getStyle().set("border-radius", "12px");
+        headerLayout.setSpacing(true);
 
-            clearSelectionButton.addClickListener(event -> {
-                clearForm();
-            });
 
-            selectedInfo.getStyle()
+        configureGrid();
 
-                    .set("font-weight", "600")
+        add(
+                headerLayout,
+                grid
+        );
 
-                    .set("color", "#334155")
-
-                    .set("padding-left", "12px");
-
-            HorizontalLayout actionLayout =
-                    new HorizontalLayout(
-
-                            returnButton,
-
-                            clearSelectionButton,
-
-                            refreshButton,
-
-                            selectedInfo
-                    );
-
-            actionLayout.setWidthFull();
-
-            actionLayout.setAlignItems(
-                    FlexComponent.Alignment.CENTER
-            );
-
-            actionLayout.getStyle()
-
-                    .set("background", "white")
-
-                    .set("padding", "10px")
-
-                    .set("border-radius", "18px")
-
-                    .set("box-shadow",
-                            "0 4px 14px rgba(0,0,0,0.08)");
-
-            HorizontalLayout formLayout =
-                    new HorizontalLayout(
-
-                            returnQuantity,
-
-                            returnCondition
-                    );
-
-            formLayout.setWidthFull();
-
-            formLayout.setFlexGrow(
-                    1,
-                    returnQuantity,
-                    returnCondition
-            );
-
-            VerticalLayout formCard =
-                    new VerticalLayout(
-
-                            formLayout,
-
-                            remarks
-                    );
-
-            formCard.setWidthFull();
-
-            formCard.getStyle()
-
-                    .set("background", "white")
-
-                    .set("padding", "10px")
-
-                    .set("border-radius", "10px")
-
-                    .set("box-shadow",
-                            "0 6px 18px rgba(0,0,0,0.08)");
-
-            add(
-
-                headingSection,
-
-                actionLayout,
-
-                grid,
-
-                formCard
-            );
-
-            refreshGrid();
+        refreshGrid();
     }
 
     private void configureGrid() {
 
-            grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
+        grid.addThemeVariants(
 
-            grid.addColumn(
-                    ReturnedItemDTO::getIssueReferenceNumber
-            ).setHeader("Issue Ref");
+                GridVariant.LUMO_ROW_STRIPES,
 
-            grid.addColumn(
-                    ReturnedItemDTO::getEmployeeName
-            ).setHeader("Employee");
+                GridVariant.LUMO_COLUMN_BORDERS
+        );
 
-            grid.addColumn(
-                    ReturnedItemDTO::getItemName
-            ).setHeader("Item");
+        grid.addColumn(
+                ReturnedItemDTO::getIssueReferenceNumber
+        ).setHeader("Issue Ref");
 
-            grid.addColumn(
-                    ReturnedItemDTO::getItemCode
-            ).setHeader("Item Code");
+        grid.addColumn(
+                ReturnedItemDTO::getEmployeeName
+        ).setHeader("Employee");
 
-            grid.addComponentColumn(item -> {
+        grid.addColumn(
+                ReturnedItemDTO::getItemName
+        ).setHeader("Item");
 
-                Span quantityBadge = new Span(String.valueOf(item.getIssuedQuantity()));
+        grid.addColumn(
+                ReturnedItemDTO::getItemCode
+        ).setHeader("Item Code");
 
-                quantityBadge.getStyle()
+        grid.addColumn(
+                ReturnedItemDTO::getIssuedQuantity
+        ).setHeader("Issued Qty");
 
-                        .set("background", "#dbeafe")
+        grid.addComponentColumn(item -> {
 
-                        .set("color", "#2563eb")
+            Span badge =
+                    new Span("ISSUED");
 
-                        .set("padding", "6px 14px")
+            badge.getStyle()
 
-                        .set("border-radius", "20px")
+                    .set("background", "#dcfce7")
 
-                        .set("font-weight", "700")
+                    .set("color", "#166534")
 
-                        .set("font-size", "13px");
+                    .set("padding", "5px 14px")
 
-                return quantityBadge;
+                    .set("border-radius", "14px")
 
-            }).setHeader("Issued Qty");
+                    .set("font-size", "12px")
 
-            grid.addComponentColumn(item -> {
+                    .set("font-weight", "600");
 
-                String status = item.getIssueStatus() != null ? item.getIssueStatus().name() : "PENDING";
+            return badge;
 
-                Span badge = new Span(status);
+        }).setHeader("Status");
 
-                badge.getStyle()
 
-                        .set("background", status.equals("ISSUED") ? "#dcfce7" : "#fee2e2")
+        grid.addComponentColumn(item -> {
 
-                        .set("color", status.equals("ISSUED") ? "#166534" : "#991b1b")
+            Button returnButton =
+                    new Button(
+                            "Return",
+                            VaadinIcon.ROTATE_LEFT.create()
+                    );
 
-                        .set("padding", "6px 14px")
+            returnButton.addThemeVariants(
+                    ButtonVariant.LUMO_PRIMARY
+            );
 
-                        .set("border-radius", "20px")
+            returnButton.getStyle()
 
-                        .set("font-weight", "700")
+                    .set("border-radius", "8px")
 
-                        .set("font-size", "12px");
+                    .set("font-size", "13px")
 
-                return badge;
+                    .set("font-weight", "600");
 
-            }).setHeader("Issue Status");
+            returnButton.addClickListener(event ->
+                    openReturnDialog(item)
+            );
 
-            grid.setWidthFull();
+            return returnButton;
 
-            grid.setHeight("550px");
+        }).setHeader("Action");
 
-            grid.getStyle()
+        grid.setWidthFull();
 
-                    .set("background", "white")
+        grid.setHeight("650px");
 
-                    .set("border-radius", "20px")
+        grid.getStyle()
 
-                    .set("overflow", "hidden")
+                .set("background", "white")
 
-                    .set("box-shadow", "0 6px 18px rgba(0,0,0,0.08)");
+                .set("border-radius", "12px")
 
-            grid.asSingleSelect()
-                    .addValueChangeListener(event -> {
-
-                        selectedItem = event.getValue();
-
-                        if(selectedItem != null) {
-
-                            returnQuantity.setValue(selectedItem.getIssuedQuantity());
-
-                            selectedInfo.setText(
-
-                                    "Selected : "
-
-                                    + selectedItem.getIssueReferenceNumber()
-
-                                    + " | "
-
-                                    + selectedItem.getItemName()
-                            );
-
-                        } else {
-                            selectedInfo.setText("No item selected");
-                        }
-                    });
+                .set("border", "1px solid #dbe2ea");
     }
 
-    private void returnItem() {
+    private void openReturnDialog(
+            ReturnedItemDTO item
+    ) {
 
-        try {
+        Dialog dialog =
+                new Dialog();
 
-            if (selectedItem == null) {
+        dialog.setWidth("500px");
 
-                NotificationUtil.warning("Select an item first");
+        dialog.setHeaderTitle(
+                "Return Item"
+        );
 
-                return;
+
+        Span itemInfo =
+                new Span(
+
+                        "Item : "
+
+                                + item.getItemName()
+
+                                + " | Available Qty : "
+
+                                + item.getIssuedQuantity()
+                );
+
+        itemInfo.getStyle()
+
+                .set("font-size", "14px")
+
+                .set("font-weight", "600")
+
+                .set("color", "#475569");
+
+
+        IntegerField returnQuantity =
+                new IntegerField(
+                        "Return Quantity"
+                );
+
+        returnQuantity.setWidthFull();
+
+        returnQuantity.setMin(1);
+
+        returnQuantity.setValue(
+                item.getIssuedQuantity()
+        );
+
+
+        ComboBox<ReturnCondition>
+                returnCondition =
+                new ComboBox<>(
+                        "Return Condition"
+                );
+
+        returnCondition.setItems(
+                ReturnCondition.values()
+        );
+
+        returnCondition.setWidthFull();
+
+
+        TextArea remarks =
+                new TextArea(
+                        "Remarks"
+                );
+
+        remarks.setWidthFull();
+
+        remarks.setHeight("100px");
+
+
+        Button submitButton =
+                new Button(
+                        "Submit Return"
+                );
+
+        submitButton.addThemeVariants(
+                ButtonVariant.LUMO_PRIMARY
+        );
+
+        submitButton.getStyle()
+
+                .set("border-radius", "8px")
+
+                .set("font-weight", "600");
+
+        Button cancelButton =
+                new Button(
+                        "Cancel"
+                );
+
+        cancelButton.addThemeVariants(
+                ButtonVariant.LUMO_TERTIARY
+        );
+
+        cancelButton.addClickListener(event ->
+                dialog.close()
+        );
+
+        submitButton.addClickListener(event -> {
+
+            try {
+
+                if(returnCondition.getValue() == null) {
+
+                    NotificationUtil.warning(
+                            "Select return condition"
+                    );
+
+                    return;
+                }
+
+                item.setReturnQuantity(
+                        returnQuantity.getValue()
+                );
+
+                item.setReturnCondition(
+                        returnCondition.getValue()
+                );
+
+                item.setReturnRemarks(
+                        remarks.getValue()
+                );
+
+                ConfirmDialogUtil.showConfirmDialog(
+
+                        "Return Item",
+
+                        "Are you sure you want to return this item?",
+
+                        () -> {
+
+                            try {
+
+                                returnService.returnItem(item);
+
+                                NotificationUtil.success(
+                                        "Item returned successfully"
+                                );
+
+                                dialog.close();
+
+                                refreshGrid();
+
+                            } catch (Exception e) {
+
+                                NotificationUtil.error(
+                                        e.getMessage()
+                                );
+                            }
+                        }
+                );
+
+            } catch (Exception e) {
+
+                NotificationUtil.error(
+                        e.getMessage()
+                );
             }
+        });
 
-            if (returnCondition.getValue() == null) {
+        HorizontalLayout buttonLayout =
+                new HorizontalLayout(
+                        cancelButton,
+                        submitButton
+                );
 
-                NotificationUtil.warning("Select a return condition");
+        buttonLayout.setWidthFull();
 
-                return;
-            }
+        buttonLayout.setJustifyContentMode(
+                JustifyContentMode.END
+        );
 
-            selectedItem.setReturnQuantity(returnQuantity.getValue());
+        VerticalLayout dialogLayout =
+                new VerticalLayout(
 
-            selectedItem.setReturnCondition(returnCondition.getValue());
+                        itemInfo,
 
-            selectedItem.setReturnRemarks(remarks.getValue());
+                        returnQuantity,
 
-            returnService.returnItem(selectedItem);
+                        returnCondition,
 
-            NotificationUtil.success("Item returned successfully");
+                        remarks,
 
-            refreshGrid();
+                        buttonLayout
+                );
 
-            clearForm();
+        dialogLayout.setPadding(false);
 
-        } catch (Exception e) {
-            NotificationUtil.error(e.getMessage());
-        }
+        dialogLayout.setSpacing(true);
+
+        dialog.add(dialogLayout);
+
+        dialog.open();
     }
 
     private void refreshGrid() {
-        grid.setItems(returnService.getIssuedItemsForReturn());
+
+        grid.setItems(
+                returnService
+                        .getIssuedItemsForReturn()
+        );
     }
-
-    private void clearForm() {
-
-        selectedItem = null;
-
-        returnQuantity.clear();
-
-        returnCondition.clear();
-
-        remarks.clear();
-
-        selectedInfo.setText("No item selected");
-
-        grid.deselectAll();
-    }
-
 }

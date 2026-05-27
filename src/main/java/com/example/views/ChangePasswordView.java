@@ -3,6 +3,10 @@ package com.example.views;
 import com.example.dto.ChangePasswordDTO;
 import com.example.service.ChangePasswordService;
 import com.example.utils.NotificationUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.base.ui.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -10,6 +14,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
@@ -43,6 +48,12 @@ public class ChangePasswordView
         private final PasswordField confirmPassword = new PasswordField(
                         "Confirm Password");
 
+        private final Span passwordValidationMessage =
+                new Span();
+
+        private final Span confirmPasswordMessage =
+                new Span();
+
         public ChangePasswordView(
 
                         ChangePasswordService changePasswordService,
@@ -74,7 +85,6 @@ public class ChangePasswordView
                                 .set("padding",
                                                 "40px");
 
-                // PAGE TITLE
 
                 H2 heading = new H2("Change Password");
 
@@ -90,8 +100,7 @@ public class ChangePasswordView
 
                                 .set("color", "#0f172a");
 
-                Paragraph subtitle = new Paragraph(
-                                "Secure your ERP account with a strong password");
+                Paragraph subtitle = new Paragraph("Secure your ERP account with a strong password");
 
                 subtitle.getStyle()
 
@@ -129,13 +138,51 @@ public class ChangePasswordView
                 confirmPassword.getStyle()
                                 .set("margin-bottom", "10px");
 
+                passwordValidationMessage.getStyle()
+
+                        .set("font-size", "13px")
+
+                        .set("color", "#dc2626")
+
+                        .set("margin-top", "-6px")
+
+                        .set("margin-bottom", "8px");
+
+                confirmPasswordMessage.getStyle()
+
+                        .set("font-size", "13px")
+
+                        .set("color", "#dc2626")
+
+                        .set("margin-top", "-6px")
+
+                        .set("margin-bottom", "8px");
+
+                
+                newPassword.addValueChangeListener(event -> {
+
+                        validatePassword();
+                });
+
+                confirmPassword.addValueChangeListener(event -> {
+
+                        validateConfirmPassword();
+                });
+
                 FormLayout formLayout = new FormLayout();
 
                 formLayout.add(
 
-                                oldPassword,
+                               oldPassword,
+
                                 newPassword,
-                                confirmPassword);
+
+                                passwordValidationMessage,
+
+                                confirmPassword,
+
+                                confirmPasswordMessage
+                );
 
                 formLayout.setResponsiveSteps(
 
@@ -218,7 +265,7 @@ public class ChangePasswordView
 
                 HorizontalLayout buttonLayout = new HorizontalLayout(
                                 changePasswordButton,
-                                clearButton,
+                                // clearButton,
                                 cancelButton);
 
                 buttonLayout.setSpacing(true);
@@ -293,5 +340,88 @@ public class ChangePasswordView
                 newPassword.clear();
 
                 confirmPassword.clear();
+
+                passwordValidationMessage.setText("");
+
+                confirmPasswordMessage.setText("");
         }
+
+        private void validatePassword() {
+
+                String password = newPassword.getValue();
+
+                List<String> errors = new ArrayList<>();
+
+                if(password.length() < 6) {
+
+                        errors.add("Minimum 6 characters");
+                }
+
+                else if(!password.matches(".*[A-Z].*")) {
+
+                        errors.add("One uppercase letter required");
+                }
+
+                else if(!password.matches(".*[a-z].*")) {
+
+                        errors.add("One lowercase letter required");
+                }
+
+                else if(!password.matches(".*[0-9].*")) {
+
+                        errors.add("One number required");
+                }
+
+                else if(!password.matches(".*[@#$].*")) {
+
+                        errors.add("One special character required");
+                }
+
+                if(errors.isEmpty()) {
+
+                        passwordValidationMessage.setText(
+                                "Strong password"
+                        );
+
+                        passwordValidationMessage
+                                .getStyle()
+                                .set("color", "#16a34a");
+
+                } else {
+
+                        passwordValidationMessage.setText(
+                                String.join(" | ", errors)
+                        );
+
+                        passwordValidationMessage
+                                .getStyle()
+                                .set("color", "#dc2626");
+                }
+        }
+
+        private void validateConfirmPassword() {
+
+                if(confirmPassword.getValue()
+                        .equals(newPassword.getValue())) {
+
+                        confirmPasswordMessage.setText(
+                                "Passwords matched"
+                        );
+
+                        confirmPasswordMessage
+                                .getStyle()
+                                .set("color", "#16a34a");
+
+                } else {
+
+                        confirmPasswordMessage.setText(
+                                "Passwords do not match"
+                        );
+
+                        confirmPasswordMessage
+                                .getStyle()
+                                .set("color", "#dc2626");
+                }
+        }
+
 }

@@ -1,19 +1,25 @@
 package com.example.views;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.example.base.ui.MainLayout;
 import com.example.dto.InventoryItemDTO;
 import com.example.dto.InventoryRequestDTO;
 import com.example.dto.RequestItemDTO;
+import com.example.dto.ReturnedItemDTO;
 import com.example.entity.Employee;
 import com.example.entity.User;
+import com.example.enums.IssueStatus;
 import com.example.enums.RequestStatus;
 import com.example.repository.UserRepository;
 import com.example.security.SecurityService;
 import com.example.service.ApprovalProgressService;
 import com.example.service.InventoryRequestService;
+import com.example.service.IssueService;
+import com.example.service.ReturnService;
 import com.example.utils.NotificationUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -32,6 +38,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.html.Span;
 
 import com.example.dto.InventoryRequestFilterDTO;
+import com.example.dto.IssuedItemDTO;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 
@@ -50,9 +57,29 @@ public class InventoryRequestView extends VerticalLayout {
 
     private final ApprovalProgressService approvalProgressService;
 
+    private final IssueService issuedService;
+    
+    private final ReturnService returnService;
+
     private boolean editMode = false;
 
     private final Grid<RequestItemDTO> itemGrid = new Grid<>(RequestItemDTO.class, false);
+
+    private final Grid<IssuedItemDTO> issuedGrid = new Grid<>(IssuedItemDTO.class, false);
+
+        private final Grid<ReturnedItemDTO> returnedGrid = new Grid<>(ReturnedItemDTO.class, false);
+
+        private final VerticalLayout contentLayout = new VerticalLayout();
+
+        private Button requestsTab;
+
+        private Button approvedTab;
+
+        private Button issuedTab;
+
+        private Button returnedTab;
+
+        private Button requestedTab;
 
     private final Grid<InventoryRequestDTO> requestGrid = new Grid<>(InventoryRequestDTO.class, false);
 
@@ -98,7 +125,9 @@ public class InventoryRequestView extends VerticalLayout {
         InventoryRequestService inventoryRequestService,
         UserRepository userRepository,
         SecurityService securityService,
-        ApprovalProgressService approvalProgressService) {
+        ApprovalProgressService approvalProgressService,
+        IssueService issuedService,
+        ReturnService returnService) {
 
         this.inventoryRequestService = inventoryRequestService;
 
@@ -107,6 +136,10 @@ public class InventoryRequestView extends VerticalLayout {
         this.securityService = securityService;
 
         this.approvalProgressService = approvalProgressService;
+
+        this.issuedService = issuedService;
+
+        this.returnService = returnService;
 
         setWidthFull();
 
@@ -124,8 +157,7 @@ public class InventoryRequestView extends VerticalLayout {
 
         loadLoggedInEmployee();
 
-        H2 heading =
-                new H2("Inventory Request Management");
+        H2 heading = new H2("Inventory Request Management");
 
         heading.getStyle()
 
@@ -145,11 +177,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 .set("color", "#64748b");
 
-        VerticalLayout headingSection =
-                new VerticalLayout(
-                        heading,
-                        subtitle
-                );
+        VerticalLayout headingSection = new VerticalLayout(heading, subtitle);
 
         headingSection.setPadding(true);
 
@@ -165,8 +193,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 .set("margin-left", "auto")
 
-                .set("background",
-                        "linear-gradient(135deg,#2563eb,#1d4ed8)")
+                .set("background", "linear-gradient(135deg,#2563eb,#1d4ed8)")
 
                 .set("border-radius", "12px")
 
@@ -176,20 +203,23 @@ public class InventoryRequestView extends VerticalLayout {
 
                 .set("padding", "0 18px")
 
-                .set("box-shadow",
-                        "0 4px 14px rgba(37,99,235,0.35)");
+                .set("box-shadow", "0 4px 14px rgba(37,99,235,0.35)");
 
         openDialogButton.addClickListener(event -> {
 
                 clearForm();
+                currentRequest.setRequestNumber(generateRequestNumber());
+
+                requestNumber.setValue(currentRequest.getRequestNumber());
+
                 requestDialog.open();
         });
 
-        HorizontalLayout headerLayout =
-                new HorizontalLayout(
-                        headingSection,
-                        openDialogButton
-                );
+        HorizontalLayout headerLayout = new HorizontalLayout(headingSection);
+
+        if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")){
+                headerLayout.add(openDialogButton);
+        }
 
         headerLayout.setWidthFull();
 
@@ -205,21 +235,13 @@ public class InventoryRequestView extends VerticalLayout {
 
         configureRequestGrid();
 
-        HorizontalLayout requestLayout =
-                new HorizontalLayout(
-                        requestNumber,
-                        requestStatus
-                );
+        HorizontalLayout requestLayout = new HorizontalLayout(requestNumber, requestStatus);
 
         requestLayout.setWidthFull();
 
         requestLayout.expand(requestNumber);
 
-        HorizontalLayout itemLayout =
-                new HorizontalLayout(
-                        itemComboBox,
-                        quantityField
-                );
+        HorizontalLayout itemLayout = new HorizontalLayout(itemComboBox, quantityField);
 
         itemLayout.setWidthFull();
 
@@ -227,15 +249,12 @@ public class InventoryRequestView extends VerticalLayout {
 
         configureFilters();
 
-        HorizontalLayout filterLayout =
-                new HorizontalLayout(
-                        requestSearchField
-                );
+        HorizontalLayout filterLayout = new HorizontalLayout(requestSearchField);
 
         if(!securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")) {
                 filterLayout.add(
                         employeeSearchField,
-                        statusFilter,
+                        // statusFilter,
                         fromDateFilter,
                         toDateFilter,
                         clearFilterButton
@@ -243,7 +262,7 @@ public class InventoryRequestView extends VerticalLayout {
 
         } else {
                 filterLayout.add(
-                        statusFilter,
+                        // statusFilter,
                         fromDateFilter,
                         toDateFilter,
                         clearFilterButton
@@ -317,7 +336,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         remarks,
 
-                        itemLayout,
+                        itemLayout, 
 
                         addItemButton,
 
@@ -325,10 +344,11 @@ public class InventoryRequestView extends VerticalLayout {
 
                         buttonLayout
                 );
+                
 
         dialogLayout.setWidth("950px");
 
-        dialogLayout.setHeightFull();
+        dialogLayout.setHeight("500px");
 
         dialogLayout.setPadding(true);
 
@@ -354,11 +374,33 @@ public class InventoryRequestView extends VerticalLayout {
 
         requestDialog.setHeight("720px");
 
-        add(
-                headerLayout,
-                filterLayout,
-                requestGrid
-        );
+        createTabs();
+
+        contentLayout.setWidthFull();
+
+        contentLayout.setPadding(false);
+
+        contentLayout.setSpacing(false);
+
+        showRequests();
+
+        if(!securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")){
+                add(
+                        headerLayout,
+                        createTabsLayout(),
+                        filterLayout,
+                        contentLayout
+                );
+        }
+        else{
+                add(
+                        headerLayout,
+                        createTabsLayout(),
+                        filterLayout,
+                        contentLayout
+                );
+        }
+
 
         refreshRequestGrid();
      }
@@ -369,13 +411,9 @@ public class InventoryRequestView extends VerticalLayout {
 
                 requestStatus.setReadOnly(true);
 
-                requestStatus.setValue(
-                        RequestStatus.DRAFT.name()
-                );
+                requestStatus.setValue(RequestStatus.DRAFT.name());
 
-                requestNumber.setPlaceholder(
-                        "Generated Automatically"
-                );
+                requestNumber.setPlaceholder("Generated Automatically");
 
                 requestNumber.setWidthFull();
 
@@ -399,9 +437,7 @@ public class InventoryRequestView extends VerticalLayout {
         itemComboBox.setItems(inventoryRequestService.getAvailableItems());
 
         itemComboBox.setItemLabelGenerator(
-                item -> item.getItemName()
-                        + " - "
-                        + item.getItemCode()
+                item -> item.getItemName() + " - " + item.getItemCode()
         );
 
         quantityField.setMin(1);
@@ -468,45 +504,27 @@ public class InventoryRequestView extends VerticalLayout {
 
     private void configureFilters() {
 
-                requestSearchField.setPlaceholder(
-                        "Search Request No"
-                );
+                requestSearchField.setPlaceholder("Search Request No");
 
-                requestSearchField.setPrefixComponent(
-                        VaadinIcon.SEARCH.create()
-                );
+                requestSearchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 
                 requestSearchField.setWidth("260px");
 
-                employeeSearchField.setPlaceholder(
-                        "Search Employee"
-                );
+                employeeSearchField.setPlaceholder("Search Employee");
 
-                employeeSearchField.setPrefixComponent(
-                        VaadinIcon.USER.create()
-                );
+                employeeSearchField.setPrefixComponent(VaadinIcon.USER.create());
 
                 employeeSearchField.setWidth("220px");
 
-                statusFilter.setPlaceholder(
-                        "Status"
-                );
+                statusFilter.setPlaceholder("Status");
 
-                statusFilter.setItems(
-                        RequestStatus.values()
-                );
+                statusFilter.setItems(RequestStatus.values());
 
-                fromDateFilter.setPlaceholder(
-                        "From Date"
-                );
+                fromDateFilter.setPlaceholder("From Date");
 
-                toDateFilter.setPlaceholder(
-                        "To Date"
-                );
+                toDateFilter.setPlaceholder("To Date");
 
-                clearFilterButton.addThemeVariants(
-                        ButtonVariant.LUMO_ERROR
-                );
+                clearFilterButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
                 clearFilterButton.getStyle().set("border-radius", "10px");
 
@@ -555,6 +573,470 @@ public class InventoryRequestView extends VerticalLayout {
 
                 refreshRequestGrid();
         }
+
+        private void configureIssuedGrid() {
+
+                issuedGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES
+                );
+
+                issuedGrid.addColumn(
+                        IssuedItemDTO::getIssueReferenceNumber
+                ).setHeader("Issue Reference");
+
+                issuedGrid.addColumn(
+                        IssuedItemDTO::getItemName
+                ).setHeader("Item");
+
+                issuedGrid.addColumn(
+                        IssuedItemDTO::getItemCode
+                ).setHeader("Item Code");
+
+                issuedGrid.addColumn(
+                        IssuedItemDTO::getIssuedQuantity
+                ).setHeader("Quantity");
+
+                issuedGrid.addColumn(
+                        item -> "ISSUED"
+                ).setHeader("Status");
+
+                issuedGrid.setWidthFull();
+
+                issuedGrid.setHeight("550px");
+        }
+
+        private void configureReturnedGrid() {
+
+                returnedGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+                // returnedGrid.addColumn(
+                //         ReturnedItemDTO::getReturnReferenceNumber
+                // ).setHeader("Return Reference");
+
+                returnedGrid.addColumn(
+                        ReturnedItemDTO::getIssueReferenceNumber
+                ).setHeader("Issue Reference");
+
+                returnedGrid.addColumn(
+                        ReturnedItemDTO::getItemName
+                ).setHeader("Item");
+
+                returnedGrid.addColumn(
+                        ReturnedItemDTO::getItemCode
+                ).setHeader("Item Code");
+
+                returnedGrid.addColumn(
+                        ReturnedItemDTO::getReturnQuantity
+                ).setHeader("Returned Qty");
+
+                returnedGrid.addComponentColumn(item -> {
+
+                        Span status =
+                                new Span(item.getIssueStatus().name());
+
+                        String color = "#475569";
+
+                        if(item.getIssueStatus() == IssueStatus.CLOSED) {
+                                color = "#475569";
+                        }
+
+                        status.getStyle()
+
+                                .set("background", color)
+
+                                .set("color", "white")
+
+                                .set("padding", "6px 12px")
+
+                                .set("border-radius", "14px")
+
+                                .set("font-size", "12px")
+
+                                .set("font-weight", "700");
+
+                        return status;
+
+                }).setHeader("Status");
+
+                        returnedGrid.addComponentColumn(item -> {
+
+                        HorizontalLayout actions = new HorizontalLayout();
+
+                        if(securityService.getAuthenticatedRole().equals("ROLE_SUPER_ADMIN")
+
+                                ||
+
+                                securityService.getAuthenticatedRole().equals("ROLE_INVENTORY_ADMIN")
+                        ) {
+
+
+                                if(item.getIssueStatus() != IssueStatus.CLOSED) {
+
+                                        Button closeButton =
+                                                new Button(
+                                                        "Close",
+                                                        VaadinIcon.LOCK.create()
+                                                );
+
+                                        closeButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+
+                                        closeButton.addClickListener(event -> {
+
+                                                returnService.closeReturn(item.getIssuedItemId());
+
+                                                NotificationUtil.success("Return closed successfully");
+
+                                                showReturnedItems();
+                                        });
+
+                                        actions.add(closeButton);
+                                }
+                        }
+                        else{
+                                if(item.getIssueStatus() != IssueStatus.CLOSED){
+
+                                        Button cancelButton =
+                                                        new Button(
+                                                                "Cancel Return",
+                                                                VaadinIcon.ROTATE_LEFT.create()
+                                                        );
+
+                                                cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+                                                cancelButton.addClickListener(event -> {
+
+                                                        returnService.cancelReturn(item.getIssuedItemId());
+
+                                                        NotificationUtil.success("Return cancelled successfully");
+
+                                                        showReturnedItems();
+                                                });
+                                        actions.add(cancelButton);
+                                }
+                        }
+                        return actions;
+
+                }).setHeader("Actions");
+
+                returnedGrid.setWidthFull();
+
+                returnedGrid.setHeight("550px");
+        }
+
+        private HorizontalLayout createTabsLayout() {
+
+                HorizontalLayout tabsLayout = new HorizontalLayout();
+
+                // EMPLOYEE TABS
+
+                if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")) {
+
+                        requestsTab = createTabButton(
+                                "All Requests",
+                                inventoryRequestService
+                                        .getAllRequests()
+                                        .size(),
+                                "#838585"
+                        );
+
+                        requestedTab = createTabButton(
+                                "Requested",
+                                (int) inventoryRequestService
+                                        .getAllRequests()
+                                        .stream()
+                                        .filter(request ->
+                                                request.getRequestStatus() == RequestStatus.PENDING_APPROVAL).count(),
+                                "#838585"
+                        );
+
+                        approvedTab = createTabButton(
+                                "Approved",
+                                (int) inventoryRequestService
+                                        .getAllRequests()
+                                        .stream()
+                                        .filter(request ->
+                                                request.getRequestStatus() == RequestStatus.APPROVED).count(),
+                                "#838585"
+                        );
+
+                        issuedTab = createTabButton(
+                                "Issued",
+                                (int) issuedService.getIssuedHistory().size(),
+                                "#838585"
+                        );
+
+                        returnedTab = createTabButton(
+                                "Returned",
+                                (int) returnService.getReturnedHistory().size(),
+                                "#838585"
+                        );
+
+                        setActiveTab(requestsTab);
+
+                        requestsTab.addClickListener(event -> {
+
+                                setActiveTab(requestsTab);
+
+                                showRequests();
+                        });
+
+                        requestedTab.addClickListener(event -> {
+
+                                setActiveTab(requestedTab);
+
+                                showRequestedRequests();
+                        });
+
+                        approvedTab.addClickListener(event -> {
+
+                                setActiveTab(approvedTab);
+
+                                showApprovedRequests();
+                        });
+
+                        issuedTab.addClickListener(event -> {
+
+                                setActiveTab(issuedTab);
+
+                                showIssuedItems();
+                        });
+
+                        returnedTab.addClickListener(event -> {
+
+                                setActiveTab(returnedTab);
+
+                                showReturnedItems();
+                        });
+
+                        tabsLayout.add(
+                                requestsTab,
+                                requestedTab,
+                                approvedTab,
+                                issuedTab,
+                                returnedTab
+                        );
+                }
+
+                // ADMIN TABS
+
+                else {
+                        requestsTab = createTabButton(
+                                "All Requests",
+                                inventoryRequestService.getAllRequests().size(),
+                                "#838585"
+                        );
+
+
+                        requestsTab.addClickListener(event -> {
+
+                                setActiveTab(requestsTab);
+
+                                showRequests();
+                        });
+
+                        returnedTab = createTabButton(
+                                "Returned",
+                                (int) returnService.getReturnedHistory().size(),
+                                "#838585"
+                        );
+
+                        
+                        returnedTab.addClickListener(event -> {
+
+                                setActiveTab(returnedTab);
+
+                                showReturnedItems();
+                        });
+
+                        setActiveTab(requestsTab);
+
+                        tabsLayout.add(requestsTab, returnedTab);
+                }
+
+                tabsLayout.setSpacing(true);
+
+                tabsLayout.getStyle().set("margin-bottom", "8px");
+
+                return tabsLayout;
+        }
+
+        private void setActiveTab(Button activeTab) {
+
+                List<Button> tabs = new ArrayList<>();
+
+                if(requestsTab != null) {
+                        tabs.add(requestsTab);
+                }
+
+                if(requestedTab != null) {
+                        tabs.add(requestedTab);
+                }
+
+                if(approvedTab != null) {
+                        tabs.add(approvedTab);
+                }
+
+                if(issuedTab != null) {
+                        tabs.add(issuedTab);
+                }
+
+                if(returnedTab != null) {
+                        tabs.add(returnedTab);
+                }
+
+                for(Button tab : tabs) {
+
+                        tab.getStyle()
+
+                                .set("background", "white")
+
+                                .set("color", "#64748b")
+
+                                .set("border", "1px solid #d1d5db");
+                }
+
+                activeTab.getStyle()
+
+                        .set("background", "#eff6ff")
+
+                        .set("color", "#2563eb")
+
+                        .set("border", "1px solid #2563eb");
+        }
+
+
+        private Button createTabButton(String label, int count, String color) {
+
+                        Span labelSpan = new Span(label);
+
+                        labelSpan.getStyle()
+                                
+                                .set("font-weight", "600");
+
+                        Span countSpan = new Span(String.valueOf(count));
+
+                        countSpan.getStyle()
+
+                                .set("background", color)
+
+                                .set("color", "white")
+
+                                .set("padding", "2px 8px")
+
+                                .set("border-radius", "10px")
+
+                                .set("font-size", "12px")
+
+                                .set("font-weight", "700");
+
+                        HorizontalLayout content =
+                                new HorizontalLayout(
+                                        labelSpan,
+                                        countSpan
+                                );
+
+                        content.setSpacing(true);
+
+                        content.setAlignItems(Alignment.CENTER);
+
+                        Button button = new Button(content);
+
+                        button.getStyle()
+
+                                .set("background", "white")
+
+                                .set("border", "1px solid #dbe4f0")
+
+                                .set("border-radius", "12px")
+
+                                .set("padding", "10px 16px")
+
+                                .set("cursor", "pointer")
+
+                                .set("box-shadow",    "0 2px 8px rgba(0,0,0,0.04)");
+
+                        return button;
+        }
+
+        private void createTabs() {
+
+                configureIssuedGrid();
+
+                configureReturnedGrid();
+        }
+
+        private void showRequests() {
+
+                contentLayout.removeAll();
+
+                requestGrid.setItems(
+                        inventoryRequestService.getAllRequests()
+                );
+
+                contentLayout.add(requestGrid);
+        
+        }
+
+        private void showApprovedRequests() {
+
+                contentLayout.removeAll();
+
+                requestGrid.setItems(
+
+                        inventoryRequestService
+                                .getAllRequests()
+                                .stream()
+
+                                .filter(request ->
+                                        request.getRequestStatus().name().equals("APPROVED"))
+                                .toList()
+                );
+
+                contentLayout.add(requestGrid);
+        }
+
+        private void showRequestedRequests() {
+
+                contentLayout.removeAll();
+
+                List<InventoryRequestDTO> requestedRequests =
+                        inventoryRequestService
+                                .getAllRequests()
+                                .stream()
+
+                                .filter(request ->
+                                        request.getRequestStatus() == RequestStatus.PENDING_APPROVAL
+                                )
+
+                                .toList();
+
+                requestGrid.setItems(requestedRequests);
+
+                contentLayout.add(requestGrid);
+        }
+
+        private void showIssuedItems() {
+
+                contentLayout.removeAll();
+
+                issuedGrid.setItems(
+                        issuedService.getIssuedHistory()
+                );
+
+                contentLayout.add(issuedGrid);
+        }
+
+        private void showReturnedItems() {
+
+                contentLayout.removeAll();
+
+                returnedGrid.setItems(
+                        returnService.getReturnedHistory()
+                );
+
+                contentLayout.add(returnedGrid);
+        }
+
 
         private void loadRequestToForm(InventoryRequestDTO dto) {
 
@@ -609,10 +1091,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 requestGrid.addComponentColumn(request -> {
 
-                        Span statusSpan =
-                                new Span(
-                                        request.getRequestStatus().name()
-                                );
+                        Span statusSpan = new Span(request.getRequestStatus().name());
 
                         String backgroundColor = "#2563eb";
 
@@ -661,10 +1140,17 @@ public class InventoryRequestView extends VerticalLayout {
 
                 }).setHeader("Status");
 
-                requestGrid.addColumn(
-                        InventoryRequestDTO::getRequestDate
-                )
-                .setHeader("Request Date");
+                requestGrid.addColumn(request -> {
+
+                        if(request.getRequestDate() == null) {
+                                return "-";
+                        }
+
+                        return request.getRequestDate()
+                                .toLocalDate()
+                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+                }).setHeader("Request Date");
 
                 requestGrid.setHeight("620px");
 
@@ -706,8 +1192,7 @@ public class InventoryRequestView extends VerticalLayout {
                         return;
                 }
 
-                if(quantityField.getValue() == null
-                        || quantityField.getValue() <= 0) {
+                if(quantityField.getValue() == null || quantityField.getValue() <= 0) {
 
                         NotificationUtil.error("Enter valid quantity");
 
@@ -718,10 +1203,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 RequestItemDTO existingItem = requestItems
                         .stream()
-                        .filter(item ->
-                            item.getItemId()
-                            .equals(itemId)
-                        )
+                        .filter(item -> item.getItemId().equals(itemId))
                         .findFirst()
                         .orElse(null);
 
@@ -762,9 +1244,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         RequestItemDTO existing = mergedItems
                                 .stream()
-                                .filter(i ->
-                                        i.getItemId().equals(item.getItemId())
-                                )
+                                .filter(i -> i.getItemId().equals(item.getItemId()))
                                 .findFirst()
                                 .orElse(null);
 
@@ -776,28 +1256,17 @@ public class InventoryRequestView extends VerticalLayout {
 
                         } else {
 
-                                RequestItemDTO newItem =
-                                        new RequestItemDTO();
+                                RequestItemDTO newItem = new RequestItemDTO();
 
-                                newItem.setRequestItemId(
-                                        item.getRequestItemId()
-                                );
+                                newItem.setRequestItemId(item.getRequestItemId());
 
-                                newItem.setItemId(
-                                        item.getItemId()
-                                );
+                                newItem.setItemId(item.getItemId());
 
-                                newItem.setItemName(
-                                        item.getItemName()
-                                );
+                                newItem.setItemName(item.getItemName());
 
-                                newItem.setItemCode(
-                                        item.getItemCode()
-                                );
+                                newItem.setItemCode(item.getItemCode());
 
-                                newItem.setRequestedQuantity(
-                                        item.getRequestedQuantity()
-                                );
+                                newItem.setRequestedQuantity(item.getRequestedQuantity());
 
                                 mergedItems.add(newItem);
                         }
@@ -870,6 +1339,8 @@ public class InventoryRequestView extends VerticalLayout {
 
                 currentRequest.setEmployeeId(loggedInEmployee.getEmployeeId());
 
+                currentRequest.setRequestNumber(requestNumber.getValue());
+
                 currentRequest.setRemarks(remarks.getValue());
 
                 currentRequest.setRequestItems(new ArrayList<>(requestItems));
@@ -889,26 +1360,30 @@ public class InventoryRequestView extends VerticalLayout {
                         );
 
         if(user.getEmployee() == null){
-                throw new RuntimeException(
-                        "Logged in user is not mapped to employee"
-                );
+                throw new RuntimeException("Logged in user is not mapped to employee");
         }
 
         loggedInEmployee = user.getEmployee();
     }
 
+    private String generateRequestNumber() {
+
+                return "REQ-" + UUID.randomUUID()
+                                .toString()
+                                .substring(0, 8)
+                                .toUpperCase();
+        }
+
     private void refreshRequestGrid() {
 
         requestGrid.setItems(
-                inventoryRequestService
-                        .getAllRequests()
+                inventoryRequestService.getAllRequests()
         );
     }
 
         private void clearForm() {
 
-                currentRequest =
-                        new InventoryRequestDTO();
+                currentRequest = new InventoryRequestDTO();
 
                 saveDraftButton.setText("Save Draft");
 
@@ -938,8 +1413,6 @@ public class InventoryRequestView extends VerticalLayout {
 
                 requestDialog.close();
 
-                NotificationUtil.success(
-                        "Request Cancelled"
-                );
+                NotificationUtil.success("Request Cancelled");
         }
 }

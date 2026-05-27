@@ -34,145 +34,103 @@ public class DashboardView extends VerticalLayout {
     private final DashboardService dashboardService;
 
     public DashboardView(
+        SecurityService securityService, EmployeeRepository employeeRepository, DashboardService dashboardService) {
 
-            SecurityService securityService,
+        this.employeeRepository = employeeRepository;
 
-            EmployeeRepository employeeRepository,
-
-            DashboardService dashboardService
-    ) {
-
-        this.employeeRepository =
-                employeeRepository;
-
-        this.dashboardService =
-                dashboardService;
+        this.dashboardService = dashboardService;
 
         setSizeFull();
 
-        setPadding(false);
+        setPadding(true);
 
-        setSpacing(false);
+        setSpacing(true);
+
+        setMargin(false);
 
         getStyle()
 
-                .set("background",
-                        "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)")
+                .set("background", "#f8fafc")
 
-                .set("padding", "28px")
+                .set("margin", "0")
+
+                .set("padding", "20px")
 
                 .set("overflow", "auto");
 
-        DashboardStatsDTO stats =
-                dashboardService.getDashboardStats();
+        DashboardStatsDTO stats = dashboardService.getDashboardStats();
 
-        String role =
-                securityService.getAuthenticatedRole();
+        String role = securityService.getAuthenticatedRole();
 
-        Employee employee =
-        employeeRepository.findByEmail(
-                securityService.getAuthenticatedUser()
-        );
+        Employee employee = employeeRepository.findByEmail(securityService.getAuthenticatedUser());
 
         String displayName =
                 employee != null
                         ? employee.getEmployeeName()
                         : securityService.getAuthenticatedUser();
 
-        // HEADER SECTION
 
-        HorizontalLayout topSection =
-                new HorizontalLayout();
+        HorizontalLayout topSection = new HorizontalLayout();
 
         topSection.setWidthFull();
 
-        topSection.setAlignItems(
-                Alignment.CENTER
-        );
+        topSection.setAlignItems(Alignment.CENTER);
 
-        topSection.setJustifyContentMode(
-                JustifyContentMode.BETWEEN
-        );
+        topSection.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        VerticalLayout leftHeader =
-                new VerticalLayout();
+        topSection.getStyle().set("margin-bottom", "20px");
 
-        leftHeader.setPadding(false);
 
-        leftHeader.setSpacing(false);
+        VerticalLayout leftHeader = new VerticalLayout();
 
-        H1 heading =
-                new H1("ERP Dashboard");
+        leftHeader.setPadding(true);
+
+        leftHeader.setSpacing(true);
+
+        H1 heading = new H1("ERP Dashboard");
 
         heading.getStyle()
 
                 .set("margin", "0")
 
-                .set("font-size", "42px")
+                .set("font-size", "38px")
 
-                .set("font-weight", "800")
+                .set("font-weight", "700")
 
-                .set("color", "#0f172a")
+                .set("color", "#1e293b");
 
-                .set("letter-spacing", "-1px");
-
-        Span subtitle =
-                new Span(
-                        "Smart inventory tracking and workflow insights"
-                );
+        Span subtitle = new Span("Inventory and workflow overview");
 
         subtitle.getStyle()
 
-                .set("font-size", "16px")
+                .set("font-size", "15px")
 
-                .set("color", "#64748b")
-
-                .set("margin-top", "6px");
+                .set("color", "#64748b");
 
         leftHeader.add(
                 heading,
                 subtitle
         );
 
-        leftHeader.setPadding(true);
+        // USER CARD
 
-        leftHeader.setSpacing(true);
+        HorizontalLayout userCard = new HorizontalLayout();
 
-
-
-        HorizontalLayout userCard =
-                new HorizontalLayout();
-
-        userCard.setAlignItems(
-                Alignment.CENTER
-        );
+        userCard.setAlignItems(Alignment.CENTER);
 
         userCard.setSpacing(true);
 
         userCard.getStyle()
 
-                .set("height", "80px")
+                .set("background", "white")
 
-                .set("background",
-                        "rgba(255,255,255,0.92)")
+                .set("padding", "2px 18px")
 
-                .set("padding",
-                        "12px 18px")
+                .set("border-radius", "12px")
 
-                .set("border-radius",
-                        "18px")
+                .set("border", "1px solid #e2e8f0");
 
-                .set("border",
-                        "1px solid rgba(255,255,255,0.7)")
-
-                .set("backdrop-filter",
-                        "blur(14px)")
-
-                .set("box-shadow",
-                        "0 14px 40px rgba(15,23,42,0.08)");
-
-        Div avatar =
-                new Div();
+        Div avatar = new Div();
 
         avatar.setText(
                 displayName
@@ -182,9 +140,9 @@ public class DashboardView extends VerticalLayout {
 
         avatar.getStyle()
 
-                .set("width", "80px")
+                .set("width", "65px")
 
-                .set("height", "60px")
+                .set("height", "50px")
 
                 .set("display", "flex")
 
@@ -192,60 +150,39 @@ public class DashboardView extends VerticalLayout {
 
                 .set("justify-content", "center")
 
-                .set("font-size", "30px")
+                .set("font-size", "24px")
 
-                .set("font-weight", "800")
+                .set("font-weight", "700")
 
                 .set("color", "white")
 
                 .set("border-radius", "50%")
 
-                .set("background",
-                        "linear-gradient(135deg, #2563eb, #7c3aed)")
+                .set("background", "#2563eb");
 
-                .set("box-shadow",
-                        "0 10px 24px rgba(79,70,229,0.35)");
-
-        VerticalLayout userInfo =
-                new VerticalLayout();
+        VerticalLayout userInfo = new VerticalLayout();
 
         userInfo.setPadding(true);
 
         userInfo.setSpacing(true);
 
-        Span welcomeText =
-                new Span(
-                        displayName
-                );
+        Span welcomeText = new Span(displayName);
 
         welcomeText.getStyle()
 
-                .set("font-size", "20px")
-
-                .set("font-weight", "700")
-
-                .set("color", "#0f172a");
-
-        Span roleText =
-                new Span(
-                        role.replace("ROLE_", "")
-                );
-
-        roleText.getStyle()
-
-                .set("font-size", "14px")
+                .set("font-size", "18px")
 
                 .set("font-weight", "600")
 
-                .set("padding", "4px 22px")
+                .set("color", "#1e293b");
 
-                .set("border-radius", "30px")
+        Span roleText = new Span(role.replace("ROLE_", ""));
 
-                .set("background", "#dbeafe")
+        roleText.getStyle()
 
-                .set("color", "#1d4ed8")
+                .set("font-size", "13px")
 
-                .set("width", "fit-content");
+                .set("color", "#64748b");
 
         userInfo.add(
                 welcomeText,
@@ -262,33 +199,26 @@ public class DashboardView extends VerticalLayout {
                 userCard
         );
 
-        
 
-        VerticalLayout dashboardContent =
-                new VerticalLayout();
+        VerticalLayout dashboardContent = new VerticalLayout();
 
-        dashboardContent.setPadding(false);
+        dashboardContent.setPadding(true);
 
         dashboardContent.setSpacing(true);
 
-        dashboardContent.getStyle()
-                .set("margin-top", "30px");
-
-        HorizontalLayout row1 =
-                new HorizontalLayout();
+        HorizontalLayout row1 = new HorizontalLayout();
 
         row1.setWidthFull();
 
         row1.setSpacing(true);
 
-        HorizontalLayout row2 =
-                new HorizontalLayout();
+        HorizontalLayout row2 = new HorizontalLayout();
 
         row2.setWidthFull();
 
         row2.setSpacing(true);
 
-        
+        // EMPLOYEE
 
         if(role.equals("ROLE_EMPLOYEE")) {
 
@@ -300,8 +230,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getTotalRequests()
                             ),
                             VaadinIcon.CLIPBOARD_TEXT,
-                            "#2563eb",
-                            "#dbeafe"
+                            "#2563eb"
                     ),
 
                     createCard(
@@ -310,8 +239,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getDraftRequests()
                             ),
                             VaadinIcon.EDIT,
-                            "#7c3aed",
-                            "#ede9fe"
+                            "#7c3aed"
                     ),
 
                     createCard(
@@ -320,8 +248,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getPendingRequests()
                             ),
                             VaadinIcon.CLOCK,
-                            "#ea580c",
-                            "#ffedd5"
+                            "#ea580c"
                     )
             );
 
@@ -332,9 +259,8 @@ public class DashboardView extends VerticalLayout {
                             String.valueOf(
                                     stats.getApprovedRequests()
                             ),
-                            VaadinIcon.CHECK_CIRCLE,
-                            "#059669",
-                            "#d1fae5"
+                            VaadinIcon.CHECK,
+                            "#059669"
                     ),
 
                     createCard(
@@ -343,8 +269,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getIssuedRequests()
                             ),
                             VaadinIcon.PACKAGE,
-                            "#0891b2",
-                            "#cffafe"
+                            "#0891b2"
                     )
             );
         }
@@ -361,8 +286,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getPendingApprovals()
                             ),
                             VaadinIcon.WARNING,
-                            "#dc2626",
-                            "#fee2e2"
+                            "#dc2626"
                     ),
 
                     createCard(
@@ -371,8 +295,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getApprovedRequests()
                             ),
                             VaadinIcon.CHECK,
-                            "#059669",
-                            "#d1fae5"
+                            "#059669"
                     ),
 
                     createCard(
@@ -380,9 +303,8 @@ public class DashboardView extends VerticalLayout {
                             String.valueOf(
                                     stats.getPendingRequests()
                             ),
-                            VaadinIcon.TIME_BACKWARD,
-                            "#ea580c",
-                            "#ffedd5"
+                            VaadinIcon.CLOCK,
+                            "#ea580c"
                     )
             );
 
@@ -394,8 +316,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getIssuedRequests()
                             ),
                             VaadinIcon.PACKAGE,
-                            "#2563eb",
-                            "#dbeafe"
+                            "#2563eb"
                     )
             );
         }
@@ -411,9 +332,8 @@ public class DashboardView extends VerticalLayout {
                             String.valueOf(
                                     stats.getPendingApprovals()
                             ),
-                            VaadinIcon.CLIPBOARD_CHECK,
-                            "#dc2626",
-                            "#fee2e2"
+                            VaadinIcon.WARNING,
+                            "#dc2626"
                     ),
 
                     createCard(
@@ -421,9 +341,8 @@ public class DashboardView extends VerticalLayout {
                             String.valueOf(
                                     stats.getApprovedRequests()
                             ),
-                            VaadinIcon.CHECK_CIRCLE,
-                            "#059669",
-                            "#d1fae5"
+                            VaadinIcon.CHECK,
+                            "#059669"
                     ),
 
                     createCard(
@@ -432,21 +351,19 @@ public class DashboardView extends VerticalLayout {
                                     stats.getIssuedRequests()
                             ),
                             VaadinIcon.TRUCK,
-                            "#0891b2",
-                            "#cffafe"
+                            "#0891b2"
                     )
             );
 
             row2.add(
 
                     createCard(
-                            "Low Stock Items",
+                            "Low Stock",
                             String.valueOf(
                                     stats.getLowStockItems()
                             ),
-                            VaadinIcon.WARNING,
-                            "#ea580c",
-                            "#ffedd5"
+                            VaadinIcon.STOCK,
+                            "#ea580c"
                     ),
 
                     createCard(
@@ -455,8 +372,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getOutOfStockItems()
                             ),
                             VaadinIcon.CLOSE_CIRCLE,
-                            "#b91c1c",
-                            "#fee2e2"
+                            "#dc2626"
                     )
             );
         }
@@ -473,8 +389,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getTotalEmployees()
                             ),
                             VaadinIcon.USERS,
-                            "#2563eb",
-                            "#dbeafe"
+                            "#2563eb"
                     ),
 
                     createCard(
@@ -483,8 +398,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getTotalItems()
                             ),
                             VaadinIcon.PACKAGE,
-                            "#7c3aed",
-                            "#ede9fe"
+                            "#7c3aed"
                     ),
 
                     createCard(
@@ -493,8 +407,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getTotalRequests()
                             ),
                             VaadinIcon.CLIPBOARD_TEXT,
-                            "#059669",
-                            "#d1fae5"
+                            "#059669"
                     )
             );
 
@@ -506,8 +419,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getPendingApprovals()
                             ),
                             VaadinIcon.WARNING,
-                            "#ea580c",
-                            "#ffedd5"
+                            "#ea580c"
                     ),
 
                     createCard(
@@ -516,8 +428,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getLowStockItems()
                             ),
                             VaadinIcon.STOCK,
-                            "#0891b2",
-                            "#cffafe"
+                            "#0891b2"
                     ),
 
                     createCard(
@@ -526,8 +437,7 @@ public class DashboardView extends VerticalLayout {
                                     stats.getOutOfStockItems()
                             ),
                             VaadinIcon.CLOSE_CIRCLE,
-                            "#dc2626",
-                            "#fee2e2"
+                            "#dc2626"
                     )
             );
         }
@@ -543,23 +453,11 @@ public class DashboardView extends VerticalLayout {
         );
     }
 
-    private VerticalLayout createCard(
+    private VerticalLayout createCard(String title, String value, VaadinIcon icon, String color) {
 
-            String title,
+        Icon topIcon = icon.create();
 
-            String value,
-
-            VaadinIcon icon,
-
-            String color,
-
-            String background
-    ) {
-
-        Icon topIcon =
-                icon.create();
-
-        topIcon.setSize("26px");
+        topIcon.setSize("22px");
 
         topIcon.setColor(color);
 
@@ -567,9 +465,9 @@ public class DashboardView extends VerticalLayout {
 
         iconWrapper.getStyle()
 
-                .set("width", "58px")
+                .set("width", "46px")
 
-                .set("height", "58px")
+                .set("height", "46px")
 
                 .set("display", "flex")
 
@@ -577,109 +475,56 @@ public class DashboardView extends VerticalLayout {
 
                 .set("justify-content", "center")
 
-                .set("border-radius", "16px")
+                .set("border-radius", "10px")
 
-                .set("background", background);
+                .set("background", "#f1f5f9");
 
-        Span titleText =
-                new Span(title);
+        Span titleText = new Span(title);
 
         titleText.getStyle()
 
-                .set("font-size", "16px")
+                .set("font-size", "15px")
 
                 .set("font-weight", "600")
 
                 .set("color", "#64748b");
 
-        Span valueText =
-                new Span(value);
+        Span valueText = new Span(value);
 
         valueText.getStyle()
 
-                .set("font-size", "48px")
+                .set("font-size", "36px")
 
-                .set("font-weight", "800")
-
-                .set("line-height", "1")
+                .set("font-weight", "700")
 
                 .set("color", "#0f172a");
-
-        Span analytics =
-                new Span("Live ERP Statistics");
-
-        analytics.getStyle()
-
-                .set("font-size", "13px")
-
-                .set("font-weight", "500")
-
-                .set("color", color)
-
-                .set("background", background)
-
-                .set("padding", "6px 12px")
-
-                .set("border-radius", "30px")
-
-                .set("width", "fit-content");
 
         VerticalLayout card = new VerticalLayout();
 
         card.setWidthFull();
 
-        card.setHeight("220px");
+        card.setHeight("170px");
 
         card.setSpacing(true);
 
-        card.setPadding(false);
+        card.setPadding(true);
 
         card.setAlignItems(Alignment.START);
 
         card.getStyle()
 
-                .set("background",
-                        "rgba(255,255,255,0.8)")
+                .set("background", "white")
 
-                .set("backdrop-filter",
-                        "blur(12px)")
+                .set("border-radius", "14px")
 
-                .set("border-radius", "24px")
+                .set("padding", "18px")
 
-                .set("padding", "24px")
-
-                .set("border",
-                        "1px solid rgba(255,255,255,0.7)")
-
-                .set("box-shadow",
-                        "0 12px 40px rgba(15,23,42,0.08)")
-
-                .set("transition",
-                        "all 0.3s ease")
-
-                .set("overflow", "hidden")
-
-                .set("position", "relative");
-
-        // card.getElement().executeJs("""
-
-        //     this.addEventListener('mouseenter', () => {
-        //         this.style.transform='translateY(-6px)';
-        //         this.style.boxShadow='0 18px 45px rgba(37,99,235,0.18)';
-        //     });
-
-        //     this.addEventListener('mouseleave', () => {
-        //         this.style.transform='translateY(0px)';
-        //         this.style.boxShadow='0 12px 40px rgba(15,23,42,0.08)';
-        //     });
-
-        // """);
+                .set("border", "1px solid #e2e8f0");
 
         card.add(
                 iconWrapper,
                 titleText,
-                valueText,
-                analytics
+                valueText
         );
 
         return card;

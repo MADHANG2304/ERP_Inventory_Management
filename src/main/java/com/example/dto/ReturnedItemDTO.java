@@ -11,6 +11,8 @@ public class ReturnedItemDTO {
 
     private String issueReferenceNumber;
 
+    private String returnReferenceNumber;
+
     private String employeeName;
 
     private String itemName;
@@ -46,6 +48,14 @@ public class ReturnedItemDTO {
         this.returnRemarks = returnRemarks;
         this.returnedDate = returnedDate;
         this.issueStatus = issueStatus;
+    }
+
+    public String getReturnReferenceNumber() {
+        return returnReferenceNumber;
+    }
+
+    public void setReturnReferenceNumber(String returnReferenceNumber) {
+        this.returnReferenceNumber = returnReferenceNumber;
     }
 
     public Long getIssuedItemId() {

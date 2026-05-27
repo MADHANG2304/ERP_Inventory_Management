@@ -29,13 +29,16 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final AuditLogService auditLogService;
+
     public UserService(UserRepository userRepository , EmployeeRepository employeeRepository,
-                RoleRepository roleRepository , PasswordEncoder passwordEncoder) {
+                RoleRepository roleRepository , PasswordEncoder passwordEncoder, AuditLogService auditLogService) {
 
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     public UserDTO saveUser(UserDTO dto) {
@@ -68,6 +71,7 @@ public class UserService {
 
                         
         user.setEmployee(employee);
+        employee.setUser(user);
         user.setRoles(role);
         user.setUsername(employee.getEmail().trim().toLowerCase());
         user.setEmail(employee.getEmail().trim().toLowerCase());
@@ -82,9 +86,23 @@ public class UserService {
         }
         User savedUser = userRepository.save(user);
 
+        employeeRepository.save(employee);
+
         UserDTO response = convertToDTO(savedUser);
 
         response.setGeneratedPassword(generatedPassword);
+
+        auditLogService.logAction(
+
+                "USER_MODULE",
+
+                dto.getUserId() == null
+                        ? "CREATE"
+                        : "UPDATE",
+
+                "User saved : "
+                        + dto.getUsername()
+        );
 
         return response;
     }
@@ -119,7 +137,7 @@ public class UserService {
                 .findAll()
                 .stream()
 
-                .filter(employee -> employee.getUser() == null)
+                .filter(employee -> employee.getUser() != null)
 
                 .map(employee -> {
                     EmployeeDTO dto = new EmployeeDTO();

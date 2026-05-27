@@ -17,8 +17,11 @@ public class InventoryCategoryService {
     
     private final InventoryCategoryRepository repository;
 
-    public InventoryCategoryService(InventoryCategoryRepository repository){
+    private final AuditLogService auditLogService;
+
+    public InventoryCategoryService(InventoryCategoryRepository repository, AuditLogService auditLogService){
         this.repository = repository;
+        this.auditLogService = auditLogService;
     }
 
     public InventoryCategoryDTO saveCategory(InventoryCategoryDTO dto){
@@ -40,6 +43,18 @@ public class InventoryCategoryService {
         category.setIsActive(dto.getIsActive());
         
         InventoryCategory saved = repository.save(category);
+
+        auditLogService.logAction(
+
+                "CATEGORY_MODULE",
+
+                dto.getCategoryId() == null
+                        ? "CREATE"
+                        : "UPDATE",
+
+                "Category saved : "
+                        + dto.getCategoryName()
+        );
 
         return convertToDTO(saved);
     }
@@ -64,7 +79,28 @@ public class InventoryCategoryService {
     }
 
     public void deleteCategory(Long id){
+
+        InventoryCategory category =
+        repository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Category not found"
+                        )
+                );
+
+
         repository.deleteById(id);
+
+                auditLogService.logAction(
+
+                "CATEGORY_MODULE",
+
+                "DELETE",
+
+                "Deleted category : "
+                        + category.getCategoryName()
+        );
     }
 
     private void validateCategory(InventoryCategoryDTO dto){

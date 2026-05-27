@@ -223,7 +223,7 @@ public class DesignationView extends VerticalLayout{
         HorizontalLayout dialogButtonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        clearButton,
+                        // clearButton,
                         deleteButton,
                         cancelButton
                 );

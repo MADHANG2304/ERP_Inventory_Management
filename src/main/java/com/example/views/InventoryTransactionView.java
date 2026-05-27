@@ -1,23 +1,25 @@
 package com.example.views;
 
+import java.time.format.DateTimeFormatter;
+
+import com.example.base.ui.MainLayout;
 import com.example.dto.InventoryTransactionDTO;
 import com.example.dto.InventoryTransactionFilterDTO;
 import com.example.enums.ReferenceType;
 import com.example.enums.TransactionType;
 import com.example.service.InventoryTransactionService;
-import com.example.base.ui.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "inventory-transactions", layout = MainLayout.class)
@@ -227,8 +229,19 @@ public class InventoryTransactionView
 
                 grid.addColumn(InventoryTransactionDTO::getRemarks).setHeader("Remarks");
 
-                grid.addColumn(InventoryTransactionDTO::getTransactionDate).setHeader("Transaction Date");
 
+                grid.addColumn(transaction -> {
+
+                        if(transaction.getTransactionDate() == null) {
+                                return "-";
+                        }
+
+                        return transaction.getTransactionDate()
+                                .toLocalDate()
+                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                })
+                .setHeader("Transaction Date");
+                
                 grid.setWidthFull();
 
                 grid.setHeight("650px");

@@ -20,10 +20,12 @@ public class InventoryItemService {
     
     private final InventoryItemRepository itemRepository;
     private final InventoryCategoryRepository categoryRepository;
+    private final AuditLogService auditLogService;
 
-    public InventoryItemService(InventoryItemRepository itemRepository, InventoryCategoryRepository categoryRepository){
+    public InventoryItemService(InventoryItemRepository itemRepository, InventoryCategoryRepository categoryRepository, AuditLogService auditLogService){
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
+        this.auditLogService = auditLogService;
     }
 
     public InventoryItemDTO saveItem(InventoryItemDTO dto){
@@ -64,6 +66,18 @@ public class InventoryItemService {
         item.setStatus(dto.getStatus());
 
         InventoryItem saved = itemRepository.save(item);
+
+        auditLogService.logAction(
+
+                "INVENTORY_ITEM",
+
+                dto.getItemId() == null
+                        ? "CREATE"
+                        : "UPDATE",
+
+                "Inventory item saved : "
+                        + dto.getItemName()
+        );
 
         return convertToDTO(saved);
     }

@@ -30,10 +30,13 @@ public class ApprovalProcessService {
 
     private final UserRepository userRepository;
 
+    private final AuditLogService auditLogService;
+
     public ApprovalProcessService(
             RequestApprovalRepository requestApprovalRepository,
             InventoryRequestRepository inventoryRequestRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            AuditLogService auditLogService
     ) {
 
         this.requestApprovalRepository =
@@ -44,20 +47,17 @@ public class ApprovalProcessService {
 
         this.userRepository =
                 userRepository;
+
+        this.auditLogService = auditLogService;
     }
 
-    public List<RequestApprovalDTO>
-    getPendingApprovals(
-            String username
-    ) {
+    public List<RequestApprovalDTO> getPendingApprovals(String username) {
 
         User user =
                 userRepository.findAll()
                         .stream()
                         .filter(u ->
-
-                                u.getUsername()
-                                        .equals(username)
+                                u.getUsername().equals(username)
                         )
                         .findFirst()
                         .orElseThrow(() ->
@@ -66,9 +66,7 @@ public class ApprovalProcessService {
                                 )
                         );
 
-        String roleName =
-                user.getRoles()
-                        .getRoleName();
+        String roleName = user.getRoles().getRoleName();
 
         return requestApprovalRepository
                 .findAll()
@@ -87,9 +85,28 @@ public class ApprovalProcessService {
 
                         &&
 
-                        approval.getApprovalRole()
-                                .name()
-                                .equals(roleName)
+                        // approval.getApprovalRole()
+                        //         .name()
+                        //         .equals(roleName)
+
+                        approval.getApprover() != null
+
+                        &&
+
+                        user.getEmployee() != null
+
+                        &&
+
+                        approval.getApprover().getEmployeeId() != null
+
+                        &&
+
+                        approval.getApprover()
+                                .getEmployeeId()
+                                .equals(
+                                        user.getEmployee()
+                                                .getEmployeeId()
+                                )
                 )
 
                 .sorted(
@@ -107,79 +124,57 @@ public class ApprovalProcessService {
     public void approveRequest(
         Long approvalId,
         String comments
-) {
+        ) {
 
-    RequestApproval currentApproval =
-            requestApprovalRepository
-                    .findById(approvalId)
-                    .orElseThrow(() ->
-                            new RuntimeException(
-                                    "Approval not found"
-                            )
-                    );
+        RequestApproval currentApproval =
+                requestApprovalRepository
+                        .findById(approvalId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Approval not found"
+                                )
+                        );
 
-    if(!Boolean.TRUE.equals(
-            currentApproval.getIsCurrentLevel()
-    )) {
+        if(!Boolean.TRUE.equals(
+                currentApproval.getIsCurrentLevel()
+        )) { 
 
-        throw new RuntimeException(
-                "Invalid approval level"
+                throw new RuntimeException(
+                        "Invalid approval level"
+                );
+        }
+
+        currentApproval.setApprovalStatus(
+                ApprovalStatus.APPROVED
         );
-    }
 
-    /*
-     * CURRENT LEVEL APPROVED
-     */
-    currentApproval.setApprovalStatus(
-            ApprovalStatus.APPROVED
-    );
+        currentApproval.setComments(
+                comments
+        );
 
-    currentApproval.setComments(
-            comments
-    );
+        currentApproval.setIsCurrentLevel(
+                false
+        );
 
-    currentApproval.setIsCurrentLevel(
-            false
-    );
+        requestApprovalRepository.save(
+                currentApproval
+        );
 
-    requestApprovalRepository.save(
-            currentApproval
-    );
+        InventoryRequest request =
+                currentApproval.getRequest();
 
-    InventoryRequest request =
-            currentApproval.getRequest();
+        List<RequestApproval> approvals =
+                request.getApprovals()
+                        .stream()
 
-    List<RequestApproval> approvals =
-            request.getApprovals()
-                    .stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        RequestApproval
+                                                ::getApprovalOrder
+                                )
+                        )
 
-                    .sorted(
-                            Comparator.comparing(
-                                    RequestApproval
-                                            ::getApprovalOrder
-                            )
-                    )
-
-                    .toList();
-
-//     RequestApproval nextApproval = null;
-
-//     for(RequestApproval approval : approvals) {
-
-//         if(approval.getApprovalOrder()
-//                 > currentApproval
-//                         .getApprovalOrder()
-                
-//                 &&
-
-//                     approval.getApprovalStatus()
-//                             == ApprovalStatus.PENDING) {
-
-//             nextApproval = approval;
-
-//             break;
-//         }
-//     }
+                        .toList();
 
         RequestApproval nextApproval = approvals
                 .stream()
@@ -199,9 +194,6 @@ public class ApprovalProcessService {
 
                 .orElse(null);
 
-    /*
-     * MOVE TO NEXT LEVEL
-     */
     if(nextApproval != null) {
 
         nextApproval.setIsCurrentLevel(
@@ -220,6 +212,16 @@ public class ApprovalProcessService {
 
         inventoryRequestRepository.save(
                 request
+        );
+
+        auditLogService.logAction(
+
+                "APPROVAL_MODULE",
+
+                "APPROVE",
+
+                "Approved request : "
+                        + request.getRequestNumber()
         );
     }
 }
@@ -263,6 +265,16 @@ public class ApprovalProcessService {
         inventoryRequestRepository.save(
                 request
         );
+
+        auditLogService.logAction(
+
+        "APPROVAL_MODULE",
+
+        "REJECT",
+
+        "Rejected request : "
+                + request.getRequestNumber()
+);
     }
 
         public List<RequestApprovalDTO>

@@ -263,8 +263,8 @@ public class UserView extends VerticalLayout {
         HorizontalLayout buttonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        clearButton,
-                        deleteButton,
+                        // clearButton,
+                        // deleteButton,
                         cancelButton
                 );
 

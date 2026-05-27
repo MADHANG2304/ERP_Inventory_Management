@@ -3,6 +3,7 @@ package com.example.views.layout;
 import com.example.security.SecurityService;
 import com.example.views.ApprovalConfigView;
 import com.example.views.ApprovalProcessView;
+import com.example.views.AuditLogView;
 import com.example.views.ChangePasswordView;
 import com.example.views.DashboardView;
 import com.example.views.DepartmentView;
@@ -10,9 +11,8 @@ import com.example.views.DesignationView;
 import com.example.views.EmployeeIssuedItemsView;
 import com.example.views.EmployeeView;
 import com.example.views.InventoryCategoryView;
-import com.example.views.InventoryItemView;
+import com.example.views.InventoryManagementView;
 import com.example.views.InventoryRequestView;
-import com.example.views.InventoryStockView;
 import com.example.views.InventoryTransactionView;
 import com.example.views.IssueView;
 import com.example.views.ReturnView;
@@ -165,6 +165,16 @@ public class SideMenu extends SideNav {
                             "#ef4444"
                     )
             );
+
+            addItem(
+                    createModernNavItem(
+                            "Audit Logs",
+                            AuditLogView.class,
+                            VaadinIcon.COGS,
+                            "#ef4444"
+                    )
+            );
+
         }
 
         // SUPER ADMIN + INVENTORY ADMIN
@@ -185,17 +195,8 @@ public class SideMenu extends SideNav {
 
             addItem(
                     createModernNavItem(
-                            "Inventory Items",
-                            InventoryItemView.class,
-                            VaadinIcon.PACKAGE,
-                            "#0ea5e9"
-                    )
-            );
-
-            addItem(
-                    createModernNavItem(
-                            "Inventory Stock",
-                            InventoryStockView.class,
+                            "Inventory Management",
+                            InventoryManagementView.class,
                             VaadinIcon.STORAGE,
                             "#22c55e"
                     )
@@ -240,15 +241,6 @@ public class SideMenu extends SideNav {
                             "#16a34a"
                     )
             );
-
-            addItem(
-                    createModernNavItem(
-                            "Return Items",
-                            ReturnView.class,
-                            VaadinIcon.DOWNLOAD_ALT,
-                            "#dc2626"
-                    )
-            );
         }
 
         // MANAGER
@@ -291,14 +283,14 @@ public class SideMenu extends SideNav {
                     )
             );
 
-            addItem(
-                    createModernNavItem(
-                            "My Issued Items",
-                            EmployeeIssuedItemsView.class,
-                            VaadinIcon.PACKAGE,
-                            "#10b981"
-                    )
-            );
+        //     addItem(
+        //             createModernNavItem(
+        //                     "My Issued Items",
+        //                     EmployeeIssuedItemsView.class,
+        //                     VaadinIcon.PACKAGE,
+        //                     "#10b981"
+        //             )
+        //     );
 
             addItem(
                     createModernNavItem(
@@ -382,21 +374,6 @@ public class SideMenu extends SideNav {
 
                 .set("cursor", "pointer");
 
-        // item.getElement().executeJs("""
-
-        //     this.addEventListener('mouseenter', () => {
-        //         this.style.background='#eff6ff';
-        //         this.style.transform='translateX(4px)';
-        //         this.style.boxShadow='0 4px 12px rgba(37,99,235,0.12)';
-        //     });
-
-        //     this.addEventListener('mouseleave', () => {
-        //         this.style.background='transparent';
-        //         this.style.transform='translateX(0px)';
-        //         this.style.boxShadow='none';
-        //     });
-
-        // """);
 
         return item;
     }

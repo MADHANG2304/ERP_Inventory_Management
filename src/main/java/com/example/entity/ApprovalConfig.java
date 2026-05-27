@@ -6,7 +6,6 @@ import java.util.List;
 import com.example.entity.base.BaseEntity;
 import com.example.enums.RequestType;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -42,11 +41,9 @@ public class ApprovalConfig extends BaseEntity {
     @OneToMany(
             mappedBy = "approvalConfig",
             fetch= FetchType.EAGER,
-            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<ApprovalConfigLevel> levels =
-            new ArrayList<>();
+    private List<ApprovalConfigLevel> levels = new ArrayList<>();
 
     public ApprovalConfig() {
     }

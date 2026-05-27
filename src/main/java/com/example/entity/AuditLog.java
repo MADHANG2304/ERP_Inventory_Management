@@ -1,0 +1,85 @@
+package com.example.entity;
+
+import com.example.entity.base.BaseEntity;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "audit_logs")
+public class AuditLog extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "audit_id")
+    private Long auditId;
+
+    private String username;
+
+    private String roleName;
+
+    private String moduleName;
+
+    private String actionType;
+
+    @Column(length = 1000)
+    private String description;
+
+    private LocalDateTime actionTime;
+
+    public Long getAuditId() {
+        return auditId;
+    }
+
+    public void setAuditId(Long auditId) {
+        this.auditId = auditId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
+
+    public String getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(String actionType) {
+        this.actionType = actionType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getActionTime() {
+        return actionTime;
+    }
+
+    public void setActionTime(LocalDateTime actionTime) {
+        this.actionTime = actionTime;
+    }
+}

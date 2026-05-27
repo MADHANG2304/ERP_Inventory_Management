@@ -7,6 +7,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -56,10 +58,7 @@ public class ApprovalProgressDialog extends Dialog {
 
                 .set("color", "white");
 
-        com.vaadin.flow.component.html.H2 heading =
-                new com.vaadin.flow.component.html.H2(
-                        "Approval Workflow Progress"
-                );
+        H2 heading = new H2("Approval Workflow Progress");
 
         heading.getStyle()
 
@@ -71,10 +70,7 @@ public class ApprovalProgressDialog extends Dialog {
 
                 .set("color", "white");
 
-        com.vaadin.flow.component.html.Span subHeading =
-                new com.vaadin.flow.component.html.Span(
-                        "Track request approval flow and current approval stage"
-                );
+        Span subHeading = new Span("Track request approval flow and current approval stage");
 
         subHeading.getStyle()
 
@@ -118,8 +114,8 @@ public class ApprovalProgressDialog extends Dialog {
 
         grid.addComponentColumn(dto -> {
 
-                com.vaadin.flow.component.html.Span roleBadge =
-                        new com.vaadin.flow.component.html.Span(
+                Span roleBadge =
+                        new Span(
                                 dto.getApprovalRole().name()
                         );
 
@@ -157,8 +153,8 @@ public class ApprovalProgressDialog extends Dialog {
                         backgroundColor = "#f59e0b";
                 }
 
-                com.vaadin.flow.component.html.Span statusBadge =
-                        new com.vaadin.flow.component.html.Span(
+                Span statusBadge =
+                        new Span(
                                 dto.getApprovalStatus().name()
                         );
 
@@ -184,30 +180,26 @@ public class ApprovalProgressDialog extends Dialog {
 
                 if(Boolean.TRUE.equals(dto.getCurrentLevel())) {
 
-                com.vaadin.flow.component.html.Span current =
-                        new com.vaadin.flow.component.html.Span(
-                                "IN PROGRESS"
-                        );
+                        Span current = new Span("IN PROGRESS");
 
-                current.getStyle()
+                        current.getStyle()
 
-                        .set("background", "#dcfce7")
+                                .set("background", "#dcfce7")
 
-                        .set("color", "#15803d")
+                                .set("color", "#15803d")
 
-                        .set("padding", "6px 14px")
+                                .set("padding", "6px 14px")
 
-                        .set("border-radius", "30px")
+                                .set("border-radius", "30px")
 
-                        .set("font-size", "12px")
+                                .set("font-size", "12px")
 
-                        .set("font-weight", "700");
+                                .set("font-weight", "700");
 
-                return current;
+                        return current;
                 }
 
-                com.vaadin.flow.component.html.Span completed =
-                        new com.vaadin.flow.component.html.Span("-");
+                Span completed = new Span("-");
 
                 completed.getStyle()
 
@@ -219,16 +211,11 @@ public class ApprovalProgressDialog extends Dialog {
 
         }).setHeader("Current Stage");
 
-        grid.addColumn(
-                ApprovalProgressDTO::getActionDate
-        )
-        .setHeader("Updated Date")
-        .setAutoWidth(true);
+        grid.addColumn(ApprovalProgressDTO::getActionDate)
+                .setHeader("Updated Date")
+                .setAutoWidth(true);
 
-        grid.setItems(
-                approvalProgressService
-                        .getApprovalProgress(requestId)
-        );
+        grid.setItems(approvalProgressService.getApprovalProgress(requestId));
 
         grid.setSizeFull();
 
@@ -243,14 +230,12 @@ public class ApprovalProgressDialog extends Dialog {
                 .set("box-shadow",
                         "0 6px 18px rgba(0,0,0,0.08)");
 
-        VerticalLayout gridWrapper =
-                new VerticalLayout(grid);
+        VerticalLayout gridWrapper = new VerticalLayout(grid);
 
         gridWrapper.setPadding(true);
 
         gridWrapper.setSizeFull();
 
-        // FOOTER
 
         Button closeButton = new Button("Close");
 

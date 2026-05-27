@@ -57,6 +57,8 @@ public class InventoryRequestService {
 
         private final UserRepository userRepository;
 
+        private final AuditLogService auditLogService;
+
         public InventoryRequestService(
                         InventoryRequestRepository inventoryRequestRepository,
                         RequestItemRepository requestItemRepository,
@@ -66,7 +68,8 @@ public class InventoryRequestService {
                         ApprovalConfigRepository approvalConfigRepository,
                         RequestApprovalRepository requestApprovalRepository,
                         SecurityService securityService,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        AuditLogService auditLogService) {
 
                 this.inventoryRequestRepository = inventoryRequestRepository;
 
@@ -85,9 +88,21 @@ public class InventoryRequestService {
                 this.securityService = securityService;
 
                 this.userRepository = userRepository;
+
+                this.auditLogService = auditLogService;
         }
 
         public InventoryRequestDTO saveDraft(InventoryRequestDTO dto) {
+
+                auditLogService.logAction(
+
+                        "REQUEST_MODULE",
+
+                        "CREATE",
+
+                        "Draft request created : "
+                                + dto.getRequestNumber()
+                );
                 return saveRequest(dto , RequestStatus.DRAFT);
         }
 
@@ -96,6 +111,16 @@ public class InventoryRequestService {
                 InventoryRequestDTO savedRequest = saveRequest(dto , RequestStatus.PENDING_APPROVAL);
 
                 generateApprovalWorkflow(savedRequest.getRequestId());
+
+                auditLogService.logAction(
+
+                        "REQUEST_MODULE",
+
+                        "SUBMIT",
+
+                        "Submitted request : "
+                                + dto.getRequestNumber()
+                );
 
                 return convertToDTO(inventoryRequestRepository.findById(savedRequest.getRequestId()).orElseThrow());
         }
@@ -137,6 +162,66 @@ public class InventoryRequestService {
                         approval.setApprovalStatus(ApprovalStatus.PENDING);
 
                         approval.setIsCurrentLevel(i == 0);
+
+                        Employee manager = null;
+
+                        if(level.getApprovalRole().name().equals("MANAGER") && (i == 0)) {
+
+                                manager =
+                                        employeeRepository
+                                                .findManagerByDepartmentAndRole(
+
+                                                        request.getEmployee()
+                                                                .getDepartment()
+                                                                .getDepartmentId(),
+
+                                                        "MANAGER"
+                                                );
+
+
+                                if(manager == null) {
+
+                                        throw new RuntimeException(
+                                                "Manager not found for department"
+                                        );
+                                }
+
+                        }
+                        else if(level.getApprovalRole().name().equals("INVENTORY_ADMIN")) {
+                                
+                                manager =
+                                        employeeRepository
+                                                .findByUserRoleRoleName(
+                                                        "INVENTORY_ADMIN"
+                                                );
+
+                                if(manager == null) {
+
+                                        throw new RuntimeException(
+                                                "Inventory Admin not found"
+                                        );
+                                }
+                        }
+
+                        // SUPER ADMIN APPROVAL
+
+                        else if(level.getApprovalRole().name().equals("SUPER_ADMIN")) {
+
+                                manager =
+                                        employeeRepository
+                                                .findByUserRoleRoleName(
+                                                        "SUPER_ADMIN"
+                                                );
+
+                                if(manager == null) {
+
+                                        throw new RuntimeException(
+                                                "Super Admin not found"
+                                        );
+                                }
+                        }
+
+                        approval.setApprover(manager);
 
                         request.getApprovals().add(approval);
                 }
@@ -185,7 +270,8 @@ public class InventoryRequestService {
 
                         request = new InventoryRequest();
 
-                        request.setRequestNumber(generateRequestNumber());
+                        // request.setRequestNumber(generateRequestNumber());
+                        request.setRequestNumber(dto.getRequestNumber());
 
                         request.setRequestDate(LocalDateTime.now());
                 }
@@ -269,6 +355,15 @@ public class InventoryRequestService {
                                                         loggedInUser.getEmployee().getEmployeeId()
                                                 );
                         })
+
+                        .sorted(
+                                (r1, r2) ->
+
+                                        r2.getRequestDate()
+                                                .compareTo(
+                                                        r1.getRequestDate()
+                                                )
+                        )
 
                         .map(this::convertToDTO)
 
@@ -395,13 +490,14 @@ public class InventoryRequestService {
                 }
         }
 
-        private String generateRequestNumber() {
 
-                return "REQ-" + UUID.randomUUID()
-                                .toString()
-                                .substring(0, 8)
-                                .toUpperCase();
-        }
+        // private String generateRequestNumber() {
+
+        //         return "REQ-" + UUID.randomUUID()
+        //                         .toString()
+        //                         .substring(0, 8)
+        //                         .toUpperCase();
+        // }
 
         private InventoryRequestDTO convertToDTO(InventoryRequest request) {
 

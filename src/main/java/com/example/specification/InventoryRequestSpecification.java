@@ -1,13 +1,11 @@
 package com.example.specification;
 
-import com.example.entity.InventoryRequest;
-import com.example.entity.RequestItems;
-import com.example.enums.RequestStatus;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.Specification;
+
+import com.example.entity.InventoryRequest;
+import com.example.enums.RequestStatus;
 
 public class InventoryRequestSpecification {
 

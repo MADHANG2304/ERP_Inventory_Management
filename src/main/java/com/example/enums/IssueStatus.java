@@ -5,5 +5,6 @@ public enum IssueStatus {
     PARTIALLY_RETURNED,
     RETURNED,
     LOST,
-    DAMAGED
+    DAMAGED,
+    CLOSED
 }

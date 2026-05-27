@@ -1,7 +1,5 @@
 package com.example.views;
 
-import java.security.Principal;
-
 import com.example.base.ui.MainLayout;
 import com.example.dto.IssuedItemDTO;
 import com.example.security.SecurityService;
@@ -14,8 +12,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -38,18 +34,13 @@ public class IssueView extends VerticalLayout {
 
     private final String username;
 
-    private final Grid<IssuedItemDTO>
-            grid =
-            new Grid<>(IssuedItemDTO.class, false);
-
-        private final Span selectedInfo =
-                new Span("No request selected");
-
-        private final Button clearSelectionButton =
-                new Button("Clear Selection");
-
-        private final Button refreshButton =
-                new Button("Refresh");
+    private final Grid<IssuedItemDTO> grid = new Grid<>(IssuedItemDTO.class, false);
+    
+    private final Span selectedInfo = new Span("No request selected");
+    
+    private final Button clearSelectionButton = new Button("Clear Selection");
+    
+    private final Button refreshButton = new Button("Refresh");
 
     private IssuedItemDTO selectedItem;
 
@@ -140,9 +131,7 @@ public class IssueView extends VerticalLayout {
 
                         refreshGrid();
 
-                        NotificationUtil.success(
-                                "Data refreshed"
-                        );
+                        NotificationUtil.success("Data refreshed");
                 });
 
                 selectedInfo.getStyle()

@@ -215,7 +215,7 @@ public class InventoryStockView extends VerticalLayout {
 
                 HorizontalLayout buttonLayout = new HorizontalLayout(
                                 saveButton,
-                                clearButton,
+                                // clearButton,
                                 cancelButton);
 
                 VerticalLayout dialogLayout = new VerticalLayout(
