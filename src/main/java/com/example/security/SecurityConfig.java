@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.example.views.LoginView;
-// import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 @Configuration
@@ -26,10 +25,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // @Bean
-    // public VaadinAwareSecurityContextHolderStrategyConfiguration securitycontextHolderstrategyConfiguration(){
-    //     return new VaadinAwareSecurityContextHolderStrategyConfiguration();
-    // }
 
     @Bean
     public PasswordEncoder passwordEncoder(){

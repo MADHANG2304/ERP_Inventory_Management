@@ -21,7 +21,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -269,14 +268,9 @@ public class ApprovalProcessView extends VerticalLayout {
 
         grid.addComponentColumn(approval -> {
 
-            Button viewButton =
-                    new Button(
-                            "View"
-                    );
+            Button viewButton = new Button("View");
 
-            viewButton.addThemeVariants(
-                    ButtonVariant.LUMO_PRIMARY
-            );
+            viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
             viewButton.getStyle()
 
@@ -284,9 +278,7 @@ public class ApprovalProcessView extends VerticalLayout {
 
                     .set("font-size", "13px");
 
-            viewButton.addClickListener(event ->
-                    openApprovalDialog(approval)
-            );
+            viewButton.addClickListener(event -> openApprovalDialog(approval));
 
             return viewButton;
 
@@ -305,38 +297,24 @@ public class ApprovalProcessView extends VerticalLayout {
                 .set("border", "1px solid #dbe2ea");
     }
 
-    private void openApprovalDialog(
-            RequestApprovalDTO approvalDTO
-    ) {
+    private void openApprovalDialog(RequestApprovalDTO approvalDTO) {
 
-        Dialog dialog =
-                new Dialog();
+        Dialog dialog = new Dialog();
 
         dialog.setWidth("700px");
 
-        dialog.setHeaderTitle(
-                "Approval Details"
-        );
+        dialog.setHeaderTitle("Approval Details");
 
-        InventoryRequestDTO request =
-                inventoryRequestService
-                        .getRequestById(
-                                approvalDTO.getRequestId()
-                        );
+        InventoryRequestDTO request = inventoryRequestService.getRequestById(approvalDTO.getRequestId());
 
         // REQUEST INFO
 
-        Span requestInfo =
-                new Span(
+        Span requestInfo = new Span(
 
-                        "Request No : "
-
-                                + approvalDTO.getRequestNumber()
-
-                                + " | Role : "
-
-                                + approvalDTO.getApprovalRole()
-                                        .name()
+                        "Request No : " + approvalDTO.getRequestNumber()
+                        
+                        + " | Role : " + approvalDTO.getApprovalRole().name()
+                
                 );
 
         requestInfo.getStyle()
@@ -349,22 +327,14 @@ public class ApprovalProcessView extends VerticalLayout {
 
         // REMARKS
 
-        TextArea requestRemarks =
-                new TextArea(
-                        "Request Remarks"
-                );
+        TextArea requestRemarks = new TextArea("Request Remarks");
 
         requestRemarks.setWidthFull();
 
         requestRemarks.setReadOnly(true);
 
         requestRemarks.setValue(
-
-                request.getRemarks() != null
-
-                        ? request.getRemarks()
-
-                        : ""
+                request.getRemarks() != null ? request.getRemarks() : ""
         );
 
         // ITEM GRID

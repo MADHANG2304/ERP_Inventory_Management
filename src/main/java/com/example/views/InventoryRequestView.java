@@ -68,7 +68,7 @@ public class InventoryRequestView extends VerticalLayout {
     private final Grid<IssuedItemDTO> issuedGrid = new Grid<>(IssuedItemDTO.class, false);
 
         private final Grid<ReturnedItemDTO> returnedGrid = new Grid<>(ReturnedItemDTO.class, false);
-
+        
         private final VerticalLayout contentLayout = new VerticalLayout();
 
         private Button requestsTab;

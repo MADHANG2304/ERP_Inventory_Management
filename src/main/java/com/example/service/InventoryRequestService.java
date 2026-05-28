@@ -2,7 +2,6 @@ package com.example.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -167,10 +166,7 @@ public class InventoryRequestService {
 
                         if(level.getApprovalRole().name().equals("MANAGER") && (i == 0)) {
 
-                                manager =
-                                        employeeRepository
-                                                .findManagerByDepartmentAndRole(
-
+                                manager = employeeRepository.findManagerByDepartmentAndRole(
                                                         request.getEmployee()
                                                                 .getDepartment()
                                                                 .getDepartmentId(),
@@ -180,26 +176,16 @@ public class InventoryRequestService {
 
 
                                 if(manager == null) {
-
-                                        throw new RuntimeException(
-                                                "Manager not found for department"
-                                        );
+                                        throw new RuntimeException("Manager not found for department");
                                 }
 
                         }
                         else if(level.getApprovalRole().name().equals("INVENTORY_ADMIN")) {
                                 
-                                manager =
-                                        employeeRepository
-                                                .findByUserRoleRoleName(
-                                                        "INVENTORY_ADMIN"
-                                                );
+                                manager = employeeRepository.findByUserRoleRoleName("INVENTORY_ADMIN");
 
                                 if(manager == null) {
-
-                                        throw new RuntimeException(
-                                                "Inventory Admin not found"
-                                        );
+                                        throw new RuntimeException("Inventory Admin not found");
                                 }
                         }
 
@@ -207,17 +193,10 @@ public class InventoryRequestService {
 
                         else if(level.getApprovalRole().name().equals("SUPER_ADMIN")) {
 
-                                manager =
-                                        employeeRepository
-                                                .findByUserRoleRoleName(
-                                                        "SUPER_ADMIN"
-                                                );
+                                manager = employeeRepository.findByUserRoleRoleName("SUPER_ADMIN");
 
                                 if(manager == null) {
-
-                                        throw new RuntimeException(
-                                                "Super Admin not found"
-                                        );
+                                        throw new RuntimeException("Super Admin not found");
                                 }
                         }
 
@@ -270,7 +249,6 @@ public class InventoryRequestService {
 
                         request = new InventoryRequest();
 
-                        // request.setRequestNumber(generateRequestNumber());
                         request.setRequestNumber(dto.getRequestNumber());
 
                         request.setRequestDate(LocalDateTime.now());
@@ -490,14 +468,6 @@ public class InventoryRequestService {
                 }
         }
 
-
-        // private String generateRequestNumber() {
-
-        //         return "REQ-" + UUID.randomUUID()
-        //                         .toString()
-        //                         .substring(0, 8)
-        //                         .toUpperCase();
-        // }
 
         private InventoryRequestDTO convertToDTO(InventoryRequest request) {
 
