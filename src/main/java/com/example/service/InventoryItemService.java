@@ -53,12 +53,12 @@ public class InventoryItemService {
         item.setDescription(dto.getDescription());
         item.setIsReusable(dto.getIsReusable());
 
-        if(Boolean.FALSE.equals(dto.getIsReusable())) {
-            item.setAllowReturn(false);
-        } 
-        else {
-            item.setAllowReturn(true);
-        }
+        // if(Boolean.FALSE.equals(dto.getIsReusable())) {
+        //     item.setAllowReturn(false);
+        // } 
+        // else {
+        //     item.setAllowReturn(true);
+        // }
 
         item.setApprovalType(dto.getApprovalType());
         item.setMinimumStock(dto.getMinimumStock());
@@ -191,7 +191,7 @@ public class InventoryItemService {
         dto.setItemCode(item.getItemCode());
         dto.setDescription(item.getDescription());
         dto.setIsReusable(item.getIsReusable());
-        dto.setAllowReturn(item.getAllowReturn());
+        // dto.setAllowReturn(item.getAllowReturn());
         dto.setApprovalType(item.getApprovalType());
         dto.setMinimumStock(item.getMinimumStock());
         dto.setUnitType(item.getUnitType());

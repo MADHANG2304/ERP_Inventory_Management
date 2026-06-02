@@ -19,7 +19,7 @@ import com.example.entity.InventoryRequest;
 import com.example.entity.InventoryStock;
 import com.example.entity.RequestApproval;
 import com.example.entity.RequestItems;
-import com.example.entity.User;
+import com.example.entity.Employee;
 import com.example.enums.ApprovalStatus;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
@@ -31,7 +31,7 @@ import com.example.repository.InventoryRequestRepository;
 import com.example.repository.InventoryStockRepository;
 import com.example.repository.RequestApprovalRepository;
 import com.example.repository.RequestItemRepository;
-import com.example.repository.UserRepository;
+import com.example.repository.EmployeeRepository;
 import com.example.security.SecurityService;
 import com.example.specification.InventoryRequestSpecification;
 
@@ -41,8 +41,6 @@ public class InventoryRequestService {
         private InventoryRequestRepository inventoryRequestRepository;
 
         private final RequestItemRepository requestItemRepository;
-
-        private final EmployeeRepository employeeRepository;
 
         private final InventoryItemRepository inventoryItemRepository;
 
@@ -54,7 +52,7 @@ public class InventoryRequestService {
 
         private final SecurityService securityService;
 
-        private final UserRepository userRepository;
+        private final EmployeeRepository employeeRepository;
 
         private final AuditLogService auditLogService;
 
@@ -67,7 +65,6 @@ public class InventoryRequestService {
                         ApprovalConfigRepository approvalConfigRepository,
                         RequestApprovalRepository requestApprovalRepository,
                         SecurityService securityService,
-                        UserRepository userRepository,
                         AuditLogService auditLogService) {
 
                 this.inventoryRequestRepository = inventoryRequestRepository;
@@ -85,8 +82,6 @@ public class InventoryRequestService {
                 this.requestApprovalRepository = requestApprovalRepository;
 
                 this.securityService = securityService;
-
-                this.userRepository = userRepository;
 
                 this.auditLogService = auditLogService;
         }
@@ -309,8 +304,8 @@ public class InventoryRequestService {
                 String role =
                         securityService.getAuthenticatedRole();
 
-                User loggedInUser =
-                        userRepository
+                Employee loggedInUser =
+                        employeeRepository
                                 .findAll()
                                 .stream()
                                 .filter(user -> user.getUsername().equals(username))
@@ -327,10 +322,10 @@ public class InventoryRequestService {
                                 }
 
                                 return request.getEmployee() != null
-                                        && loggedInUser.getEmployee() != null
+                                        && loggedInUser != null
                                         && request.getEmployee().getEmployeeId()
                                                 .equals(
-                                                        loggedInUser.getEmployee().getEmployeeId()
+                                                        loggedInUser.getEmployeeId()
                                                 );
                         })
 
@@ -418,13 +413,13 @@ public class InventoryRequestService {
 
                 if(role.equals("ROLE_EMPLOYEE")) {
 
-                        User user = userRepository.findByUsername(username);
+                        Employee employee = employeeRepository.findByUsername(username);
 
-                        if(user != null && user.getEmployee() != null) {
+                        if(employee != null && employee != null) {
 
                         specification =
                                 specification.and(
-                                        InventoryRequestSpecification.hasEmployeeId(user.getEmployee().getEmployeeId())
+                                        InventoryRequestSpecification.hasEmployeeId(employee.getEmployeeId())
                                 );
                         }
                 }

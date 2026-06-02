@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.entity.base.BaseEntity;
+import com.example.enums.ApprovalRole;
 import com.example.enums.RequestType;
+import com.example.enums.RequesterRole;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,12 +38,17 @@ public class ApprovalConfig extends BaseEntity {
     @Column(name = "request_type")
     private RequestType requestType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "requester_role")
+    private RequesterRole requesterRole;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 
     @OneToMany(
             mappedBy = "approvalConfig",
             fetch= FetchType.EAGER,
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<ApprovalConfigLevel> levels = new ArrayList<>();
@@ -48,14 +56,19 @@ public class ApprovalConfig extends BaseEntity {
     public ApprovalConfig() {
     }
 
-    public ApprovalConfig(Long configId, String configName, RequestType requestType, Boolean isActive,
-            List<ApprovalConfigLevel> levels) {
+   
+
+    public ApprovalConfig(Long configId, String configName, RequestType requestType, RequesterRole requesterRole,
+            Boolean isActive, List<ApprovalConfigLevel> levels) {
         this.configId = configId;
         this.configName = configName;
         this.requestType = requestType;
+        this.requesterRole = requesterRole;
         this.isActive = isActive;
         this.levels = levels;
     }
+
+
 
     public Long getConfigId() {
         return configId;
@@ -95,6 +108,18 @@ public class ApprovalConfig extends BaseEntity {
 
     public void setLevels(List<ApprovalConfigLevel> levels) {
         this.levels = levels;
+    }
+
+
+
+    public RequesterRole getRequesterRole() {
+        return requesterRole;
+    }
+
+
+
+    public void setRequesterRole(RequesterRole requesterRole) {
+        this.requesterRole = requesterRole;
     }
 
     

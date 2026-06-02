@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.web.method.annotation.RequestHeaderMethodArgumentResolver;
+
 import com.example.base.ui.MainLayout;
 import com.example.dto.ApprovalConfigDTO;
 import com.example.dto.ApprovalConfigLevelDTO;
 import com.example.enums.ApprovalRole;
 import com.example.enums.RequestType;
+import com.example.enums.RequesterRole;
 import com.example.service.ApprovalConfigService;
 import com.example.utils.ConfirmDialogUtil;
 import com.example.utils.NotificationUtil;
@@ -57,11 +60,15 @@ public class ApprovalConfigView extends VerticalLayout {
             requestType =
             new ComboBox<>("Request Type");
 
+    private final ComboBox<RequesterRole>
+        requesterRole =
+        new ComboBox<>("Requester Role");
+
     private final Checkbox isActive =
             new Checkbox("Active");
 
-    private final IntegerField approvalOrder =
-            new IntegerField("Approval Order");
+//     private final IntegerField approvalOrder =
+//             new IntegerField("Approval Order");
 
     private final ComboBox<ApprovalRole>
             approvalRole =
@@ -226,6 +233,7 @@ public class ApprovalConfigView extends VerticalLayout {
                 formLayout.add(
                         configName,
                         requestType,
+                        requesterRole,
                         isActive
                 );
 
@@ -244,7 +252,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 HorizontalLayout levelForm =
                         new HorizontalLayout(
-                                approvalOrder,
+                                // approvalOrder,
                                 approvalRole
                         );
 
@@ -252,7 +260,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 levelForm.setFlexGrow(
                         1,
-                        approvalOrder,
+                        // approvalOrder,
                         approvalRole
                 );
 
@@ -358,9 +366,16 @@ public class ApprovalConfigView extends VerticalLayout {
                         new HorizontalLayout(
                                 saveButton,
                                 clearButton,
-                                deleteButton,
+                                deleteButton, 
                                 cancelButton
                         );
+
+                // if(isEdit){
+                //         actionButtons.add(deleteButton, cancelButton);
+                // }
+                // else{
+                //         actionButtons.add(cancelButton);
+                // }
 
                 VerticalLayout levelSection =
                         new VerticalLayout(
@@ -428,20 +443,23 @@ public class ApprovalConfigView extends VerticalLayout {
                 refreshGrid();
         }
 
-    private void configureForm() {
+        private void configureForm() {
 
-        requestType.setItems(
-                RequestType.values()
-        );
+                requestType.setItems(
 
-        approvalRole.setItems(
-                ApprovalRole.values()
-        );
+                        RequestType.values()
+                );
 
-        approvalOrder.setMin(1);
+                requesterRole.setItems(
+                        RequesterRole.values()
+                );
 
-        isActive.setValue(true);
-    }
+                approvalRole.setItems(
+                        ApprovalRole.values()
+                );
+
+                isActive.setValue(true);
+        }
 
     private void configureLevelGrid() {
 
@@ -521,9 +539,15 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         removeButton.addClickListener(event -> {
 
-                        levelList.remove(level);
+                                levelList.remove(level);
 
-                        refreshLevelGrid();
+                                for(int i = 0; i < levelList.size(); i++) {
+
+                                        levelList.get(i)
+                                                .setApprovalOrder(i + 1);
+                                }
+
+                                refreshLevelGrid();
                         });
 
                         return removeButton;
@@ -675,99 +699,79 @@ public class ApprovalConfigView extends VerticalLayout {
                         .addValueChangeListener(event -> {
 
                                 if(event.getValue() != null) {
-
-                                loadConfigToForm(
-                                        event.getValue()
-                                );
+                                        isEdit = true;
+                                        loadConfigToForm(
+                                                event.getValue()
+                                        );
                                 }
                         });
         }
 
-    private void addLevel() {
+        private void addLevel() {
 
-        if(approvalOrder.getValue() == null
-                || approvalOrder.getValue() <= 0) {
+                if(approvalRole.getValue() == null) {
 
-        //     showError(
-        //             "Invalid approval order"
-        //     );
-
-        NotificationUtil.error("Invalid approval order");
-
-            return;
-        }
-
-        if(approvalRole.getValue() == null) {
-
-        //     showError(
-        //             "Select approval role"
-        //     );
-        NotificationUtil.error("Select an approval role");
-
-            return;
-        }
-
-        boolean duplicateOrder =
-                levelList.stream()
-                        .anyMatch(level ->
-
-                                level.getApprovalOrder()
-                                        .equals(
-                                                approvalOrder
-                                                        .getValue()
-                                        )
+                        NotificationUtil.error(
+                                "Select approval role"
                         );
 
-        if(duplicateOrder) {
+                        return;
+                }
 
-        //     showError(
-        //             "Approval order already exists"
-        //     );
-        NotificationUtil.warning("Approval order already exists");
+                if(requesterRole.getValue() != null
 
-            return;
-        }
+                        &&
 
-        boolean duplicateRole =
-                levelList.stream()
-                        .anyMatch(level ->
+                        requesterRole.getValue()
+                                .equals(
+                                        approvalRole.getValue()
+                                )) {
 
-                                level.getApprovalRole()
-                                        .equals(
-                                                approvalRole
-                                                        .getValue()
-                                        )
+                        NotificationUtil.error(
+                                "Requester role cannot approve itself"
                         );
 
-        if(duplicateRole) {
+                        return;
+                }
 
-        //     showError(
-        //             "Approval role already added"
-        //     );
-        NotificationUtil.warning("Approval role already added");
+                boolean duplicateRole =
 
-            return;
+                        levelList.stream()
+
+                                .anyMatch(level ->
+
+                                        level.getApprovalRole()
+                                                .equals(
+                                                        approvalRole.getValue()
+                                                )
+                                );
+
+                if(duplicateRole) {
+
+                        NotificationUtil.warning(
+                                "Approval role already added"
+                        );
+
+                        return;
+                }
+
+                ApprovalConfigLevelDTO dto =
+                        new ApprovalConfigLevelDTO();
+
+                dto.setApprovalOrder(
+                        levelList.size() + 1
+                );
+
+                dto.setApprovalRole(
+                        approvalRole.getValue()
+                );
+
+                levelList.add(dto);
+
+                refreshLevelGrid();
+
+                approvalRole.clear();
         }
-
-        ApprovalConfigLevelDTO dto =
-                new ApprovalConfigLevelDTO();
-
-        dto.setApprovalOrder(
-                approvalOrder.getValue()
-        );
-
-        dto.setApprovalRole(
-                approvalRole.getValue()
-        );
-
-        levelList.add(dto);
-
-        refreshLevelGrid();
-
-        approvalOrder.clear();
-
-        approvalRole.clear();
-    }
 
     private void saveConfig() {
 
@@ -781,6 +785,10 @@ public class ApprovalConfigView extends VerticalLayout {
                     requestType.getValue()
             );
 
+            currentConfig.setRequesterRole(
+                    requesterRole.getValue()
+            );
+
             currentConfig.setIsActive(
                     isActive.getValue()
             );
@@ -792,9 +800,6 @@ public class ApprovalConfigView extends VerticalLayout {
             approvalConfigService
                     .saveConfig(currentConfig);
 
-        //     showSuccess(
-        //             "Approval config saved successfully"
-        //     );
         if(isEdit){
                 NotificationUtil.success("Approval config updated successfully");       
         }
@@ -808,12 +813,11 @@ public class ApprovalConfigView extends VerticalLayout {
 
             refreshGrid();
 
+            configDialog.close();
+
         } catch (Exception e) {
 
-        //     showError(
-        //             e.getMessage()
-        //     );
-        NotificationUtil.error(e.getMessage());
+                NotificationUtil.error(e.getMessage());
         }
     }
 
@@ -821,9 +825,6 @@ public class ApprovalConfigView extends VerticalLayout {
 
         if(currentConfig.getConfigId() == null) {
 
-        //     showError(
-        //             "Select config first"
-        //     );
 
         NotificationUtil.warning("Select a config first");
 
@@ -834,14 +835,13 @@ public class ApprovalConfigView extends VerticalLayout {
                 currentConfig.getConfigId()
         );
 
-        // showSuccess(
-        //         "Config deleted successfully"
-        // );
         NotificationUtil.success("Config deleted successfully");
 
         clearForm();
 
         refreshGrid();
+
+        configDialog.close();
     }
 
     private void loadConfigToForm(
@@ -856,6 +856,10 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 requestType.setValue(
                         dto.getRequestType()
+                );
+
+                requesterRole.setValue(
+                        dto.getRequesterRole()
                 );
 
                 isActive.setValue(
@@ -916,7 +920,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 isActive.setValue(true);
 
-                approvalOrder.clear();
+                requesterRole.clear();
 
                 approvalRole.clear();
 

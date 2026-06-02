@@ -1,729 +1,729 @@
-package com.example.views;
+// package com.example.views;
 
-import com.example.base.ui.MainLayout;
-import com.example.dto.EmployeeDTO;
-import com.example.dto.RoleDTO;
-import com.example.dto.UserDTO;
-import com.example.service.UserService;
-import com.example.utils.ConfirmDialogUtil;
-import com.example.utils.NotificationUtil;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+// import com.example.base.ui.MainLayout;
+// import com.example.dto.EmployeeDTO;
+// import com.example.dto.RoleDTO;
+// import com.example.dto.UserDTO;
+// import com.example.service.UserService;
+// import com.example.utils.ConfirmDialogUtil;
+// import com.example.utils.NotificationUtil;
+// import com.vaadin.flow.component.button.Button;
+// import com.vaadin.flow.component.button.ButtonVariant;
+// import com.vaadin.flow.component.checkbox.Checkbox;
+// import com.vaadin.flow.component.combobox.ComboBox;
+// import com.vaadin.flow.component.dialog.Dialog;
+// import com.vaadin.flow.component.formlayout.FormLayout;
+// import com.vaadin.flow.component.grid.Grid;
+// import com.vaadin.flow.component.grid.GridVariant;
+// import com.vaadin.flow.component.html.H2;
+// import com.vaadin.flow.component.html.Span;
+// import com.vaadin.flow.component.icon.VaadinIcon;
+// import com.vaadin.flow.component.notification.Notification;
+// import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+// import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+// import com.vaadin.flow.component.textfield.TextField;
+// import com.vaadin.flow.data.binder.BeanValidationBinder;
+// import com.vaadin.flow.data.binder.ValidationException;
+// import com.vaadin.flow.router.PageTitle;
+// import com.vaadin.flow.router.Route;
 
-import jakarta.annotation.security.RolesAllowed;
+// import jakarta.annotation.security.RolesAllowed;
 
-@Route(value = "users", layout = MainLayout.class)
-@PageTitle("Users")
-@RolesAllowed({
-        "SUPER_ADMIN"
-})
-public class UserView extends VerticalLayout {
+// @Route(value = "users", layout = MainLayout.class)
+// @PageTitle("Users")
+// @RolesAllowed({
+//         "SUPER_ADMIN"
+// })
+// public class UserView extends VerticalLayout {
 
-    private final UserService userService;
+//     private final UserService userService;
 
-    private final Grid<UserDTO> grid = new Grid<>(UserDTO.class, false);
+//     private final Grid<UserDTO> grid = new Grid<>(UserDTO.class, false);
 
-    private final BeanValidationBinder<UserDTO> binder = new BeanValidationBinder<>(UserDTO.class);
+//     private final BeanValidationBinder<UserDTO> binder = new BeanValidationBinder<>(UserDTO.class);
 
-    private UserDTO currentUser = new UserDTO();
+//     private UserDTO currentUser = new UserDTO();
 
-    private final ComboBox<EmployeeDTO> employeeId = new ComboBox<>("Employee");
+//     private final ComboBox<EmployeeDTO> employeeId = new ComboBox<>("Employee");
 
-    private final ComboBox<RoleDTO> roleId = new ComboBox<>("Role");
+//     private final ComboBox<RoleDTO> roleId = new ComboBox<>("Role");
 
-    private final TextField username = new TextField("Username");
+//     private final TextField username = new TextField("Username");
 
-    private final Checkbox isActive = new Checkbox("Active");
+//     private final Checkbox isActive = new Checkbox("Active");
 
-    private final TextField searchField = new TextField();
+//     private final TextField searchField = new TextField();
 
-    private final Dialog userDialog =
-        new Dialog();
+//     private final Dialog userDialog =
+//         new Dialog();
 
-    private final Button openDialogButton =
-            new Button(VaadinIcon.PLUS.create());
+//     private final Button openDialogButton =
+//             new Button(VaadinIcon.PLUS.create());
 
-    private UserDTO selectedUser;
+//     private UserDTO selectedUser;
 
-    private boolean isEdit = false;
+//     private boolean isEdit = false;
 
-    Button saveButton = new Button("Create User");
+//     Button saveButton = new Button("Create User");
 
 
 
 
-    public UserView(UserService userService) {
+//     public UserView(UserService userService) {
 
-        this.userService = userService;
+//         this.userService = userService;
 
-        setSizeFull();
+//         setSizeFull();
 
-        setPadding(true);
+//         setPadding(true);
 
-        setSpacing(true);
+//         setSpacing(true);
 
-        getStyle()
+//         getStyle()
 
-                .set("background", "#f4f7fb")
+//                 .set("background", "#f4f7fb")
 
-                .set("padding", "24px");
+//                 .set("padding", "24px");
 
-        H2 heading =
-                new H2("User Management");
+//         H2 heading =
+//                 new H2("User Management");
 
-        heading.getStyle()
+//         heading.getStyle()
 
-                .set("margin", "0")
+//                 .set("margin", "0")
 
-                .set("font-size", "34px")
+//                 .set("font-size", "34px")
 
-                .set("font-weight", "700")
+//                 .set("font-weight", "700")
 
-                .set("color", "#0f172a");
+//                 .set("color", "#0f172a");
 
-        Span subHeading =
-                new Span(
-                        "Manage ERP system users and access permissions"
-                );
+//         Span subHeading =
+//                 new Span(
+//                         "Manage ERP system users and access permissions"
+//                 );
 
-        subHeading.getStyle()
+//         subHeading.getStyle()
 
-                .set("font-size", "15px")
+//                 .set("font-size", "15px")
 
-                .set("color", "#64748b");
+//                 .set("color", "#64748b");
 
-        VerticalLayout headingSection =
-                new VerticalLayout(
-                        heading,
-                        subHeading
-                );
+//         VerticalLayout headingSection =
+//                 new VerticalLayout(
+//                         heading,
+//                         subHeading
+//                 );
 
-        headingSection.setPadding(true);
+//         headingSection.setPadding(true);
 
-        headingSection.setSpacing(true);
+//         headingSection.setSpacing(true);
 
-        openDialogButton.setText("New User");
+//         openDialogButton.setText("New User");
 
-        openDialogButton.setIcon(
-                VaadinIcon.PLUS.create()
-        );
+//         openDialogButton.setIcon(
+//                 VaadinIcon.PLUS.create()
+//         );
 
-        openDialogButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY
-        );
+//         openDialogButton.addThemeVariants(
+//                 ButtonVariant.LUMO_PRIMARY
+//         );
 
-        openDialogButton.getStyle()
+//         openDialogButton.getStyle()
 
-                .set("margin-left", "auto")
+//                 .set("margin-left", "auto")
 
-                .set("background",
-                        "linear-gradient(135deg,#2563eb,#1d4ed8)")
+//                 .set("background",
+//                         "linear-gradient(135deg,#2563eb,#1d4ed8)")
 
-                .set("border-radius", "12px")
+//                 .set("border-radius", "12px")
 
-                .set("font-weight", "600")
+//                 .set("font-weight", "600")
 
-                .set("height", "42px")
+//                 .set("height", "42px")
 
-                .set("padding", "0 18px")
+//                 .set("padding", "0 18px")
 
-                .set("box-shadow",
-                        "0 4px 14px rgba(37,99,235,0.35)");
+//                 .set("box-shadow",
+//                         "0 4px 14px rgba(37,99,235,0.35)");
 
-        openDialogButton.addClickListener(event -> {
+//         openDialogButton.addClickListener(event -> {
 
-            clearForm();
+//             clearForm();
 
-            userDialog.open();
-        });
+//             userDialog.open();
+//         });
 
-        HorizontalLayout headerLayout =
-                new HorizontalLayout(
-                        headingSection,
-                        openDialogButton
-                );
+//         HorizontalLayout headerLayout =
+//                 new HorizontalLayout(
+//                         headingSection,
+//                         openDialogButton
+//                 );
 
-        headerLayout.setWidthFull();
+//         headerLayout.setWidthFull();
 
-        headerLayout.expand(headingSection);
+//         headerLayout.expand(headingSection);
 
-        headerLayout.setAlignItems(
-                Alignment.CENTER
-        );
+//         headerLayout.setAlignItems(
+//                 Alignment.CENTER
+//         );
 
-        configureForm();
+//         configureForm();
 
-        configureGrid();
+//         configureGrid();
 
-        FormLayout formLayout =
-                new FormLayout();
+//         FormLayout formLayout =
+//                 new FormLayout();
 
-        username.setReadOnly(true);
+//         username.setReadOnly(true);
 
-        formLayout.add(
-                employeeId,
-                roleId,
-                username,
-                isActive
-        );
+//         formLayout.add(
+//                 employeeId,
+//                 roleId,
+//                 username,
+//                 isActive
+//         );
 
-        formLayout.setResponsiveSteps(
+//         formLayout.setResponsiveSteps(
 
-                new FormLayout.ResponsiveStep("0", 1),
+//                 new FormLayout.ResponsiveStep("0", 1),
 
-                new FormLayout.ResponsiveStep("800px", 2)
-        );
+//                 new FormLayout.ResponsiveStep("800px", 2)
+//         );
 
-        formLayout.getStyle()
-                .set("padding", "10px");
+//         formLayout.getStyle()
+//                 .set("padding", "10px");
 
-        saveButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY
-        );
+//         saveButton.addThemeVariants(
+//                 ButtonVariant.LUMO_PRIMARY
+//         );
 
-        saveButton.getStyle()
+//         saveButton.getStyle()
 
-                .set("background",
-                        "linear-gradient(135deg,#2563eb,#1d4ed8)")
+//                 .set("background",
+//                         "linear-gradient(135deg,#2563eb,#1d4ed8)")
 
-                .set("border-radius", "12px")
+//                 .set("border-radius", "12px")
 
-                .set("font-weight", "600");
+//                 .set("font-weight", "600");
 
-        Button clearButton =
-                new Button("Clear");
+//         Button clearButton =
+//                 new Button("Clear");
 
-        clearButton.getStyle()
-                .set("border-radius", "12px");
+//         clearButton.getStyle()
+//                 .set("border-radius", "12px");
 
-        Button deleteButton =
-                new Button("Delete");
+//         Button deleteButton =
+//                 new Button("Delete");
 
-        deleteButton.addThemeVariants(
-                ButtonVariant.LUMO_ERROR
-        );
+//         deleteButton.addThemeVariants(
+//                 ButtonVariant.LUMO_ERROR
+//         );
 
-        deleteButton.getStyle()
-                .set("border-radius", "12px");
+//         deleteButton.getStyle()
+//                 .set("border-radius", "12px");
 
-        saveButton.addClickListener(
-                event -> saveUser()
-        );
+//         saveButton.addClickListener(
+//                 event -> saveUser()
+//         );
 
-        clearButton.addClickListener(
-                event -> clearForm()
-        );
+//         clearButton.addClickListener(
+//                 event -> clearForm()
+//         );
 
-        deleteButton.addClickListener(event -> {
+//         deleteButton.addClickListener(event -> {
 
-            ConfirmDialogUtil.showConfirmDialog(
+//             ConfirmDialogUtil.showConfirmDialog(
 
-                    "Delete",
+//                     "Delete",
 
-                    "Are you sure you want to delete the user?",
+//                     "Are you sure you want to delete the user?",
 
-                    this::deleteUser
-            );
-        });
+//                     this::deleteUser
+//             );
+//         });
 
-        Button cancelButton =
-                new Button("Cancel");
+//         Button cancelButton =
+//                 new Button("Cancel");
 
-        cancelButton.addThemeVariants(
-                ButtonVariant.LUMO_ERROR
-        );
+//         cancelButton.addThemeVariants(
+//                 ButtonVariant.LUMO_ERROR
+//         );
 
-        cancelButton.getStyle()
-                .set("border-radius", "12px");
+//         cancelButton.getStyle()
+//                 .set("border-radius", "12px");
 
-        cancelButton.addClickListener(event -> {
+//         cancelButton.addClickListener(event -> {
 
-            clearForm();
+//             clearForm();
 
-            userDialog.close();
-        });
+//             userDialog.close();
+//         });
 
-        HorizontalLayout buttonLayout =
-                new HorizontalLayout(
-                        saveButton,
-                        // clearButton,
-                        // deleteButton,
-                        cancelButton
-                );
+//         HorizontalLayout buttonLayout =
+//                 new HorizontalLayout(
+//                         saveButton,
+//                         // clearButton,
+//                         // deleteButton,
+//                         cancelButton
+//                 );
 
-        VerticalLayout dialogLayout =
-                new VerticalLayout(
-                        formLayout,
-                        buttonLayout
-                );
+//         VerticalLayout dialogLayout =
+//                 new VerticalLayout(
+//                         formLayout,
+//                         buttonLayout
+//                 );
 
-        dialogLayout.setWidth("900px");
+//         dialogLayout.setWidth("900px");
 
-        dialogLayout.getStyle()
+//         dialogLayout.getStyle()
 
-                .set("background", "white")
+//                 .set("background", "white")
 
-                .set("border-radius", "20px");
+//                 .set("border-radius", "20px");
 
-        userDialog.add(dialogLayout);
+//         userDialog.add(dialogLayout);
 
-        userDialog.setHeaderTitle(
-                "User Management"
-        );
+//         userDialog.setHeaderTitle(
+//                 "User Management"
+//         );
 
-        userDialog.setModal(true);
+//         userDialog.setModal(true);
 
-        userDialog.setDraggable(true);
+//         userDialog.setDraggable(true);
 
-        userDialog.setResizable(true);
+//         userDialog.setResizable(true);
 
-        userDialog.setWidth("1000px");
+//         userDialog.setWidth("1000px");
 
-        searchField.setPlaceholder(
-                "Search User..."
-        );
+//         searchField.setPlaceholder(
+//                 "Search User..."
+//         );
 
-        searchField.setPrefixComponent(
-                VaadinIcon.SEARCH.create()
-        );
+//         searchField.setPrefixComponent(
+//                 VaadinIcon.SEARCH.create()
+//         );
 
-        searchField.setWidth("350px");
+//         searchField.setWidth("350px");
 
-        searchField.getStyle()
+//         searchField.getStyle()
 
-                .set("background", "white")
+//                 .set("background", "white")
 
-                .set("border-radius", "14px")
+//                 .set("border-radius", "14px")
 
-                .set("margin-bottom", "10px");
+//                 .set("margin-bottom", "10px");
 
-        searchField.addValueChangeListener(event -> {
+//         searchField.addValueChangeListener(event -> {
 
-            grid.setItems(
+//             grid.setItems(
 
-                    userService.searchUsers(
-                            event.getValue()
-                    )
-            );
-        });
+//                     userService.searchUsers(
+//                             event.getValue()
+//                     )
+//             );
+//         });
 
-        employeeId.addValueChangeListener(event -> {
+//         employeeId.addValueChangeListener(event -> {
 
-            if(event.getValue() != null) {
+//             if(event.getValue() != null) {
 
-                username.setValue(
-                        event.getValue().getEmail()
-                );
-            }
-        });
+//                 username.setValue(
+//                         event.getValue().getEmail()
+//                 );
+//             }
+//         });
 
-        add(
-                headerLayout,
-                searchField,
-                grid
-        );
+//         add(
+//                 headerLayout,
+//                 searchField,
+//                 grid
+//         );
 
-        refreshGrid();
-    }
+//         refreshGrid();
+//     }
 
-    private void configureForm() {
+//     private void configureForm() {
 
-        employeeId.setItems(
-                userService.getAvailableEmployees()
-        );
+//         employeeId.setItems(
+//                 userService.getAvailableEmployees()
+//         );
 
-        employeeId.setItemLabelGenerator(
-                employee ->
-                        employee.getEmployeeName()
-                                + " - "
-                                + employee.getEmail()
-        );
+//         employeeId.setItemLabelGenerator(
+//                 employee ->
+//                         employee.getEmployeeName()
+//                                 + " - "
+//                                 + employee.getEmail()
+//         );
 
-        roleId.setItems(
-                userService.getAllRoles()
-        );
+//         roleId.setItems(
+//                 userService.getAllRoles()
+//         );
 
-        roleId.setItemLabelGenerator(
-                RoleDTO::getRoleName
-        );
+//         roleId.setItemLabelGenerator(
+//                 RoleDTO::getRoleName
+//         );
 
-        employeeId.setWidthFull();
+//         employeeId.setWidthFull();
 
-        roleId.setWidthFull();
+//         roleId.setWidthFull();
 
-        username.setWidthFull();
+//         username.setWidthFull();
 
-        employeeId.getStyle()
-                .set("border-radius", "12px");
+//         employeeId.getStyle()
+//                 .set("border-radius", "12px");
 
-        roleId.getStyle()
-                .set("border-radius", "12px");
+//         roleId.getStyle()
+//                 .set("border-radius", "12px");
 
-        username.getStyle()
-                .set("border-radius", "12px");
+//         username.getStyle()
+//                 .set("border-radius", "12px");
 
-        binder.forField(employeeId)
-                .bind(
+//         binder.forField(employeeId)
+//                 .bind(
 
-                        employee -> {
+//                         employee -> {
 
-                            if(employee.getEmployeeId() == null) {
+//                             if(employee.getEmployeeId() == null) {
 
-                                return null;
-                            }
+//                                 return null;
+//                             }
 
-                            EmployeeDTO dto =
-                                    new EmployeeDTO();
+//                             EmployeeDTO dto =
+//                                     new EmployeeDTO();
 
-                            dto.setEmployeeId(
-                                    employee.getEmployeeId()
-                            );
+//                             dto.setEmployeeId(
+//                                     employee.getEmployeeId()
+//                             );
 
-                            dto.setEmployeeName(
-                                    employee.getEmployeeName()
-                            );
+//                             dto.setEmployeeName(
+//                                     employee.getEmployeeName()
+//                             );
 
-                            dto.setEmail(
-                                    employee.getEmail()
-                            );
+//                             dto.setEmail(
+//                                     employee.getEmail()
+//                             );
 
-                            return dto;
-                        },
+//                             return dto;
+//                         },
 
-                        (user, employee) -> {
+//                         (user, employee) -> {
 
-                            if(employee != null) {
+//                             if(employee != null) {
 
-                                user.setEmployeeId(
-                                        employee.getEmployeeId()
-                                );
+//                                 user.setEmployeeId(
+//                                         employee.getEmployeeId()
+//                                 );
 
-                                user.setEmployeeName(
-                                        employee.getEmployeeName()
-                                );
+//                                 user.setEmployeeName(
+//                                         employee.getEmployeeName()
+//                                 );
 
-                                user.setEmail(
-                                        employee.getEmail()
-                                );
+//                                 user.setEmail(
+//                                         employee.getEmail()
+//                                 );
 
-                                user.setUsername(
-                                        employee.getEmail()
-                                );
-                            }
-                        }
-                );
+//                                 user.setUsername(
+//                                         employee.getEmail()
+//                                 );
+//                             }
+//                         }
+//                 );
 
-        binder.forField(roleId)
-                .bind(
+//         binder.forField(roleId)
+//                 .bind(
 
-                        role -> {
+//                         role -> {
 
-                            if(role.getRoleId() == null) {
+//                             if(role.getRoleId() == null) {
 
-                                return null;
-                            }
+//                                 return null;
+//                             }
 
-                            RoleDTO dto =
-                                    new RoleDTO();
+//                             RoleDTO dto =
+//                                     new RoleDTO();
 
-                            dto.setRoleId(
-                                    role.getRoleId()
-                            );
+//                             dto.setRoleId(
+//                                     role.getRoleId()
+//                             );
 
-                            dto.setRoleName(
-                                    role.getRoleName()
-                            );
+//                             dto.setRoleName(
+//                                     role.getRoleName()
+//                             );
 
-                            return dto;
-                        },
+//                             return dto;
+//                         },
 
-                        (user, role) -> {
+//                         (user, role) -> {
 
-                            if(role != null) {
+//                             if(role != null) {
 
-                                user.setRoleId(
-                                        role.getRoleId()
-                                );
+//                                 user.setRoleId(
+//                                         role.getRoleId()
+//                                 );
 
-                                user.setRoleName(
-                                        role.getRoleName()
-                                );
-                            }
-                        }
-                );
+//                                 user.setRoleName(
+//                                         role.getRoleName()
+//                                 );
+//                             }
+//                         }
+//                 );
 
-        binder.forField(username)
+//         binder.forField(username)
 
-                .asRequired(
-                        "User Name is required"
-                )
+//                 .asRequired(
+//                         "User Name is required"
+//                 )
 
-                .bind(
-                        UserDTO::getUsername,
-                        UserDTO::setUsername
-                );
+//                 .bind(
+//                         UserDTO::getUsername,
+//                         UserDTO::setUsername
+//                 );
 
-        binder.forField(isActive)
-                .bind(
-                        UserDTO::getIsActive,
-                        UserDTO::setIsActive
-                );
+//         binder.forField(isActive)
+//                 .bind(
+//                         UserDTO::getIsActive,
+//                         UserDTO::setIsActive
+//                 );
 
-        binder.setBean(currentUser);
-    }
+//         binder.setBean(currentUser);
+//     }
 
-    private void configureGrid() {
+//     private void configureGrid() {
 
-        grid.addThemeVariants(
+//         grid.addThemeVariants(
 
-                GridVariant.LUMO_ROW_STRIPES,
+//                 GridVariant.LUMO_ROW_STRIPES,
 
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+//                 GridVariant.LUMO_COLUMN_BORDERS
+//         );
 
-        grid.addColumn(
-                UserDTO::getEmployeeName
-        )
-        .setHeader("Employee")
-        .setAutoWidth(true);
+//         grid.addColumn(
+//                 UserDTO::getEmployeeName
+//         )
+//         .setHeader("Employee")
+//         .setAutoWidth(true);
 
-        grid.addColumn(
-                UserDTO::getUsername
-        )
-        .setHeader("Username");
+//         grid.addColumn(
+//                 UserDTO::getUsername
+//         )
+//         .setHeader("Username");
 
-        grid.addColumn(
-                UserDTO::getRoleName
-        )
-        .setHeader("Role");
+//         grid.addColumn(
+//                 UserDTO::getRoleName
+//         )
+//         .setHeader("Role");
 
-        grid.addComponentColumn(user -> {
+//         grid.addComponentColumn(user -> {
 
-            Span statusBadge =
-                    new Span(
+//             Span statusBadge =
+//                     new Span(
 
-                            Boolean.TRUE.equals(
-                                    user.getIsActive()
-                            )
+//                             Boolean.TRUE.equals(
+//                                     user.getIsActive()
+//                             )
 
-                            ? "ACTIVE"
+//                             ? "ACTIVE"
 
-                            : "INACTIVE"
-                    );
+//                             : "INACTIVE"
+//                     );
 
-            if(Boolean.TRUE.equals(user.getIsActive())) {
+//             if(Boolean.TRUE.equals(user.getIsActive())) {
 
-                statusBadge.getStyle()
+//                 statusBadge.getStyle()
 
-                        .set("background", "#dcfce7")
+//                         .set("background", "#dcfce7")
 
-                        .set("color", "#15803d");
+//                         .set("color", "#15803d");
 
-            } else {
+//             } else {
 
-                statusBadge.getStyle()
+//                 statusBadge.getStyle()
 
-                        .set("background", "#fee2e2")
+//                         .set("background", "#fee2e2")
 
-                        .set("color", "#dc2626");
-            }
+//                         .set("color", "#dc2626");
+//             }
 
-            statusBadge.getStyle()
+//             statusBadge.getStyle()
 
-                    .set("padding", "6px 14px")
+//                     .set("padding", "6px 14px")
 
-                    .set("border-radius", "20px")
+//                     .set("border-radius", "20px")
 
-                    .set("font-size", "12px")
+//                     .set("font-size", "12px")
 
-                    .set("font-weight", "700");
+//                     .set("font-weight", "700");
 
-            return statusBadge;
+//             return statusBadge;
 
-        }).setHeader("Status");
+//         }).setHeader("Status");
 
-        grid.setHeight("620px");
+//         grid.setHeight("620px");
 
-        grid.setWidthFull();
+//         grid.setWidthFull();
 
-        grid.getStyle()
+//         grid.getStyle()
 
-                .set("background", "white")
+//                 .set("background", "white")
 
-                .set("border-radius", "20px")
+//                 .set("border-radius", "20px")
 
-                .set("overflow", "hidden")
+//                 .set("overflow", "hidden")
 
-                .set("box-shadow",
-                        "0 6px 18px rgba(0,0,0,0.08)");
+//                 .set("box-shadow",
+//                         "0 6px 18px rgba(0,0,0,0.08)");
 
-        grid.asSingleSelect()
-                .addValueChangeListener(event -> {
+//         grid.asSingleSelect()
+//                 .addValueChangeListener(event -> {
 
-                    if(event.getValue() != null) {
+//                     if(event.getValue() != null) {
 
-                        selectedUser =
-                                event.getValue();
+//                         selectedUser =
+//                                 event.getValue();
 
-                        currentUser =
-                                selectedUser;
+//                         currentUser =
+//                                 selectedUser;
 
-                        binder.setBean(currentUser);
+//                         binder.setBean(currentUser);
 
-                        username.setValue(
-                                currentUser.getUsername()
-                        );
+//                         username.setValue(
+//                                 currentUser.getUsername()
+//                         );
 
-                        EmployeeDTO selectedEmployee =
-                                userService
-                                        .getAvailableEmployees()
-                                        .stream()
+//                         EmployeeDTO selectedEmployee =
+//                                 userService
+//                                         .getAvailableEmployees()
+//                                         .stream()
 
-                                        .filter(employee ->
+//                                         .filter(employee ->
 
-                                                employee.getEmployeeId()
-                                                        .equals(
-                                                                currentUser.getEmployeeId()
-                                                        )
-                                        )
+//                                                 employee.getEmployeeId()
+//                                                         .equals(
+//                                                                 currentUser.getEmployeeId()
+//                                                         )
+//                                         )
 
-                                        .findFirst()
-                                        .orElse(null);
+//                                         .findFirst()
+//                                         .orElse(null);
 
-                        employeeId.setValue(
-                                selectedEmployee
-                        );
+//                         employeeId.setValue(
+//                                 selectedEmployee
+//                         );
 
-                        RoleDTO selectedRole =
-                                userService
-                                        .getAllRoles()
-                                        .stream()
+//                         RoleDTO selectedRole =
+//                                 userService
+//                                         .getAllRoles()
+//                                         .stream()
 
-                                        .filter(role ->
+//                                         .filter(role ->
 
-                                                role.getRoleId()
-                                                        .equals(
-                                                                currentUser.getRoleId()
-                                                        )
-                                        )
+//                                                 role.getRoleId()
+//                                                         .equals(
+//                                                                 currentUser.getRoleId()
+//                                                         )
+//                                         )
 
-                                        .findFirst()
-                                        .orElse(null);
+//                                         .findFirst()
+//                                         .orElse(null);
 
-                        roleId.setValue(
-                                selectedRole
-                        );
+//                         roleId.setValue(
+//                                 selectedRole
+//                         );
 
-                        saveButton.setText(
-                                "Update User"
-                        );
+//                         saveButton.setText(
+//                                 "Update User"
+//                         );
 
-                        isEdit = true;
+//                         isEdit = true;
 
-                        userDialog.open();
-                    }
-                });
-    }
+//                         userDialog.open();
+//                     }
+//                 });
+//     }
 
-    private void saveUser() {
+//     private void saveUser() {
 
-        try {
+//         try {
 
-            binder.writeBean(currentUser);
+//             binder.writeBean(currentUser);
 
-            UserDTO savedUser = userService.saveUser(currentUser);
+//             UserDTO savedUser = userService.saveUser(currentUser);
 
-            // Notification.show("User created successfully.\nPassword : " + savedUser.getGeneratedPassword())
-            //         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+//             // Notification.show("User created successfully.\nPassword : " + savedUser.getGeneratedPassword())
+//             //         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-            if(isEdit){
-                NotificationUtil.success("User updated successfully.");
-            }
-            else{
-                NotificationUtil.success("User created successfully.\nPassword : " + savedUser.getGeneratedPassword());
-            }
+//             if(isEdit){
+//                 NotificationUtil.success("User updated successfully.");
+//             }
+//             else{
+//                 NotificationUtil.success("User created successfully.\nPassword : " + savedUser.getGeneratedPassword());
+//             }
 
-            isEdit = !isEdit;
+//             isEdit = !isEdit;
 
-            clearForm();
+//             clearForm();
 
-            refreshGrid();
+//             refreshGrid();
 
-            userDialog.close();
+//             userDialog.close();
 
-        } catch (ValidationException e) {
-            // Notification.show("Validation failed").addThemeVariants(NotificationVariant.LUMO_ERROR);
-            NotificationUtil.error("Validation Failed");
+//         } catch (ValidationException e) {
+//             // Notification.show("Validation failed").addThemeVariants(NotificationVariant.LUMO_ERROR);
+//             NotificationUtil.error("Validation Failed");
 
-        } catch (Exception e) {
-            // Notification.show(e.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
-            NotificationUtil.success(e.getMessage());
-        }
-    }
+//         } catch (Exception e) {
+//             // Notification.show(e.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
+//             NotificationUtil.success(e.getMessage());
+//         }
+//     }
 
-    private void deleteUser() {
+//     private void deleteUser() {
 
-        if(currentUser.getUserId() == null) {
+//         if(currentUser.getUserId() == null) {
 
-            Notification.show("Select user first");
+//             Notification.show("Select user first");
 
-            return;
-        }
+//             return;
+//         }
 
-        userService.deleteUser(currentUser.getUserId());
+//         userService.deleteUser(currentUser.getUserId());
 
-        // Notification.show("User deleted successfully").addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        NotificationUtil.success("User deleted successfully");
+//         // Notification.show("User deleted successfully").addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+//         NotificationUtil.success("User deleted successfully");
 
-        clearForm();
+//         clearForm();
 
-        refreshGrid();
-    }
+//         refreshGrid();
+//     }
 
-    private void clearForm() {
+//     private void clearForm() {
 
-        currentUser =
-                new UserDTO();
+//         currentUser =
+//                 new UserDTO();
 
-        selectedUser = null;
+//         selectedUser = null;
 
-        binder.setBean(currentUser);
+//         binder.setBean(currentUser);
 
-        saveButton.setText(
-                "Create User"
-        );
+//         saveButton.setText(
+//                 "Create User"
+//         );
 
-        employeeId.clear();
+//         employeeId.clear();
 
-        roleId.clear();
+//         roleId.clear();
 
-        username.clear();
+//         username.clear();
 
-        isActive.setValue(true);
+//         isActive.setValue(true);
 
-        isEdit = false;
+//         isEdit = false;
 
-        grid.deselectAll();
-    }
+//         grid.deselectAll();
+//     }
 
-    private void refreshGrid() {
-        grid.setItems(userService.getAllUsers());
-    }
-}
+//     private void refreshGrid() {
+//         grid.setItems(userService.getAllUsers());
+//     }
+// }

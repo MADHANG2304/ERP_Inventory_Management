@@ -43,9 +43,6 @@ public class InventoryItem extends BaseEntity{
     @Column(name="is_reusable")
     private Boolean isReusable;
 
-    @Column(name = "allow_return")
-    private Boolean allowReturn = false;
-
     @Column(name="minimum_stock")
     private Integer minimumStock;
 
@@ -65,7 +62,7 @@ public class InventoryItem extends BaseEntity{
     }
 
     public InventoryItem(Long itemId, InventoryCategory category, @NotBlank String itemName, String itemCode,
-            String description, Boolean isReusable, Boolean allowReturn, Integer minimumStock,
+            String description, Boolean isReusable, Integer minimumStock,
             ApprovalType approvalType, UnitType unitType, ItemStatus status) {
         this.itemId = itemId;
         this.category = category;
@@ -73,7 +70,6 @@ public class InventoryItem extends BaseEntity{
         this.itemCode = itemCode;
         this.description = description;
         this.isReusable = isReusable;
-        this.allowReturn = allowReturn;
         this.minimumStock = minimumStock;
         this.approvalType = approvalType;
         this.unitType = unitType;
@@ -126,14 +122,6 @@ public class InventoryItem extends BaseEntity{
 
     public void setIsReusable(Boolean isReusable) {
         this.isReusable = isReusable;
-    }
-
-    public Boolean getAllowReturn() {
-        return allowReturn;
-    }
-
-    public void setAllowReturn(Boolean allowReturn) {
-        this.allowReturn = allowReturn;
     }
 
     public Integer getMinimumStock() {

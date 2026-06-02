@@ -39,8 +39,12 @@ public class IssuedItem extends BaseEntity {
     private Employee issuedToEmployee;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "issued_by_user_id")
-    private User issuedBy;
+    @JoinColumn(name = "issued_by_employee_id")
+    private Employee issuedBy;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "asset_item_id")
+    private AssetItem assetItem;
 
     @Column(name = "issued_quantity")
     private Integer issuedQuantity;
@@ -58,19 +62,24 @@ public class IssuedItem extends BaseEntity {
     public IssuedItem() {
     }
 
+    
+
     public IssuedItem(Long issuedItemId, InventoryRequest request, RequestItems requestItem, Employee issuedToEmployee,
-            User issuedBy, Integer issuedQuantity, LocalDateTime issuedDate, String issueReferenceNumber,
-            IssueStatus issueStatus) {
+            Employee issuedBy, AssetItem assetItem, Integer issuedQuantity, LocalDateTime issuedDate,
+            String issueReferenceNumber, IssueStatus issueStatus) {
         this.issuedItemId = issuedItemId;
         this.request = request;
         this.requestItem = requestItem;
         this.issuedToEmployee = issuedToEmployee;
         this.issuedBy = issuedBy;
+        this.assetItem = assetItem;
         this.issuedQuantity = issuedQuantity;
         this.issuedDate = issuedDate;
         this.issueReferenceNumber = issueReferenceNumber;
         this.issueStatus = issueStatus;
     }
+
+
 
     public Long getIssuedItemId() {
         return issuedItemId;
@@ -104,11 +113,11 @@ public class IssuedItem extends BaseEntity {
         this.issuedToEmployee = issuedToEmployee;
     }
 
-    public User getIssuedBy() {
+    public Employee getIssuedBy() {
         return issuedBy;
     }
 
-    public void setIssuedBy(User issuedBy) {
+    public void setIssuedBy(Employee issuedBy) {
         this.issuedBy = issuedBy;
     }
 
@@ -142,6 +151,18 @@ public class IssuedItem extends BaseEntity {
 
     public void setIssueStatus(IssueStatus issueStatus) {
         this.issueStatus = issueStatus;
+    }
+
+
+
+    public AssetItem getAssetItem() {
+        return assetItem;
+    }
+
+
+
+    public void setAssetItem(AssetItem assetItem) {
+        this.assetItem = assetItem;
     }
 
     

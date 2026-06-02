@@ -2,7 +2,6 @@ package com.example.service;
 
 import com.example.dto.DashboardStatsDTO;
 import com.example.entity.Employee;
-import com.example.entity.User;
 import com.example.enums.ApprovalStatus;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
@@ -11,7 +10,6 @@ import com.example.repository.InventoryItemRepository;
 import com.example.repository.InventoryStockRepository;
 import com.example.repository.InventoryRequestRepository;
 import com.example.repository.RequestApprovalRepository;
-import com.example.repository.UserRepository;
 import com.example.security.SecurityService;
 
 import org.springframework.stereotype.Service;
@@ -29,7 +27,6 @@ public class DashboardService {
 
     private final EmployeeRepository employeeRepository;
 
-    private final UserRepository userRepository;
 
     private final SecurityService securityService;
 
@@ -39,7 +36,6 @@ public class DashboardService {
             InventoryItemRepository itemRepository,
             InventoryStockRepository stockRepository,
             EmployeeRepository employeeRepository,
-            UserRepository userRepository,
             SecurityService securityService
     ) {
 
@@ -48,7 +44,6 @@ public class DashboardService {
         this.itemRepository = itemRepository;
         this.stockRepository = stockRepository;
         this.employeeRepository = employeeRepository;
-        this.userRepository = userRepository;
         this.securityService = securityService;
     }
 
@@ -62,11 +57,9 @@ public class DashboardService {
         String username =
                 securityService.getAuthenticatedUser();
 
-        User user =
-                userRepository.findByUsername(username);
-
         Employee employee =
-                user.getEmployee();
+                employeeRepository.findByUsername(username);
+
 
         // EMPLOYEE
         if(role.equals("ROLE_EMPLOYEE")) {

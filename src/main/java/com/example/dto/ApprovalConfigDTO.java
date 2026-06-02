@@ -3,13 +3,17 @@ package com.example.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.enums.ApprovalRole;
 import com.example.enums.RequestType;
+import com.example.enums.RequesterRole;
 
 public class ApprovalConfigDTO {
 
     private Long configId;
 
     private String configName;
+
+    private RequesterRole requesterRole;
 
     private RequestType requestType;
 
@@ -22,12 +26,13 @@ public class ApprovalConfigDTO {
     }
 
     public ApprovalConfigDTO(Long configId, String configName, RequestType requestType, Boolean isActive,
-            List<ApprovalConfigLevelDTO> levels) {
+            List<ApprovalConfigLevelDTO> levels, RequesterRole requesterRole) {
         this.configId = configId;
         this.configName = configName;
         this.requestType = requestType;
         this.isActive = isActive;
         this.levels = levels;
+        this.requesterRole = requesterRole;
     }
 
     public Long getConfigId() {
@@ -68,6 +73,14 @@ public class ApprovalConfigDTO {
 
     public void setLevels(List<ApprovalConfigLevelDTO> levels) {
         this.levels = levels;
+    }
+
+    public RequesterRole getRequesterRole() {
+        return requesterRole;
+    }
+
+    public void setRequesterRole(RequesterRole requesterRole) {
+        this.requesterRole = requesterRole;
     }
 
     

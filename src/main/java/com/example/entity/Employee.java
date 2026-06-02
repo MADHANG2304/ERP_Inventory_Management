@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,9 +24,23 @@ public class Employee extends BaseEntity{
     @Column(name="employee_id")
     private Long employeeId;
 
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="user_id")
-    private User user;
+    // @OneToOne(fetch=FetchType.EAGER)
+    // @JoinColumn(name="user_id")
+    // private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Roles role;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "manager_employee_id")
+    private Employee manager;
+
+    @Column(name = "username", unique = true)
+    private String username;
+
+    @Column(name = "password")
+    private String password;
     
     @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="department_id")
@@ -57,11 +72,14 @@ public class Employee extends BaseEntity{
     public Employee() {
     }
 
-    public Employee(Long employeeId, User user, Department department, Designation designation,
-            @NotBlank String employeeName, String mobileNumber, @Email String email, String gender, String state,
-            String city, Boolean isActive) {
+    public Employee(Long employeeId, Roles role, Employee manager, String username, String password,
+            Department department, Designation designation, @NotBlank String employeeName, String mobileNumber,
+            @Email String email, String gender, String state, String city, Boolean isActive) {
         this.employeeId = employeeId;
-        this.user = user;
+        this.role = role;
+        this.manager = manager;
+        this.username = username;
+        this.password = password;
         this.department = department;
         this.designation = designation;
         this.employeeName = employeeName;
@@ -73,20 +91,13 @@ public class Employee extends BaseEntity{
         this.isActive = isActive;
     }
 
+
     public Long getEmployeeId() {
         return employeeId;
     }
 
     public void setEmployeeId(Long employeeId) {
         this.employeeId = employeeId;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Department getDepartment() {
@@ -159,6 +170,38 @@ public class Employee extends BaseEntity{
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public Roles getRole() {
+        return role;
+    }
+
+    public void setRole(Roles role) {
+        this.role = role;
+    }
+
+    public Employee getManager() {
+        return manager;
+    }
+
+    public void setManager(Employee manager) {
+        this.manager = manager;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     

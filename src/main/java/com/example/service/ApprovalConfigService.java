@@ -53,6 +53,10 @@ public class ApprovalConfigService {
                 dto.getConfigName()
         );
 
+        config.setRequesterRole(
+                dto.getRequesterRole()
+        );
+
         config.setRequestType(
                 dto.getRequestType()
         );
@@ -121,69 +125,73 @@ public class ApprovalConfigService {
         );
     }
 
-    private void validateConfig(
-            ApprovalConfigDTO dto
-    ) {
+        private void validateConfig(
+                ApprovalConfigDTO dto
+        ) {
 
-        if(dto.getConfigName() == null
-                || dto.getConfigName().isBlank()) {
+                if(dto.getConfigName() == null
+                        || dto.getConfigName().isBlank()) {
 
-            throw new RuntimeException(
-                    "Config name required"
-            );
+                        throw new RuntimeException(
+                                "Config name required"
+                        );
+                }
+
+                if(dto.getRequestType() == null) {
+
+                        throw new RuntimeException(
+                                "Request type required"
+                        );
+                }
+
+                if(dto.getRequesterRole() == null) {
+
+                        throw new RuntimeException(
+                                "Requester role required"
+                        );
+                }
+
+                if(dto.getLevels() == null
+                        || dto.getLevels().isEmpty()) {
+
+                        throw new RuntimeException(
+                                "At least one approval level required"
+                        );
+                }
+
+                Set<String> roles =
+                        new HashSet<>();
+
+                for(ApprovalConfigLevelDTO level
+                        : dto.getLevels()) {
+
+                        if(level.getApprovalRole() == null) {
+
+                        throw new RuntimeException(
+                                "Approval role required"
+                        );
+                        }
+
+                        if(level.getApprovalRole()
+                                .equals(
+                                        dto.getRequesterRole()
+                                )) {
+
+                        throw new RuntimeException(
+                                "Requester role cannot approve itself"
+                        );
+                        }
+
+                        if(!roles.add(
+                                level.getApprovalRole().name()
+                        )) {
+
+                        throw new RuntimeException(
+                                "Duplicate approval role"
+                        );
+                        }
+                }
         }
-
-        if(dto.getRequestType() == null) {
-
-            throw new RuntimeException(
-                    "Request type required"
-            );
-        }
-
-        if(dto.getLevels() == null
-                || dto.getLevels().isEmpty()) {
-
-            throw new RuntimeException(
-                    "At least one approval level required"
-            );
-        }
-
-        Set<Integer> orders =
-                new HashSet<>();
-
-        Set<String> roles =
-                new HashSet<>();
-
-        for(ApprovalConfigLevelDTO level
-                : dto.getLevels()) {
-
-            if(level.getApprovalOrder() == null
-                    || level.getApprovalOrder() <= 0) {
-
-                throw new RuntimeException(
-                        "Invalid approval order"
-                );
-            }
-
-            if(!orders.add(
-                    level.getApprovalOrder()
-            )) {
-
-                throw new RuntimeException(
-                        "Duplicate approval order"
-                );
-            }
-
-            if(!roles.add(
-                    level.getApprovalRole().name()
-            )) {
-
-                throw new RuntimeException(
-                        "Duplicate approval role"
-                );
-            }
-        }
-    }
 
     private ApprovalConfigDTO convertToDTO(
             ApprovalConfig config
@@ -198,6 +206,10 @@ public class ApprovalConfigService {
 
         dto.setConfigName(
                 config.getConfigName()
+        );
+
+        dto.setRequesterRole(
+                config.getRequesterRole()
         );
 
         dto.setRequestType(

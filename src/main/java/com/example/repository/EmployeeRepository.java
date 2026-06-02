@@ -9,12 +9,14 @@ import com.example.entity.Employee;
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee>{
 
     Employee findByEmail(String authenticatedUser);
+
+    Employee findByUsername(String username);
     
     @Query("""
         SELECT e
         FROM Employee e
         WHERE e.department.departmentId = :departmentId
-        AND e.user.roles.roleName = :roleName
+        AND e.role.roleName = :roleName
 
     """)
     Employee findManagerByDepartmentAndRole(
@@ -25,7 +27,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     @Query("""
         SELECT e
         FROM Employee e
-        WHERE e.user.roles.roleName = :roleName
+        WHERE e.role.roleName = :roleName
 
     """)
     Employee findByUserRoleRoleName(

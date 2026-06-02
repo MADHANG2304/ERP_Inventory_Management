@@ -1,233 +1,233 @@
-package com.example.service;
+// package com.example.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.List;
+// import java.util.stream.Collectors;
 
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+// import org.springframework.data.jpa.domain.Specification;
+// import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.stereotype.Service;
 
-import com.example.dto.EmployeeDTO;
-import com.example.dto.RoleDTO;
-import com.example.dto.UserDTO;
-import com.example.entity.Employee;
-import com.example.entity.Roles;
-import com.example.entity.User;
-import com.example.repository.EmployeeRepository;
-import com.example.repository.RoleRepository;
-import com.example.repository.UserRepository;
-import com.example.specification.UserSpecification;
+// import com.example.dto.EmployeeDTO;
+// import com.example.dto.RoleDTO;
+// import com.example.dto.UserDTO;
+// import com.example.entity.Employee;
+// import com.example.entity.Roles;
+// import com.example.entity.User;
+// import com.example.repository.EmployeeRepository;
+// import com.example.repository.RoleRepository;
+// import com.example.repository.UserRepository;
+// import com.example.specification.UserSpecification;
 
-@Service
-public class UserService {
+// @Service
+// public class UserService {
 
-    private final UserRepository userRepository;
+//     private final UserRepository userRepository;
 
-    private final EmployeeRepository employeeRepository;
+//     private final EmployeeRepository employeeRepository;
 
-    private final RoleRepository roleRepository;
+//     private final RoleRepository roleRepository;
 
-    private final PasswordEncoder passwordEncoder;
+//     private final PasswordEncoder passwordEncoder;
 
-    private final AuditLogService auditLogService;
+//     private final AuditLogService auditLogService;
 
-    public UserService(UserRepository userRepository , EmployeeRepository employeeRepository,
-                RoleRepository roleRepository , PasswordEncoder passwordEncoder, AuditLogService auditLogService) {
+//     public UserService(UserRepository userRepository , EmployeeRepository employeeRepository,
+//                 RoleRepository roleRepository , PasswordEncoder passwordEncoder, AuditLogService auditLogService) {
 
-        this.userRepository = userRepository;
-        this.employeeRepository = employeeRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.auditLogService = auditLogService;
-    }
+//         this.userRepository = userRepository;
+//         this.employeeRepository = employeeRepository;
+//         this.roleRepository = roleRepository;
+//         this.passwordEncoder = passwordEncoder;
+//         this.auditLogService = auditLogService;
+//     }
 
-    public UserDTO saveUser(UserDTO dto) {
+//     public UserDTO saveUser(UserDTO dto) {
 
-        validateUser(dto);
+//         validateUser(dto);
 
-        User user;
+//         User user;
 
-        boolean isNewUser = dto.getUserId() == null;
+//         boolean isNewUser = dto.getUserId() == null;
 
 
-        if(isNewUser) {
-                user = new User();
-        } 
-        else {
-                user = userRepository
-                        .findById(dto.getUserId())
-                        .orElseThrow(() -> new RuntimeException("User not found"));
-        }
+//         if(isNewUser) {
+//                 user = new User();
+//         } 
+//         else {
+//                 user = userRepository
+//                         .findById(dto.getUserId())
+//                         .orElseThrow(() -> new RuntimeException("User not found"));
+//         }
 
-        Employee employee =
-                employeeRepository
-                        .findById(dto.getEmployeeId())
-                        .orElseThrow(() -> new RuntimeException("Employee not found"));
+//         Employee employee =
+//                 employeeRepository
+//                         .findById(dto.getEmployeeId())
+//                         .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        Roles role =
-                roleRepository
-                        .findById(dto.getRoleId())
-                        .orElseThrow(() -> new RuntimeException("Role not found"));
+//         Roles role =
+//                 roleRepository
+//                         .findById(dto.getRoleId())
+//                         .orElseThrow(() -> new RuntimeException("Role not found"));
 
                         
-        user.setEmployee(employee);
-        employee.setUser(user);
-        user.setRoles(role);
-        user.setUsername(employee.getEmail().trim().toLowerCase());
-        user.setEmail(employee.getEmail().trim().toLowerCase());
-        user.setIsActive(dto.getIsActive());
+//         user.setEmployee(employee);
+//         employee.setUser(user);
+//         user.setRoles(role);
+//         user.setUsername(employee.getEmail().trim().toLowerCase());
+//         user.setEmail(employee.getEmail().trim().toLowerCase());
+//         user.setIsActive(dto.getIsActive());
         
-        String generatedPassword = null;
+//         String generatedPassword = null;
 
-        if(isNewUser) {
-                generatedPassword = generatePassword(employee.getEmployeeName());
+//         if(isNewUser) {
+//                 generatedPassword = generatePassword(employee.getEmployeeName());
 
-                user.setPassword(passwordEncoder.encode(generatedPassword));
-        }
-        User savedUser = userRepository.save(user);
+//                 user.setPassword(passwordEncoder.encode(generatedPassword));
+//         }
+//         User savedUser = userRepository.save(user);
 
-        employeeRepository.save(employee);
+//         employeeRepository.save(employee);
 
-        UserDTO response = convertToDTO(savedUser);
+//         UserDTO response = convertToDTO(savedUser);
 
-        response.setGeneratedPassword(generatedPassword);
+//         response.setGeneratedPassword(generatedPassword);
 
-        auditLogService.logAction(
+//         auditLogService.logAction(
 
-                "USER_MODULE",
+//                 "USER_MODULE",
 
-                dto.getUserId() == null
-                        ? "CREATE"
-                        : "UPDATE",
+//                 dto.getUserId() == null
+//                         ? "CREATE"
+//                         : "UPDATE",
 
-                "User saved : "
-                        + dto.getUsername()
-        );
+//                 "User saved : "
+//                         + dto.getUsername()
+//         );
 
-        return response;
-    }
+//         return response;
+//     }
 
-    public List<UserDTO> getAllUsers() {
+//     public List<UserDTO> getAllUsers() {
 
-        return userRepository
-                .findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+//         return userRepository
+//                 .findAll()
+//                 .stream()
+//                 .map(this::convertToDTO)
+//                 .collect(Collectors.toList());
+//     }
 
-    public List<UserDTO> searchUsers(String keyword) {
+//     public List<UserDTO> searchUsers(String keyword) {
 
-        Specification<User> specification = UserSpecification.searchUsers(keyword);
+//         Specification<User> specification = UserSpecification.searchUsers(keyword);
 
-        return userRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+//         return userRepository
+//                 .findAll(specification)
+//                 .stream()
+//                 .map(this::convertToDTO)
+//                 .collect(Collectors.toList());
+//     }
 
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
-    }
+//     public void deleteUser(Long userId) {
+//         userRepository.deleteById(userId);
+//     }
 
-    public List<EmployeeDTO> getAvailableEmployees() {
+//     public List<EmployeeDTO> getAvailableEmployees() {
 
-        return employeeRepository
-                .findAll()
-                .stream()
+//         return employeeRepository
+//                 .findAll()
+//                 .stream()
 
-                .filter(employee -> employee.getUser() != null)
+//                 .filter(employee -> employee.getUser() != null)
 
-                .map(employee -> {
-                    EmployeeDTO dto = new EmployeeDTO();
+//                 .map(employee -> {
+//                     EmployeeDTO dto = new EmployeeDTO();
 
-                    dto.setEmployeeId(employee.getEmployeeId());
+//                     dto.setEmployeeId(employee.getEmployeeId());
 
-                    dto.setEmployeeName(employee.getEmployeeName());
+//                     dto.setEmployeeName(employee.getEmployeeName());
 
-                    dto.setEmail(employee.getEmail());
+//                     dto.setEmail(employee.getEmail());
 
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+//                     return dto;
+//                 })
+//                 .collect(Collectors.toList());
+//     }
 
-    public List<RoleDTO> getAllRoles() {
+//     public List<RoleDTO> getAllRoles() {
 
-        return roleRepository
-                .findAll()
-                .stream()
-                .map(role -> {
+//         return roleRepository
+//                 .findAll()
+//                 .stream()
+//                 .map(role -> {
 
-                    RoleDTO dto = new RoleDTO();
+//                     RoleDTO dto = new RoleDTO();
 
-                    dto.setRoleId(role.getRoleId());
+//                     dto.setRoleId(role.getRoleId());
 
-                    dto.setRoleName(role.getRoleName());
+//                     dto.setRoleName(role.getRoleName());
 
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+//                     return dto;
+//                 })
+//                 .collect(Collectors.toList());
+//     }
 
-    private void validateUser(UserDTO dto) {
+//     private void validateUser(UserDTO dto) {
 
-        if(dto.getEmployeeId() == null) {
-            throw new RuntimeException("Employee is required");
-        }
+//         if(dto.getEmployeeId() == null) {
+//             throw new RuntimeException("Employee is required");
+//         }
 
-        if(dto.getRoleId() == null) {
+//         if(dto.getRoleId() == null) {
 
-            throw new RuntimeException("Role is required");
-        }
+//             throw new RuntimeException("Role is required");
+//         }
 
-        boolean employeeAlreadyMapped =
-                userRepository
-                        .findAll()
-                        .stream()
-                        .anyMatch(user -> user.getEmployee() != null &&
-                                user.getEmployee().getEmployeeId().equals(dto.getEmployeeId()) &&
-                                !user.getUserId().equals(dto.getUserId())
-                        );
+//         boolean employeeAlreadyMapped =
+//                 userRepository
+//                         .findAll()
+//                         .stream()
+//                         .anyMatch(user -> user.getEmployee() != null &&
+//                                 user.getEmployee().getEmployeeId().equals(dto.getEmployeeId()) &&
+//                                 !user.getUserId().equals(dto.getUserId())
+//                         );
 
-        if(employeeAlreadyMapped) {
-            throw new RuntimeException("User already exists for employee");
-        }
-    }
+//         if(employeeAlreadyMapped) {
+//             throw new RuntimeException("User already exists for employee");
+//         }
+//     }
 
-    private String generatePassword(String employeeName) {
+//     private String generatePassword(String employeeName) {
 
-        String cleanName = employeeName.replaceAll("\\s+", "");
+//         String cleanName = employeeName.replaceAll("\\s+", "");
 
-        // int randomNumber = new Random().nextInt(900) + 100;
+//         // int randomNumber = new Random().nextInt(900) + 100;
 
-        return cleanName + "@123";
-    }
+//         return cleanName + "@123";
+//     }
 
-    private UserDTO convertToDTO(User user) {
+//     private UserDTO convertToDTO(User user) {
 
-        UserDTO dto = new UserDTO();
+//         UserDTO dto = new UserDTO();
 
-        dto.setUserId(user.getUserId());
+//         dto.setUserId(user.getUserId());
 
-        if(user.getEmployee() != null) {
-                dto.setEmployeeId(user.getEmployee().getEmployeeId());
+//         if(user.getEmployee() != null) {
+//                 dto.setEmployeeId(user.getEmployee().getEmployeeId());
                 
-                dto.setEmployeeName(user.getEmployee().getEmployeeName());
+//                 dto.setEmployeeName(user.getEmployee().getEmployeeName());
                 
-                dto.setEmail(user.getEmployee().getEmail());
-        }
-        if(user.getRoles() != null) {
-                dto.setRoleId(user.getRoles().getRoleId());
+//                 dto.setEmail(user.getEmployee().getEmail());
+//         }
+//         if(user.getRoles() != null) {
+//                 dto.setRoleId(user.getRoles().getRoleId());
         
-                dto.setRoleName(user.getRoles().getRoleName());
-        }
+//                 dto.setRoleName(user.getRoles().getRoleName());
+//         }
 
-        dto.setUsername(user.getUsername());
+//         dto.setUsername(user.getUsername());
         
-        dto.setIsActive(user.getIsActive());
+//         dto.setIsActive(user.getIsActive());
 
-        return dto;
-    }
-}
+//         return dto;
+//     }
+// }

@@ -55,4 +55,13 @@ public class EmployeeSpecification {
             );
         };
     }
+
+    public static Specification<Employee> hasUsername(String username) {
+                return (root, query, criteriaBuilder) ->
+
+                        criteriaBuilder.equal(
+                                root.get("username"),
+                                username
+                );
+        };
 }

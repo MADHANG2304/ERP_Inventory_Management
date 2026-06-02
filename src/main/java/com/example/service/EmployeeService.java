@@ -3,14 +3,18 @@ package com.example.service;
 import com.example.dto.DepartmentDTO;
 import com.example.dto.DesignationDTO;
 import com.example.dto.EmployeeDTO;
+import com.example.dto.RoleDTO;
 import com.example.entity.Department;
 import com.example.entity.Designation;
 import com.example.entity.Employee;
+import com.example.entity.Roles;
 import com.example.repository.DepartmentRepository;
 import com.example.repository.DesignationRepository;
 import com.example.repository.EmployeeRepository;
+import com.example.repository.RoleRepository;
 import com.example.specification.EmployeeSpecification;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,10 +29,17 @@ public class EmployeeService {
 
     private final DesignationRepository designationRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, DesignationRepository designationRepository) {
+    private final RoleRepository roleRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
+                        DesignationRepository designationRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.designationRepository = designationRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public EmployeeDTO saveEmployee(EmployeeDTO dto) {
@@ -37,46 +48,109 @@ public class EmployeeService {
 
         Employee employee;
 
-        if(dto.getEmployeeId() != null) {
+        boolean isNewEmployee =
+                dto.getEmployeeId() == null;
+
+        if(isNewEmployee) {
+
+            employee = new Employee();
+
+        } else {
+
             employee = employeeRepository
                     .findById(dto.getEmployeeId())
                     .orElse(new Employee());
-
-        } else {
-            employee = new Employee();
         }
 
         Department department =
                 departmentRepository
                         .findById(dto.getDepartmentId())
-                        .orElseThrow(() -> new RuntimeException("Department not found"));
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found"
+                                ));
 
         Designation designation =
                 designationRepository
                         .findById(dto.getDesignationId())
-                        .orElseThrow(() -> new RuntimeException("Designation not found"));
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Designation not found"
+                                ));
+
+        Roles role =
+                roleRepository
+                        .findById(dto.getRoleId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Role not found"
+                                ));
 
         employee.setDepartment(department);
 
         employee.setDesignation(designation);
 
-        employee.setEmployeeName(dto.getEmployeeName().trim());
+        employee.setRole(role);
 
-        employee.setMobileNumber(dto.getMobileNumber());
+        employee.setEmployeeName(
+                dto.getEmployeeName().trim()
+        );
 
-        employee.setEmail(dto.getEmail().trim().toLowerCase());
+        employee.setMobileNumber(
+                dto.getMobileNumber()
+        );
 
-        employee.setGender(dto.getGender());
+        employee.setEmail(
+                dto.getEmail().trim().toLowerCase()
+        );
 
-        employee.setState(dto.getState());
+        employee.setUsername(
+                dto.getEmail().trim().toLowerCase()
+        );
 
-        employee.setCity(dto.getCity());
+        employee.setGender(
+                dto.getGender()
+        );
 
-        employee.setIsActive(dto.getIsActive());
+        employee.setState(
+                dto.getState()
+        );
 
-        Employee savedEmployee = employeeRepository.save(employee);
+        employee.setCity(
+                dto.getCity()
+        );
 
-        return convertToDTO(savedEmployee);
+        employee.setIsActive(
+                dto.getIsActive()
+        );
+
+        String generatedPassword = null;
+
+        if(isNewEmployee) {
+
+            generatedPassword =
+                    generatePassword(
+                            dto.getEmployeeName()
+                    );
+
+            employee.setPassword(
+                    passwordEncoder.encode(
+                            generatedPassword
+                    )
+            );
+        }
+
+        Employee savedEmployee =
+                employeeRepository.save(employee);
+
+        EmployeeDTO response =
+                convertToDTO(savedEmployee);
+
+        response.setGeneratedPassword(
+                generatedPassword
+        );
+
+        return response;
     }
 
     public List<EmployeeDTO> getAllEmployees() {
@@ -85,6 +159,24 @@ public class EmployeeService {
                 .findAll()
                 .stream()
                 .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+        public List<RoleDTO> getAllRoles() {
+
+        return roleRepository
+                .findAll()
+                .stream()
+                .map(role -> {
+
+                    RoleDTO dto = new RoleDTO();
+
+                    dto.setRoleId(role.getRoleId());
+
+                    dto.setRoleName(role.getRoleName());
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -162,6 +254,40 @@ public class EmployeeService {
             throw new RuntimeException("Mobile number is required");
         }
 
+        if(dto.getRoleId() == null) {
+            throw new RuntimeException(
+                    "Role is required"
+            );
+        }
+
+        boolean duplicateUsername =
+                employeeRepository
+                        .findAll()
+                        .stream()
+                        .anyMatch(employee ->
+
+                                employee.getUsername() != null &&
+
+                                employee.getUsername()
+                                        .equalsIgnoreCase(
+                                                dto.getEmail()
+                                        )
+
+                                &&
+
+                                !employee.getEmployeeId()
+                                        .equals(
+                                                dto.getEmployeeId()
+                                        )
+                        );
+
+        if(duplicateUsername) {
+
+            throw new RuntimeException(
+                    "Username already exists"
+            );
+        }
+
         boolean duplicateEmail =
                 employeeRepository
                         .findAll()
@@ -187,6 +313,19 @@ public class EmployeeService {
         if(duplicateMobile) {
             throw new RuntimeException("Mobile number already exists");
         }
+    }
+
+    private String generatePassword(
+            String employeeName
+    ) {
+
+        String cleanName =
+                employeeName.replaceAll(
+                        "\\s+",
+                        ""
+                );
+
+        return cleanName + "@123";
     }
 
     private EmployeeDTO convertToDTO(Employee employee) {
@@ -216,6 +355,15 @@ public class EmployeeService {
         dto.setCity(employee.getCity());
 
         dto.setIsActive(employee.getIsActive());
+
+        if(employee.getRole() != null) {
+
+            dto.setRoleId(employee.getRole().getRoleId());
+
+            dto.setRoleName(employee.getRole().getRoleName());
+        }
+
+        dto.setUsername(employee.getUsername());
 
         return dto;
     }

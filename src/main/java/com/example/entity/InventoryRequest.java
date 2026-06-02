@@ -1,4 +1,5 @@
 package com.example.entity;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,9 @@ public class InventoryRequest extends BaseEntity {
     @Column(name = "request_date")
     private LocalDateTime requestDate;
 
+    @Column(name = "required_date")
+    private LocalDate requiredDate;
+
     @Column(name = "remarks")
     private String remarks;
 
@@ -53,8 +57,8 @@ public class InventoryRequest extends BaseEntity {
             fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
             orphanRemoval = true
-        )
-        private List<RequestItems> requestItems = new ArrayList<>();
+    )
+    private List<RequestItems> requestItems = new ArrayList<>();
         
     @OneToMany(
         mappedBy = "request",
@@ -66,17 +70,28 @@ public class InventoryRequest extends BaseEntity {
             new ArrayList<>();
 
 
+    
+
     public InventoryRequest(Long requestId, Employee employee, String requestNumber, RequestStatus requestStatus,
-            LocalDateTime requestDate, String remarks, List<RequestItems> requestItems,
+            LocalDateTime requestDate, LocalDate requiredDate, String remarks, List<RequestItems> requestItems,
             List<RequestApproval> approvals) {
         this.requestId = requestId;
         this.employee = employee;
         this.requestNumber = requestNumber;
         this.requestStatus = requestStatus;
         this.requestDate = requestDate;
+        this.requiredDate = requiredDate;
         this.remarks = remarks;
         this.requestItems = requestItems;
         this.approvals = approvals;
+    }
+
+    public LocalDate getRequiredDate() {
+        return requiredDate;
+    }
+
+    public void setRequiredDate(LocalDate requiredDate) {
+        this.requiredDate = requiredDate;
     }
 
     public InventoryRequest() {

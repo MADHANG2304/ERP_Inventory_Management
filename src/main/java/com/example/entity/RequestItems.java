@@ -27,6 +27,10 @@ public class RequestItems extends BaseEntity {
     private InventoryRequest request;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "asset_item_id")
+    private AssetItem assetItem;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "item_id")
     private InventoryItem item;
 
@@ -39,14 +43,18 @@ public class RequestItems extends BaseEntity {
     public RequestItems() {
     }
 
-    public RequestItems(Long requestItemId, InventoryRequest request, InventoryItem item, Integer requestedQuantity,
-            Integer approvedQuantity) {
+
+    public RequestItems(Long requestItemId, InventoryRequest request, AssetItem assetItem, InventoryItem item,
+            Integer requestedQuantity, Integer approvedQuantity) {
         this.requestItemId = requestItemId;
         this.request = request;
+        this.assetItem = assetItem;
         this.item = item;
         this.requestedQuantity = requestedQuantity;
         this.approvedQuantity = approvedQuantity;
     }
+
+
 
     public Long getRequestItemId() {
         return requestItemId;
@@ -86,6 +94,16 @@ public class RequestItems extends BaseEntity {
 
     public void setApprovedQuantity(Integer approvedQuantity) {
         this.approvedQuantity = approvedQuantity;
+    }
+
+
+    public AssetItem getAssetItem() {
+        return assetItem;
+    }
+
+
+    public void setAssetItem(AssetItem assetItem) {
+        this.assetItem = assetItem;
     }
 
     

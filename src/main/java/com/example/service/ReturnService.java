@@ -29,7 +29,7 @@ public class ReturnService {
 
     private final SecurityService securityService;
 
-    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
 
     private final AuditLogService auditLogService;
 
@@ -39,7 +39,7 @@ public class ReturnService {
             InventoryStockRepository inventoryStockRepository,
             InventoryTransactionRepository inventoryTransactionRepository,
             SecurityService securityService,
-            UserRepository userRepository,
+            EmployeeRepository employeeRepository,
             AuditLogService auditLogService
         ) {
 
@@ -53,7 +53,7 @@ public class ReturnService {
 
         this.securityService = securityService;
 
-        this.userRepository = userRepository;
+        this.employeeRepository = employeeRepository;
 
         this.auditLogService = auditLogService;
     }
@@ -64,8 +64,8 @@ public class ReturnService {
 
         String role = securityService.getAuthenticatedRole();
 
-        User loggedInUser =
-                userRepository
+        Employee loggedInUser =
+                employeeRepository
                         .findAll()
                         .stream()
                         .filter(user -> user.getUsername().equals(username))
@@ -80,7 +80,7 @@ public class ReturnService {
 
                 .filter(item ->
 
-                        Boolean.TRUE.equals(item.getRequestItem().getItem().getAllowReturn()) 
+                        Boolean.TRUE.equals(item.getRequestItem().getItem().getIsReusable()) 
                                         && item.getIssueStatus() != IssueStatus.RETURNED
                 )
 
@@ -93,10 +93,10 @@ public class ReturnService {
                         }
 
                         return item.getIssuedToEmployee() != null
-                                && loggedInUser.getEmployee() != null
+                                && loggedInUser != null
                                 && item.getIssuedToEmployee()
                                         .getEmployeeId()
-                                        .equals(loggedInUser.getEmployee().getEmployeeId());
+                                        .equals(loggedInUser.getEmployeeId());
                 })
 
                 .map(item -> {

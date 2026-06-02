@@ -4,6 +4,7 @@ import com.example.base.ui.MainLayout;
 import com.example.dto.DepartmentDTO;
 import com.example.dto.DesignationDTO;
 import com.example.dto.EmployeeDTO;
+import com.example.dto.RoleDTO;
 import com.example.service.EmployeeService;
 import com.example.utils.ConfirmDialogUtil;
 import com.example.utils.NotificationUtil;
@@ -52,6 +53,10 @@ public class EmployeeView extends VerticalLayout {
     private final TextField employeeName = new TextField("Employee Name");
 
     private final TextField mobileNumber = new TextField("Mobile Number");
+
+    private final ComboBox<RoleDTO> roleId = new ComboBox<>("Role");
+
+    private final TextField username = new TextField("Username");
 
     private final EmailField email = new EmailField("Email");
 
@@ -155,10 +160,12 @@ public class EmployeeView extends VerticalLayout {
         formLayout.add(
                 departmentId,
                 designationId,
+                roleId,
                 employeeName,
                 mobileNumber,
                 email,
-                gender,
+                // username,
+                gender, 
                 state,
                 city,
                 isActive
@@ -171,8 +178,16 @@ public class EmployeeView extends VerticalLayout {
                 new FormLayout.ResponsiveStep("900px", 2)
         );
 
-        formLayout.getStyle()
-                .set("padding", "10px");
+        formLayout.getStyle().set("padding", "10px");
+
+        email.addValueChangeListener(event -> {
+
+                username.setValue(
+                        event.getValue()
+                );
+        });
+
+        username.setReadOnly(true);
 
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -227,8 +242,6 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout buttonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        // clearButton,
-                        // deleteButton,
                         cancelButton
                 );
 
@@ -299,6 +312,15 @@ public class EmployeeView extends VerticalLayout {
 
         designationId.setItemLabelGenerator(DesignationDTO::getDesignationName);
 
+        roleId.setItems(
+                employeeService.getAllRoles()
+        );
+
+        roleId.setItemLabelGenerator(
+                RoleDTO::getRoleName
+        );
+
+
         gender.setItems(
                 "Male",
                 "Female",
@@ -361,6 +383,50 @@ public class EmployeeView extends VerticalLayout {
                             }
                         }
                 );
+
+        binder.forField(roleId)
+        .bind(
+
+                employee -> {
+
+                    if(employee.getRoleId() == null) {
+                        return null;
+                    }
+
+                    RoleDTO dto =
+                            new RoleDTO();
+
+                    dto.setRoleId(
+                            employee.getRoleId()
+                    );
+
+                    dto.setRoleName(
+                            employee.getRoleName()
+                    );
+
+                    return dto;
+                },
+
+                (employee, role) -> {
+
+                    if(role != null) {
+
+                        employee.setRoleId(
+                                role.getRoleId()
+                        );
+
+                        employee.setRoleName(
+                                role.getRoleName()
+                        );
+                    }
+                }
+        );
+
+        binder.forField(username)
+        .bind(
+                EmployeeDTO::getUsername,
+                EmployeeDTO::setUsername
+        );
 
         binder.forField(employeeName)
         .bind(
@@ -432,6 +498,14 @@ public class EmployeeView extends VerticalLayout {
         grid.addColumn(EmployeeDTO::getDesignationName)
                 .setHeader("Designation");
 
+        grid.addColumn(
+                        EmployeeDTO::getUsername
+                ).setHeader("Username");
+
+        grid.addColumn(
+                        EmployeeDTO::getRoleName
+                ).setHeader("Role");
+
         grid.addColumn(EmployeeDTO::getGender)
                 .setHeader("Gender");
 
@@ -487,38 +561,38 @@ public class EmployeeView extends VerticalLayout {
         grid.asSingleSelect()
                 .addValueChangeListener(event -> {
 
-                    if(event.getValue() != null) {
+                        if(event.getValue() != null) {
 
-                        selectedEmployee = event.getValue();
+                                selectedEmployee = event.getValue();
 
-                        currentEmployee = selectedEmployee;
+                                currentEmployee = selectedEmployee;
 
-                        binder.setBean(currentEmployee);
+                                binder.setBean(currentEmployee);
 
-                        DepartmentDTO selectedDepartment = employeeService
-                                .getAllDepartments()
-                                .stream()
-                                .filter(department -> department.getDepartmentId().equals(currentEmployee.getDepartmentId()))
-                                .findFirst()
-                                .orElse(null);
+                                DepartmentDTO selectedDepartment = employeeService
+                                        .getAllDepartments()
+                                        .stream()
+                                        .filter(department -> department.getDepartmentId().equals(currentEmployee.getDepartmentId()))
+                                        .findFirst()
+                                        .orElse(null);
 
-                        departmentId.setValue(selectedDepartment);
+                                departmentId.setValue(selectedDepartment);
 
-                        DesignationDTO selectedDesignation = employeeService
-                                .getAllDesignations()
-                                .stream()
-                                .filter(designation -> designation.getDesignationId().equals(currentEmployee.getDesignationId()))
-                                .findFirst()
-                                .orElse(null);
+                                DesignationDTO selectedDesignation = employeeService
+                                        .getAllDesignations()
+                                        .stream()
+                                        .filter(designation -> designation.getDesignationId().equals(currentEmployee.getDesignationId()))
+                                        .findFirst()
+                                        .orElse(null);
 
-                        designationId.setValue(selectedDesignation);
+                                designationId.setValue(selectedDesignation);
 
-                        saveButton.setText("Update");
+                                saveButton.setText("Update");
 
-                        isEdit = true;
+                                isEdit = true;
 
-                        employeeDialog.open();
-                    }
+                                employeeDialog.open();
+                        }
                 });
     }
 
@@ -526,16 +600,25 @@ public class EmployeeView extends VerticalLayout {
 
         try {
 
-            binder.writeBean(currentEmployee);
+                binder.writeBean(currentEmployee);
 
-            employeeService.saveEmployee(currentEmployee);
-             
-            if(isEdit){
-                NotificationUtil.success("Employee updated successfully");
-            }
-            else{
-                NotificationUtil.success("Employee saved successfully");
-            }
+                EmployeeDTO savedEmployee = employeeService.saveEmployee(currentEmployee);
+                
+                if(!isEdit) {
+
+                        NotificationUtil.success(
+
+                                "Employee saved successfully.\nPassword : "
+
+                                + savedEmployee.getGeneratedPassword()
+                        );
+                }
+                else {
+
+                        NotificationUtil.success(
+                                "Employee updated successfully"
+                        );
+                }
             
             isEdit = !isEdit;
 

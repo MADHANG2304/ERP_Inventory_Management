@@ -14,6 +14,18 @@ public class EmployeeDTO {
 
     private String employeeName;
 
+    private Long roleId;
+
+    private String roleName;
+
+    private Long managerEmployeeId;
+
+    private String managerEmployeeName;
+
+    private String username;
+
+    private String generatedPassword;
+
     private String mobileNumber;
 
     private String email;
@@ -30,14 +42,21 @@ public class EmployeeDTO {
     }
 
     public EmployeeDTO(Long employeeId, Long departmentId, String departmentName, Long designationId,
-            String designationName, String employeeName, String mobileNumber, String email, String gender, String state,
-            String city, Boolean isActive) {
+            String designationName, String employeeName, Long roleId, String roleName, Long managerEmployeeId,
+            String managerEmployeeName, String username, String generatedPassword, String mobileNumber, String email,
+            String gender, String state, String city, Boolean isActive) {
         this.employeeId = employeeId;
         this.departmentId = departmentId;
         this.departmentName = departmentName;
         this.designationId = designationId;
         this.designationName = designationName;
         this.employeeName = employeeName;
+        this.roleId = roleId;
+        this.roleName = roleName;
+        this.managerEmployeeId = managerEmployeeId;
+        this.managerEmployeeName = managerEmployeeName;
+        this.username = username;
+        this.generatedPassword = generatedPassword;
         this.mobileNumber = mobileNumber;
         this.email = email;
         this.gender = gender;
@@ -45,6 +64,61 @@ public class EmployeeDTO {
         this.city = city;
         this.isActive = isActive;
     }
+
+
+
+
+
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
+    }
+
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+
+    public Long getManagerEmployeeId() {
+        return managerEmployeeId;
+    }
+
+
+    public void setManagerEmployeeId(Long managerEmployeeId) {
+        this.managerEmployeeId = managerEmployeeId;
+    }
+
+
+    public String getManagerEmployeeName() {
+        return managerEmployeeName;
+    }
+
+
+    public void setManagerEmployeeName(String managerEmployeeName) {
+        this.managerEmployeeName = managerEmployeeName;
+    }
+
+
+    public String getUsername() {
+        return username;
+    }
+
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
 
     public Long getEmployeeId() {
         return employeeId;
@@ -140,6 +214,14 @@ public class EmployeeDTO {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public String getGeneratedPassword() {
+        return generatedPassword;
+    }
+
+    public void setGeneratedPassword(String generatedPassword) {
+        this.generatedPassword = generatedPassword;
     }
 
     

@@ -15,128 +15,82 @@ import java.util.List;
 @Service
 public class AuditLogService {
 
-    private final AuditLogRepository
-            auditLogRepository;
+        private final AuditLogRepository auditLogRepository;
 
-    private final SecurityService
-            securityService;
+        private final SecurityService securityService;
 
-    public AuditLogService(
-            AuditLogRepository auditLogRepository,
-            SecurityService securityService
-    ) {
+        public AuditLogService(
+                        AuditLogRepository auditLogRepository,
+                        SecurityService securityService) {
 
-        this.auditLogRepository =
-                auditLogRepository;
+                this.auditLogRepository = auditLogRepository;
 
-        this.securityService =
-                securityService;
-    }
+                this.securityService = securityService;
+        }
 
-    public void logAction(
+        public void logAction(
 
-            String moduleName,
+                        String moduleName,
 
-            String actionType,
+                        String actionType,
 
-            String description
-    ) {
+                        String description) {
 
-        AuditLog log =
-                new AuditLog();
+                AuditLog log = new AuditLog();
 
-        log.setUsername(
-                securityService
-                        .getAuthenticatedUser()
-        );
+                log.setUsername(securityService.getAuthenticatedUser());
 
-        log.setRoleName(
-                securityService
-                        .getAuthenticatedRole()
-        );
+                log.setRoleName(securityService.getAuthenticatedRole());
 
-        log.setModuleName(
-                moduleName
-        );
+                log.setModuleName(moduleName);
 
-        log.setActionType(
-                actionType
-        );
+                log.setActionType(actionType);
 
-        log.setDescription(
-                description
-        );
+                log.setDescription(description);
 
-        log.setActionTime(
-                LocalDateTime.now()
-        );
+                log.setActionTime(LocalDateTime.now());
 
-        auditLogRepository.save(log);
-    }
+                auditLogRepository.save(log);
+        }
 
-    public List<AuditLogDTO>
-    getAllLogs() {
+        public List<AuditLogDTO> getAllLogs() {
 
-        return auditLogRepository
-                .findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
-    }
+                return auditLogRepository
+                                .findAll()
+                                .stream()
+                                .map(this::convertToDTO)
+                                .toList();
+        }
 
-    public List<AuditLogDTO>
-    searchLogs(
-            String keyword
-    ) {
+        public List<AuditLogDTO> searchLogs(String keyword) {
 
-        Specification<AuditLog>
-                specification =
+                Specification<AuditLog> specification = AuditLogSpecification.searchLogs(keyword);
 
-                AuditLogSpecification
-                        .searchLogs(keyword);
+                return auditLogRepository
+                                .findAll(specification)
+                                .stream()
+                                .map(this::convertToDTO)
+                                .toList();
+        }
 
-        return auditLogRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
-    }
+        private AuditLogDTO convertToDTO(AuditLog log) {
 
-    private AuditLogDTO convertToDTO(
-            AuditLog log
-    ) {
+                AuditLogDTO dto = new AuditLogDTO();
 
-        AuditLogDTO dto =
-                new AuditLogDTO();
+                dto.setAuditId(log.getAuditId());
 
-        dto.setAuditId(
-                log.getAuditId()
-        );
+                dto.setUsername(log.getUsername());
 
-        dto.setUsername(
-                log.getUsername()
-        );
+                dto.setRoleName(log.getRoleName());
 
-        dto.setRoleName(
-                log.getRoleName()
-        );
+                dto.setModuleName(log.getModuleName());
 
-        dto.setModuleName(
-                log.getModuleName()
-        );
+                dto.setActionType(log.getActionType());
 
-        dto.setActionType(
-                log.getActionType()
-        );
+                dto.setDescription(log.getDescription());
 
-        dto.setDescription(
-                log.getDescription()
-        );
+                dto.setActionTime(log.getActionTime());
 
-        dto.setActionTime(
-                log.getActionTime()
-        );
-
-        return dto;
-    }
+                return dto;
+        }
 }

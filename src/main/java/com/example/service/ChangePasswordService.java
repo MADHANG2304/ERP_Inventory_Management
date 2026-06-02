@@ -1,9 +1,9 @@
 package com.example.service;
 
 import com.example.dto.ChangePasswordDTO;
-import com.example.entity.User;
-import com.example.repository.UserRepository;
-import com.example.specification.UserSpecification;
+import com.example.entity.Employee;
+import com.example.repository.EmployeeRepository;
+import com.example.specification.EmployeeSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChangePasswordService {
 
-    private final UserRepository
-            userRepository;
+    private final EmployeeRepository
+            employeeRepository;
 
     private final PasswordEncoder
             passwordEncoder;
@@ -20,13 +20,13 @@ public class ChangePasswordService {
     private final AuditLogService auditLogService;
 
     public ChangePasswordService(
-            UserRepository userRepository,
+            EmployeeRepository employeeRepository,
             PasswordEncoder passwordEncoder,
             AuditLogService auditLogService
     ) {
 
-        this.userRepository =
-                userRepository;
+        this.employeeRepository =
+                employeeRepository;
 
         this.passwordEncoder =
                 passwordEncoder;
@@ -42,13 +42,13 @@ public class ChangePasswordService {
             ChangePasswordDTO dto
     ) {
 
-        Specification<User> specification =
+        Specification<Employee> specification =
 
-                UserSpecification
+                EmployeeSpecification
                         .hasUsername(username);
 
-        User user =
-                userRepository
+        Employee employee =
+                employeeRepository
                         .findOne(specification)
                         .orElseThrow(() ->
                                 new RuntimeException(
@@ -60,7 +60,7 @@ public class ChangePasswordService {
 
                 dto.getOldPassword(),
 
-                user.getPassword()
+                employee.getPassword()
         )) {
 
             throw new RuntimeException(
@@ -106,14 +106,14 @@ public class ChangePasswordService {
         );
         }
 
-        user.setPassword(
+        employee.setPassword(
 
                 passwordEncoder.encode(
                         dto.getNewPassword()
                 )
         );
 
-        userRepository.save(user);
+        employeeRepository.save(employee);
 
         auditLogService.logAction(
 
@@ -122,7 +122,7 @@ public class ChangePasswordService {
                 "PASSWORD_CHANGE",
 
                 "Password changed for : "
-                        + user.getUsername()
+                        + employee.getUsername()
         );
     }
 }

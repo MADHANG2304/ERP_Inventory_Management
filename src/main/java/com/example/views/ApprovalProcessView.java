@@ -33,594 +33,432 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "approval-process", layout = MainLayout.class)
 @PageTitle("Approval Process")
 @RolesAllowed({
-        "MANAGER",
-        "INVENTORY_ADMIN",
-        "SUPER_ADMIN",
-        "DEPARTMENT_HEAD"
+                "MANAGER",
+                "INVENTORY_ADMIN",
+                "SUPER_ADMIN",
+                "DEPARTMENT_HEAD"
 })
 public class ApprovalProcessView extends VerticalLayout {
 
-    private final ApprovalProcessService
-            approvalProcessService;
+        private final ApprovalProcessService approvalProcessService;
 
-    private final InventoryRequestService
-            inventoryRequestService;
+        private final InventoryRequestService inventoryRequestService;
 
-    private final Grid<RequestApprovalDTO>
-            grid =
-            new Grid<>(RequestApprovalDTO.class, false);
+        private final Grid<RequestApprovalDTO> grid = new Grid<>(RequestApprovalDTO.class, false);
 
-    private final String username;
+        private final String username;
 
-    private final String userRole;
+        private final String userRole;
 
-    private final TextField
-            requestSearchField =
-            new TextField();
+        private final TextField requestSearchField = new TextField();
 
-    private final ComboBox<ApprovalStatus>
-            statusFilter =
-            new ComboBox<>();
+        private final ComboBox<ApprovalStatus> statusFilter = new ComboBox<>();
 
-    private final ComboBox<ApprovalRole>
-            roleFilter =
-            new ComboBox<>();
+        private final ComboBox<ApprovalRole> roleFilter = new ComboBox<>();
 
-    private final Checkbox
-            currentLevelFilter =
-            new Checkbox(
-                    "Current Level Only"
-            );
+        private final Checkbox currentLevelFilter = new Checkbox("Current Level Only");
 
-    private final Button
-            clearFilterButton =
-            new Button("Clear");
+        private final Button clearFilterButton = new Button("Clear");
 
-    public ApprovalProcessView(
+        public ApprovalProcessView(
 
-            ApprovalProcessService
-                    approvalProcessService,
+                        ApprovalProcessService approvalProcessService,
 
-            SecurityService securityService,
+                        SecurityService securityService,
 
-            InventoryRequestService
-                    inventoryRequestService
-    ) {
+                        InventoryRequestService inventoryRequestService) {
 
-        this.approvalProcessService =
-                approvalProcessService;
+                this.approvalProcessService = approvalProcessService;
 
-        this.inventoryRequestService =
-                inventoryRequestService;
+                this.inventoryRequestService = inventoryRequestService;
 
-        this.username =
-                securityService
-                        .getAuthenticatedUser();
+                this.username = securityService.getAuthenticatedUser();
 
-        this.userRole =
-                securityService
-                        .getAuthenticatedRole();
+                this.userRole = securityService.getAuthenticatedRole();
 
-        setSizeFull();
+                setSizeFull();
 
-        setPadding(true);
+                setPadding(true);
 
-        setSpacing(true);
+                setSpacing(true);
 
-        getStyle()
+                getStyle()
 
-                .set("background", "#f5f7fb")
+                                .set("background", "#f5f7fb")
 
-                .set("padding", "20px");
+                                .set("padding", "20px");
 
-        // PAGE HEADER
+                // PAGE HEADER
 
-        H2 heading =
-                new H2(
-                        "Approval Requests"
-                );
+                H2 heading = new H2("Approval Requests");
 
-        heading.getStyle()
+                heading.getStyle()
 
-                .set("margin", "0")
+                                .set("margin", "0")
 
-                .set("font-size", "32px")
+                                .set("font-size", "32px")
 
-                .set("font-weight", "700")
+                                .set("font-weight", "700")
 
-                .set("color", "#0f172a");
+                                .set("color", "#0f172a");
 
-        Span subHeading =
-                new Span(
-                        "Manage pending approval requests"
-                );
+                Span subHeading = new Span("Manage pending approval requests");
 
-        subHeading.getStyle()
+                subHeading.getStyle()
 
-                .set("font-size", "15px")
+                                .set("font-size", "15px")
 
-                .set("color", "#64748b");
+                                .set("color", "#64748b");
 
-        VerticalLayout headingLayout =
-                new VerticalLayout(
-                        heading,
-                        subHeading
-                );
+                VerticalLayout headingLayout = new VerticalLayout(
+                                heading,
+                                subHeading);
 
-        headingLayout.setPadding(true);
+                headingLayout.setPadding(true);
 
-        headingLayout.setSpacing(true);
+                headingLayout.setSpacing(true);
 
-        // FILTERS
+                // FILTERS
 
-        configureFilters();
+                configureFilters();
 
-        HorizontalLayout filterLayout =
-                new HorizontalLayout();
+                HorizontalLayout filterLayout = new HorizontalLayout();
 
-        filterLayout.setWidthFull();
+                filterLayout.setWidthFull();
 
-        filterLayout.setSpacing(true);
+                filterLayout.setSpacing(true);
 
-        filterLayout.setAlignItems(
-                Alignment.END
-        );
+                filterLayout.setAlignItems(Alignment.END);
 
-        filterLayout.add(
-                requestSearchField
-        );
+                filterLayout.add(requestSearchField);
 
-        if(!userRole.equals("ROLE_MANAGER")
-                &&
-                !userRole.equals("ROLE_INVENTORY_ADMIN")) {
+                if (userRole.equals("ROLE_SUPER_ADMIN")) {
 
-            filterLayout.add(
-                    statusFilter,
-                    roleFilter,
-                    currentLevelFilter
-            );
+                        filterLayout.add(
+                                        statusFilter,
+                                        roleFilter
+                                        // currentLevelFilter
+                                );
+                }
+
+                filterLayout.add(clearFilterButton);
+
+                configureGrid();
+
+                add(
+                                headingLayout,
+                                filterLayout,
+                                grid);
+
+                refreshGrid();
         }
 
-        filterLayout.add(
-                clearFilterButton
-        );
+        private void configureGrid() {
 
-        // GRID
+                grid.addThemeVariants(
 
-        configureGrid();
+                                GridVariant.LUMO_ROW_STRIPES,
 
-        add(
-                headingLayout,
-                filterLayout,
-                grid
-        );
+                                GridVariant.LUMO_COLUMN_BORDERS);
 
-        refreshGrid();
-    }
+                grid.addColumn(
+                                RequestApprovalDTO::getRequestNumber).setHeader("Request No");
 
-    private void configureGrid() {
+                grid.addColumn(
+                                RequestApprovalDTO::getApprovalOrder).setHeader("Level");
 
-        grid.addThemeVariants(
-
-                GridVariant.LUMO_ROW_STRIPES,
-
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
-
-        grid.addColumn(
-                RequestApprovalDTO::getRequestNumber
-        ).setHeader("Request No");
-
-        grid.addColumn(
-                RequestApprovalDTO::getApprovalOrder
-        ).setHeader("Level");
-
-        grid.addColumn(approval ->
+                grid.addColumn(approval ->
 
                 approval.getApprovalRole()
-                        .name()
+                                .name()
 
-        ).setHeader("Role");
+                ).setHeader("Role");
 
-        grid.addComponentColumn(approval -> {
+                grid.addComponentColumn(approval -> {
 
-            Span badge =
-                    new Span(
-                            approval.getApprovalStatus()
-                                    .name()
-                    );
-
-            badge.getStyle()
-
-                    .set("padding", "5px 12px")
-
-                    .set("border-radius", "12px")
-
-                    .set("font-size", "12px")
-
-                    .set("font-weight", "600")
-
-                    .set("color", "white");
-
-            switch (
-                    approval.getApprovalStatus()
-            ) {
-
-                case PENDING ->
+                        Span badge = new Span(approval.getApprovalStatus().name());
 
                         badge.getStyle()
-                                .set("background", "#f59e0b");
 
-                case APPROVED ->
+                                        .set("padding", "5px 12px")
 
-                        badge.getStyle()
-                                .set("background", "#16a34a");
+                                        .set("border-radius", "12px")
 
-                case REJECTED ->
+                                        .set("font-size", "12px")
 
-                        badge.getStyle()
-                                .set("background", "#dc2626");
-            }
+                                        .set("font-weight", "600")
 
-            return badge;
+                                        .set("color", "white");
 
-        }).setHeader("Status");
+                        switch (approval.getApprovalStatus()) {
 
-        grid.addComponentColumn(approval -> {
+                                case PENDING ->
 
-            Button viewButton = new Button("View");
+                                        badge.getStyle()
+                                                        .set("background", "#f59e0b");
 
-            viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                                case APPROVED ->
 
-            viewButton.getStyle()
+                                        badge.getStyle()
+                                                        .set("background", "#16a34a");
 
-                    .set("border-radius", "8px")
+                                case REJECTED ->
 
-                    .set("font-size", "13px");
+                                        badge.getStyle()
+                                                        .set("background", "#dc2626");
+                        }
 
-            viewButton.addClickListener(event -> openApprovalDialog(approval));
+                        return badge;
 
-            return viewButton;
+                }).setHeader("Status");
 
-        }).setHeader("Action");
+                grid.addComponentColumn(approval -> {
 
-        grid.setWidthFull();
+                        Button viewButton = new Button("View");
 
-        grid.setHeight("700px");
+                        viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        grid.getStyle()
+                        viewButton.getStyle()
 
-                .set("background", "white")
+                                        .set("border-radius", "8px")
 
-                .set("border-radius", "12px")
+                                        .set("font-size", "13px");
 
-                .set("border", "1px solid #dbe2ea");
-    }
+                        viewButton.addClickListener(event -> openApprovalDialog(approval));
 
-    private void openApprovalDialog(RequestApprovalDTO approvalDTO) {
+                        return viewButton;
 
-        Dialog dialog = new Dialog();
+                }).setHeader("Action");
 
-        dialog.setWidth("700px");
+                grid.setWidthFull();
 
-        dialog.setHeaderTitle("Approval Details");
+                grid.setHeight("700px");
 
-        InventoryRequestDTO request = inventoryRequestService.getRequestById(approvalDTO.getRequestId());
+                grid.getStyle()
 
-        // REQUEST INFO
+                                .set("background", "white")
 
-        Span requestInfo = new Span(
+                                .set("border-radius", "12px")
 
-                        "Request No : " + approvalDTO.getRequestNumber()
-                        
-                        + " | Role : " + approvalDTO.getApprovalRole().name()
-                
+                                .set("border", "1px solid #dbe2ea");
+        }
+
+        private void openApprovalDialog(RequestApprovalDTO approvalDTO) {
+
+                Dialog dialog = new Dialog();
+
+                dialog.setWidth("700px");
+
+                dialog.setHeaderTitle("Approval Details");
+
+                InventoryRequestDTO request = inventoryRequestService.getRequestById(approvalDTO.getRequestId());
+
+                // REQUEST INFO
+
+                Span requestInfo = new Span(
+
+                                "Request No : " + approvalDTO.getRequestNumber()
+
+                                                + " | Role : " + approvalDTO.getApprovalRole().name()
+
                 );
 
-        requestInfo.getStyle()
+                requestInfo.getStyle()
 
-                .set("font-size", "14px")
+                                .set("font-size", "14px")
 
-                .set("font-weight", "600")
+                                .set("font-weight", "600")
 
-                .set("color", "#475569");
+                                .set("color", "#475569");
 
-        // REMARKS
+                // REMARKS
 
-        TextArea requestRemarks = new TextArea("Request Remarks");
+                TextArea requestRemarks = new TextArea("Request Remarks");
 
-        requestRemarks.setWidthFull();
+                requestRemarks.setWidthFull();
 
-        requestRemarks.setReadOnly(true);
+                requestRemarks.setReadOnly(true);
 
-        requestRemarks.setValue(
-                request.getRemarks() != null ? request.getRemarks() : ""
-        );
+                requestRemarks.setValue(
+                                request.getRemarks() != null ? request.getRemarks() : "");
 
-        // ITEM GRID
+                // ITEM GRID
 
-        Grid<RequestItemDTO> itemGrid =
-                new Grid<>(
-                        RequestItemDTO.class,
-                        false
-                );
+                Grid<RequestItemDTO> itemGrid = new Grid<>(RequestItemDTO.class, false);
 
-        itemGrid.addThemeVariants(
-                GridVariant.LUMO_ROW_STRIPES
-        );
+                itemGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-        itemGrid.addColumn(
-                RequestItemDTO::getItemName
-        ).setHeader("Item");
+                itemGrid.addColumn(
+                                RequestItemDTO::getItemName).setHeader("Item");
 
-        itemGrid.addColumn(
-                RequestItemDTO::getItemCode
-        ).setHeader("Code");
+                itemGrid.addColumn(
+                                RequestItemDTO::getItemCode).setHeader("Code");
 
-        itemGrid.addColumn(
-                RequestItemDTO::getRequestedQuantity
-        ).setHeader("Qty");
+                itemGrid.addColumn(
+                                RequestItemDTO::getRequestedQuantity).setHeader("Qty");
 
-        itemGrid.setItems(
-                request.getRequestItems()
-        );
+                itemGrid.setItems(request.getRequestItems());
 
-        itemGrid.setHeight("220px");
+                itemGrid.setHeight("220px");
 
-        // COMMENTS
+                // COMMENTS
 
-        TextArea comments =
-                new TextArea(
-                        "Comments"
-                );
+                TextArea comments = new TextArea("Comments");
 
-        comments.setWidthFull();
+                comments.setWidthFull();
 
-        comments.setPlaceholder(
-                "Enter comments..."
-        );
+                comments.setPlaceholder("Enter comments...");
 
-        // BUTTONS
+                // BUTTONS
 
-        Button approveButton =
-                new Button(
-                        "Approve",
-                        VaadinIcon.CHECK.create()
-                );
+                Button approveButton = new Button("Approve", VaadinIcon.CHECK.create());
 
-        approveButton.addThemeVariants(
-                ButtonVariant.LUMO_SUCCESS
-        );
+                approveButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
-        Button rejectButton =
-                new Button(
-                        "Reject",
-                        VaadinIcon.CLOSE.create()
-                );
+                Button rejectButton = new Button("Reject", VaadinIcon.CLOSE.create());
 
-        rejectButton.addThemeVariants(
-                ButtonVariant.LUMO_ERROR
-        );
+                rejectButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        Button cancelButton =
-                new Button(
-                        "Close"
-                );
+                Button cancelButton = new Button("Close");
 
-        cancelButton.addThemeVariants(
-                ButtonVariant.LUMO_TERTIARY
-        );
+                cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-        approveButton.addClickListener(event -> {
+                approveButton.addClickListener(event -> {
 
-            try {
+                        try {
+                                approvalProcessService.approveRequest(
 
-                approvalProcessService
-                        .approveRequest(
+                                                approvalDTO.getApprovalId(),
 
-                                approvalDTO.getApprovalId(),
+                                                comments.getValue());
 
-                                comments.getValue()
-                        );
+                                NotificationUtil.success("Request approved successfully");
 
-                NotificationUtil.success(
-                        "Request approved successfully"
-                );
+                                dialog.close();
 
-                dialog.close();
+                                refreshGrid();
+
+                        } catch (Exception e) {
+
+                                NotificationUtil.error(e.getMessage());
+                        }
+                });
+
+                rejectButton.addClickListener(event -> {
+
+                        try {
+                                approvalProcessService.rejectRequest(
+
+                                                approvalDTO.getApprovalId(),
+
+                                                comments.getValue());
+
+                                NotificationUtil.success("Request rejected successfully");
+
+                                dialog.close();
+
+                                refreshGrid();
+
+                        } catch (Exception e) {
+
+                                NotificationUtil.error(e.getMessage());
+                        }
+                });
+
+                cancelButton.addClickListener(event -> dialog.close());
+
+                HorizontalLayout buttonLayout = new HorizontalLayout(
+
+                                cancelButton,
+
+                                rejectButton,
+
+                                approveButton);
+
+                buttonLayout.setWidthFull();
+
+                buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+
+                VerticalLayout layout = new VerticalLayout(
+
+                                requestInfo,
+
+                                // requestRemarks,
+
+                                itemGrid,
+
+                                comments,
+
+                                buttonLayout);
+
+                layout.setSpacing(true);
+
+                layout.setPadding(false);
+
+                dialog.add(layout);
+
+                dialog.open();
+        }
+
+        private void configureFilters() {
+
+                requestSearchField.setPlaceholder("Search Request No");
+
+                requestSearchField.setPrefixComponent(VaadinIcon.SEARCH.create());
+
+                requestSearchField.setWidth("260px");
+
+                statusFilter.setPlaceholder("Approval Status");
+
+                roleFilter.setPlaceholder("Approval Role");
+
+                statusFilter.setItems(ApprovalStatus.values());
+
+                roleFilter.setItems(ApprovalRole.values());
+
+                requestSearchField.addValueChangeListener(event -> applyFilters());
+
+                statusFilter.addValueChangeListener(event -> applyFilters());
+
+                roleFilter.addValueChangeListener(event -> applyFilters());
+
+                currentLevelFilter.addValueChangeListener(event -> applyFilters());
+
+                clearFilterButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+                clearFilterButton.addClickListener(event -> clearFilters());
+        }
+
+        private void applyFilters() {
+
+                ApprovalFilterDTO filterDTO = new ApprovalFilterDTO();
+
+                filterDTO.setRequestNumber(requestSearchField.getValue());
+
+                filterDTO.setApprovalStatus(statusFilter.getValue());
+
+                filterDTO.setApprovalRole(roleFilter.getValue());
+
+                filterDTO.setCurrentLevel(currentLevelFilter.getValue() ? true : null);
+
+                grid.setItems(approvalProcessService.filterApprovals(filterDTO));
+        }
+
+        private void clearFilters() {
+
+                requestSearchField.clear();
+
+                statusFilter.clear();
+
+                roleFilter.clear();
+
+                currentLevelFilter.clear();
 
                 refreshGrid();
+        }
 
-            } catch (Exception e) {
+        private void refreshGrid() {
 
-                NotificationUtil.error(
-                        e.getMessage()
-                );
-            }
-        });
-
-        rejectButton.addClickListener(event -> {
-
-            try {
-
-                approvalProcessService
-                        .rejectRequest(
-
-                                approvalDTO.getApprovalId(),
-
-                                comments.getValue()
-                        );
-
-                NotificationUtil.success(
-                        "Request rejected successfully"
-                );
-
-                dialog.close();
-
-                refreshGrid();
-
-            } catch (Exception e) {
-
-                NotificationUtil.error(
-                        e.getMessage()
-                );
-            }
-        });
-
-        cancelButton.addClickListener(event ->
-                dialog.close()
-        );
-
-        HorizontalLayout buttonLayout =
-                new HorizontalLayout(
-
-                        cancelButton,
-
-                        rejectButton,
-
-                        approveButton
-                );
-
-        buttonLayout.setWidthFull();
-
-        buttonLayout.setJustifyContentMode(
-                JustifyContentMode.END
-        );
-
-        VerticalLayout layout =
-                new VerticalLayout(
-
-                        requestInfo,
-
-                        // requestRemarks,
-
-                        itemGrid,
-
-                        comments,
-
-                        buttonLayout
-                );
-
-        layout.setSpacing(true);
-
-        layout.setPadding(false);
-
-        dialog.add(layout);
-
-        dialog.open();
-    }
-
-    private void configureFilters() {
-
-        requestSearchField.setPlaceholder(
-                "Search Request No"
-        );
-
-        requestSearchField.setPrefixComponent(
-                VaadinIcon.SEARCH.create()
-        );
-
-        requestSearchField.setWidth("260px");
-
-        statusFilter.setPlaceholder(
-                "Approval Status"
-        );
-
-        roleFilter.setPlaceholder(
-                "Approval Role"
-        );
-
-        statusFilter.setItems(
-                ApprovalStatus.values()
-        );
-
-        roleFilter.setItems(
-                ApprovalRole.values()
-        );
-
-        requestSearchField
-                .addValueChangeListener(
-                        event -> applyFilters()
-                );
-
-        statusFilter
-                .addValueChangeListener(
-                        event -> applyFilters()
-                );
-
-        roleFilter
-                .addValueChangeListener(
-                        event -> applyFilters()
-                );
-
-        currentLevelFilter
-                .addValueChangeListener(
-                        event -> applyFilters()
-                );
-
-        clearFilterButton.addThemeVariants(
-                ButtonVariant.LUMO_TERTIARY
-        );
-
-        clearFilterButton.addClickListener(
-                event -> clearFilters()
-        );
-    }
-
-    private void applyFilters() {
-
-        ApprovalFilterDTO filterDTO =
-                new ApprovalFilterDTO();
-
-        filterDTO.setRequestNumber(
-                requestSearchField.getValue()
-        );
-
-        filterDTO.setApprovalStatus(
-                statusFilter.getValue()
-        );
-
-        filterDTO.setApprovalRole(
-                roleFilter.getValue()
-        );
-
-        filterDTO.setCurrentLevel(
-
-                !userRole.equals("ROLE_SUPER_ADMIN")
-
-                        ? true
-
-                        : null
-        );
-
-        grid.setItems(
-
-                approvalProcessService
-                        .filterApprovals(filterDTO)
-        );
-    }
-
-    private void clearFilters() {
-
-        requestSearchField.clear();
-
-        statusFilter.clear();
-
-        roleFilter.clear();
-
-        currentLevelFilter.clear();
-
-        refreshGrid();
-    }
-
-    private void refreshGrid() {
-
-        grid.setItems(
-
-                approvalProcessService
-                        .getPendingApprovals(
-                                username
-                        )
-        );
-    }
+                grid.setItems(approvalProcessService.getPendingApprovals(username));
+        }
 }

@@ -15,7 +15,7 @@ import com.example.views.InventoryRequestView;
 import com.example.views.InventoryTransactionView;
 import com.example.views.IssueView;
 import com.example.views.ReturnView;
-import com.example.views.UserView;
+// import com.example.views.UserView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -145,14 +145,14 @@ public class SideMenu extends SideNav {
                     )
             );
 
-            addItem(
-                    createModernNavItem(
-                            "Users",
-                            UserView.class,
-                            VaadinIcon.USER,
-                            "#f59e0b"
-                    )
-            );
+        //     addItem(
+        //             createModernNavItem(
+        //                     "Users",
+        //                     UserView.class,
+        //                     VaadinIcon.USER,
+        //                     "#f59e0b"
+        //             )
+        //     );
 
             addSectionTitle("WORKFLOW");
 

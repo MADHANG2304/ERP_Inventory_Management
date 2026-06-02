@@ -11,10 +11,9 @@ import com.example.dto.InventoryRequestDTO;
 import com.example.dto.RequestItemDTO;
 import com.example.dto.ReturnedItemDTO;
 import com.example.entity.Employee;
-import com.example.entity.User;
 import com.example.enums.IssueStatus;
 import com.example.enums.RequestStatus;
-import com.example.repository.UserRepository;
+import com.example.repository.EmployeeRepository;
 import com.example.security.SecurityService;
 import com.example.service.ApprovalProgressService;
 import com.example.service.InventoryRequestService;
@@ -51,7 +50,7 @@ public class InventoryRequestView extends VerticalLayout {
 
     private final InventoryRequestService inventoryRequestService;
 
-    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
 
     private final SecurityService securityService;
 
@@ -123,7 +122,7 @@ public class InventoryRequestView extends VerticalLayout {
 
     public InventoryRequestView(
         InventoryRequestService inventoryRequestService,
-        UserRepository userRepository,
+        EmployeeRepository employeeRepository,
         SecurityService securityService,
         ApprovalProgressService approvalProgressService,
         IssueService issuedService,
@@ -131,7 +130,7 @@ public class InventoryRequestView extends VerticalLayout {
 
         this.inventoryRequestService = inventoryRequestService;
 
-        this.userRepository = userRepository;
+        this.employeeRepository = employeeRepository;
 
         this.securityService = securityService;
 
@@ -498,8 +497,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         .set("overflow", "hidden")
 
-                        .set("box-shadow",
-                                "0 4px 16px rgba(0,0,0,0.08)");
+                        .set("box-shadow", "0 4px 16px rgba(0,0,0,0.08)");
         }
 
     private void configureFilters() {
@@ -631,8 +629,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 returnedGrid.addComponentColumn(item -> {
 
-                        Span status =
-                                new Span(item.getIssueStatus().name());
+                        Span status = new Span(item.getIssueStatus().name());
 
                         String color = "#475569";
 
@@ -733,9 +730,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         requestsTab = createTabButton(
                                 "All Requests",
-                                inventoryRequestService
-                                        .getAllRequests()
-                                        .size(),
+                                inventoryRequestService.getAllRequests().size(),
                                 "#838585"
                         );
 
@@ -744,8 +739,7 @@ public class InventoryRequestView extends VerticalLayout {
                                 (int) inventoryRequestService
                                         .getAllRequests()
                                         .stream()
-                                        .filter(request ->
-                                                request.getRequestStatus() == RequestStatus.PENDING_APPROVAL).count(),
+                                        .filter(request -> request.getRequestStatus() == RequestStatus.PENDING_APPROVAL).count(),
                                 "#838585"
                         );
 
@@ -754,8 +748,7 @@ public class InventoryRequestView extends VerticalLayout {
                                 (int) inventoryRequestService
                                         .getAllRequests()
                                         .stream()
-                                        .filter(request ->
-                                                request.getRequestStatus() == RequestStatus.APPROVED).count(),
+                                        .filter(request -> request.getRequestStatus() == RequestStatus.APPROVED).count(),
                                 "#838585"
                         );
 
@@ -909,9 +902,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         Span labelSpan = new Span(label);
 
-                        labelSpan.getStyle()
-                                
-                                .set("font-weight", "600");
+                        labelSpan.getStyle().set("font-weight", "600");
 
                         Span countSpan = new Span(String.valueOf(count));
 
@@ -986,9 +977,7 @@ public class InventoryRequestView extends VerticalLayout {
                         inventoryRequestService
                                 .getAllRequests()
                                 .stream()
-
-                                .filter(request ->
-                                        request.getRequestStatus().name().equals("APPROVED"))
+                                .filter(request -> request.getRequestStatus().name().equals("APPROVED"))
                                 .toList()
                 );
 
@@ -1003,11 +992,7 @@ public class InventoryRequestView extends VerticalLayout {
                         inventoryRequestService
                                 .getAllRequests()
                                 .stream()
-
-                                .filter(request ->
-                                        request.getRequestStatus() == RequestStatus.PENDING_APPROVAL
-                                )
-
+                                .filter(request -> request.getRequestStatus() == RequestStatus.PENDING_APPROVAL)
                                 .toList();
 
                 requestGrid.setItems(requestedRequests);
@@ -1167,8 +1152,7 @@ public class InventoryRequestView extends VerticalLayout {
                         .set("box-shadow",
                                 "0 6px 18px rgba(0,0,0,0.08)");
 
-                requestGrid.asSingleSelect()
-                        .addValueChangeListener(event -> {
+                requestGrid.asSingleSelect().addValueChangeListener(event -> {
 
                                 if(event.getValue() != null) {
 
@@ -1183,7 +1167,7 @@ public class InventoryRequestView extends VerticalLayout {
                         });
         }
 
-    private void addItem() {
+        private void addItem() {
 
                 if(itemComboBox.getValue() == null) {
 
@@ -1281,55 +1265,57 @@ public class InventoryRequestView extends VerticalLayout {
                 itemGrid.getDataProvider().refreshAll();
         }
 
-    private void saveDraft() {
+        private void saveDraft() {
 
-        try {
+                try {
 
-            prepareRequest();
+                        prepareRequest();
 
-            InventoryRequestDTO savedRequest = inventoryRequestService.saveDraft(currentRequest);
+                        InventoryRequestDTO savedRequest = inventoryRequestService.saveDraft(currentRequest);
 
-            NotificationUtil.success("Draft saved successfully");
+                        NotificationUtil.success("Draft saved successfully");
 
-            requestNumber.setValue(savedRequest.getRequestNumber());
+                        requestNumber.setValue(savedRequest.getRequestNumber());
 
-            requestStatus.setValue(savedRequest.getRequestStatus().name());
-            
-            clearForm();
-            
-            refreshRequestGrid();
-            
-            requestDialog.close();
+                        requestStatus.setValue(savedRequest.getRequestStatus().name());
+                        
+                        clearForm(); 
+                        
+                        refreshRequestGrid();
+                        
+                        requestDialog.close();
 
-        } catch (Exception e) {
-            NotificationUtil.error(e.getMessage());
+                } catch (Exception e) {
+                        
+                        NotificationUtil.error(e.getMessage());
+                }
         }
-    }
 
-    private void submitRequest() {
+        private void submitRequest() {
 
-        try {
+                try {
 
-            prepareRequest();
+                        prepareRequest();
 
-            InventoryRequestDTO savedRequest = inventoryRequestService.submitRequest(currentRequest);
+                        InventoryRequestDTO savedRequest = inventoryRequestService.submitRequest(currentRequest);
 
-            NotificationUtil.success("Request Submitted Successfully");
+                        NotificationUtil.success("Request Submitted Successfully");
 
-            requestNumber.setValue(savedRequest.getRequestNumber());
+                        requestNumber.setValue(savedRequest.getRequestNumber());
 
-            requestStatus.setValue(savedRequest.getRequestStatus().name());
+                        requestStatus.setValue(savedRequest.getRequestStatus().name());
 
-            clearForm();
+                        clearForm();
 
-            refreshRequestGrid();
+                        refreshRequestGrid();
 
-            requestDialog.close();
+                        requestDialog.close();
 
-        } catch (Exception e) {
-            NotificationUtil.error(e.getMessage());
+                } catch (Exception e) {
+                        
+                        NotificationUtil.error(e.getMessage());
+                }
         }
-    }
 
         private void prepareRequest() {
 
@@ -1346,27 +1332,27 @@ public class InventoryRequestView extends VerticalLayout {
                 currentRequest.setRequestItems(new ArrayList<>(requestItems));
         }
 
-    private void loadLoggedInEmployee() {
+        private void loadLoggedInEmployee() {
 
-        String username = securityService.getAuthenticatedUser();
-        
-        User user =
-                userRepository.findAll()
-                        .stream()
-                        .filter(u -> u.getUsername().equals(username))
-                        .findFirst()
-                        .orElseThrow(() ->
-                                new RuntimeException("User not found")
-                        );
+                String username = securityService.getAuthenticatedUser();
+                
+                Employee employee =
+                        employeeRepository.findAll()
+                                .stream()
+                                .filter(u -> u.getUsername().equals(username))
+                                .findFirst()
+                                .orElseThrow(() ->
+                                        new RuntimeException("User not found")
+                                );
 
-        if(user.getEmployee() == null){
-                throw new RuntimeException("Logged in user is not mapped to employee");
+                if(employee == null){
+                        throw new RuntimeException("Logged in user is not mapped to employee");
+                }
+
+                loggedInEmployee = employee;
         }
 
-        loggedInEmployee = user.getEmployee();
-    }
-
-    private String generateRequestNumber() {
+        private String generateRequestNumber() {
 
                 return "REQ-" + UUID.randomUUID()
                                 .toString()
@@ -1374,12 +1360,12 @@ public class InventoryRequestView extends VerticalLayout {
                                 .toUpperCase();
         }
 
-    private void refreshRequestGrid() {
+        private void refreshRequestGrid() {
 
-        requestGrid.setItems(
-                inventoryRequestService.getAllRequests()
-        );
-    }
+                requestGrid.setItems(
+                        inventoryRequestService.getAllRequests()
+                );
+        }
 
         private void clearForm() {
 
@@ -1407,6 +1393,7 @@ public class InventoryRequestView extends VerticalLayout {
         }
 
         private void cancelEditing() {
+               
                 requestGrid.deselectAll();
 
                 clearForm();
