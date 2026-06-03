@@ -187,8 +187,7 @@ public class InventoryItemView extends VerticalLayout{
 
         HorizontalLayout checkBoxLayout =
                 new HorizontalLayout(
-                        isReusable,
-                        allowReturn
+                        isReusable
                 );
 
         FormLayout formLayout = new FormLayout();

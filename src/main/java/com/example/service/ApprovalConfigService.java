@@ -86,6 +86,34 @@ public class ApprovalConfigService {
             config.getLevels().add(level);
         }
 
+        boolean exists = approvalConfigRepository
+                .findAll()
+                .stream()
+
+                .anyMatch(configs ->
+
+                        configs.getRequesterRole() == dto.getRequesterRole()
+
+                        &&
+
+                        configs.getRequestType() == dto.getRequestType()
+
+                        &&
+
+                        (dto.getConfigId() == null
+                                || !configs.getConfigId().equals(dto.getConfigId()))
+                );
+
+        if(exists) {
+
+        throw new RuntimeException(
+                "Workflow already exists for "
+                        + dto.getRequesterRole()
+                        + " and "
+                        + dto.getRequestType()
+        );
+        }
+
         ApprovalConfig savedConfig =
                 approvalConfigRepository.save(config);
 

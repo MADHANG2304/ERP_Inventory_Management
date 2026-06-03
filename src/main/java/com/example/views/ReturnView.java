@@ -127,6 +127,10 @@ public class ReturnView extends VerticalLayout {
         ).setHeader("Item Code");
 
         grid.addColumn(
+                ReturnedItemDTO::getReturnReferenceNumber
+        ).setHeader("Asset Ref");
+
+        grid.addColumn(
                 ReturnedItemDTO::getIssuedQuantity
         ).setHeader("Issued Qty");
 
@@ -213,12 +217,9 @@ public class ReturnView extends VerticalLayout {
                 new Span(
 
                         "Item : "
-
-                                + item.getItemName()
-
-                                + " | Available Qty : "
-
-                                + item.getIssuedQuantity()
+                        + item.getItemName()
+                        + " | Asset : "
+                        + item.getIssueReferenceNumber()
                 );
 
         itemInfo.getStyle()

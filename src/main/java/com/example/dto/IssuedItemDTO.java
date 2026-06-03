@@ -21,18 +21,19 @@ public class IssuedItemDTO {
     private Integer issuedQuantity;
 
     private LocalDateTime issuedDate;
-
-    private String issueReferenceNumber;
     
     private Long requestItemId;
+
+    private Long assetItemId;
+
+    private String assetReferenceNumber;
 
     
     public IssuedItemDTO() {
     }
     
     public IssuedItemDTO(Long issuedItemId, Long requestId, String requestNumber, String employeeName, String itemName,
-        String itemCode, Integer requestedQuantity, Integer issuedQuantity, LocalDateTime issuedDate,
-        String issueReferenceNumber) {
+        String itemCode, Integer requestedQuantity, Integer issuedQuantity, LocalDateTime issuedDate) {
         this.issuedItemId = issuedItemId;
         this.requestId = requestId;
         this.requestNumber = requestNumber;
@@ -42,8 +43,9 @@ public class IssuedItemDTO {
         this.requestedQuantity = requestedQuantity;
         this.issuedQuantity = issuedQuantity;
         this.issuedDate = issuedDate;
-        this.issueReferenceNumber = issueReferenceNumber;
     }
+
+
     
     public Long getRequestItemId() {
         return requestItemId;
@@ -125,14 +127,28 @@ public class IssuedItemDTO {
         this.issuedDate = issuedDate;
     }
 
-    public String getIssueReferenceNumber() {
-        return issueReferenceNumber;
+    // public String getIssueReferenceNumber() {
+    //     return assetReferenceNumber;
+    // }
+
+    // public void setIssueReferenceNumber(String assetReferenceNumber) {
+    //     this.assetReferenceNumber = assetReferenceNumber;
+    // }
+
+    public String getAssetReferenceNumber() {
+        return assetReferenceNumber;
     }
 
-    public void setIssueReferenceNumber(String issueReferenceNumber) {
-        this.issueReferenceNumber = issueReferenceNumber;
+    public void setAssetReferenceNumber(String assetReferenceNumber) {
+        this.assetReferenceNumber = assetReferenceNumber;
     }
 
+    public Long getAssetItemId(){
+        return assetItemId;
+    }
 
+    public void setAssetItemId(Long assetItemId){
+        this.assetItemId = assetItemId;
+    }
     
 }

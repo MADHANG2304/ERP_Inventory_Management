@@ -197,6 +197,12 @@ public class IssueView extends VerticalLayout {
                         IssuedItemDTO::getItemCode
                         ).setHeader("Item Code");
 
+                grid.addColumn(
+                        dto -> dto.getAssetReferenceNumber() == null
+                                ? "-"
+                                : dto.getAssetReferenceNumber()
+                ).setHeader("Asset Ref");
+
                 grid.addComponentColumn(item -> {
 
                         Span quantityBadge = new Span(String.valueOf(item.getRequestedQuantity()));
@@ -249,6 +255,17 @@ public class IssueView extends VerticalLayout {
                                         + " | "
 
                                         + selectedItem.getItemName()
+
+                                        + " | "
+
+                                        + (
+
+                                                selectedItem.getAssetReferenceNumber() != null
+
+                                                        ? selectedItem.getAssetReferenceNumber()
+
+                                                        : "Consumable"
+                                        )
                                 );
 
                                 } else {

@@ -1,32 +1,38 @@
 package com.example.views;
 
 import com.example.base.ui.MainLayout;
+import com.example.dto.AssetItemDTO;
 import com.example.dto.InventoryCategoryDTO;
 import com.example.dto.InventoryItemDTO;
 import com.example.dto.InventoryStockDTO;
 import com.example.enums.ApprovalType;
+import com.example.enums.AssetStatus;
 import com.example.enums.ItemStatus;
 import com.example.enums.UnitType;
+import com.example.service.AssetItemService;
 import com.example.service.InventoryItemService;
 import com.example.service.InventoryStockService;
 import com.example.utils.NotificationUtil;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -44,12 +50,16 @@ public class InventoryManagementView extends VerticalLayout {
 
     private final InventoryItemService itemService;
     private final InventoryStockService stockService;
+    private final AssetItemService assetItemService;
 
     private final Grid<InventoryItemDTO> itemGrid =
             new Grid<>(InventoryItemDTO.class, false);
 
     private final Grid<InventoryStockDTO> stockGrid =
             new Grid<>(InventoryStockDTO.class, false);
+
+    private final Grid<AssetItemDTO> assetGrid =
+            new Grid<>(AssetItemDTO.class,false);
 
     private final Dialog dialog = new Dialog();
 
@@ -95,13 +105,42 @@ public class InventoryManagementView extends VerticalLayout {
 
     private final Button saveButton = new Button("Save");
 
+        // ASSET DIALOG
+        private final Dialog assetDialog =
+                new Dialog();
+
+        private final ComboBox<InventoryItemDTO> assetItem =
+                new ComboBox<>("Item");
+
+        private final TextField assetReferenceNumber =
+                new TextField("Asset Reference Number");
+
+        private final TextField modelNumber =
+                new TextField("Model Number");
+
+        private final DatePicker purchaseDate =
+                new DatePicker("Purchase Date");
+
+        private final NumberField purchasePrice =
+                new NumberField("Purchase Price");
+
+        private final ComboBox<AssetStatus> assetStatus =
+                new ComboBox<>("Asset Status");
+
+        private final Button assetSaveButton =
+                new Button("Save");
+
+        private AssetItemDTO selectedAsset;
+
     public InventoryManagementView(
             InventoryItemService itemService,
-            InventoryStockService stockService
+            InventoryStockService stockService,
+            AssetItemService assetItemService
     ) {
 
         this.itemService = itemService;
         this.stockService = stockService;
+        this.assetItemService = assetItemService;
 
         setSizeFull();
 
@@ -109,15 +148,23 @@ public class InventoryManagementView extends VerticalLayout {
                 .set("background", "#f4f7fb")
                 .set("padding", "24px");
 
+        reusable.setValue(true);
+
         createHeader();
 
         configureItemGrid();
 
         configureStockGrid();
 
+        configureAssetGrid();
+
+        configureAssetDialog();
+
         configureDialog();
 
         refreshData();
+
+        add(assetDialog);
     }
 
     private void createHeader() {
@@ -186,9 +233,11 @@ public class InventoryManagementView extends VerticalLayout {
         // TABS
         Tab itemTab = new Tab("Items");
 
+        Tab assetTab = new Tab("Asset Items");
+
         Tab stockTab = new Tab("Stock");
 
-        Tabs tabs = new Tabs(itemTab, stockTab);
+        Tabs tabs = new Tabs(itemTab, assetTab, stockTab);
 
         tabs.setWidthFull();
 
@@ -197,16 +246,36 @@ public class InventoryManagementView extends VerticalLayout {
 
         tabs.addSelectedChangeListener(event -> {
 
-            content.removeAll();
+                content.removeAll();
 
-            if(event.getSelectedTab() == itemTab){
+                if(event.getSelectedTab() == itemTab){
 
-                content.add(itemGrid);
+                        content.add(itemGrid);
 
-            } else {
+                }
 
-                content.add(stockGrid);
-            }
+                else if(event.getSelectedTab() == assetTab){
+
+                        VerticalLayout assetLayout =
+                                new VerticalLayout(
+                                        createAssetHeader(),
+                                        assetGrid
+                                );
+
+                        assetLayout.setPadding(false);
+
+                        assetLayout.setSpacing(true);
+
+                        assetLayout.setSizeFull();
+
+                        content.add(assetLayout);
+
+                }
+
+                else {
+
+                        content.add(stockGrid);
+                }
         });
 
         add(
@@ -289,6 +358,30 @@ public class InventoryManagementView extends VerticalLayout {
                 InventoryStockDTO::getDamagedQuantity
         ).setHeader("Damaged");
 
+        stockGrid.addColumn(stock ->
+
+                Boolean.TRUE.equals(
+                        stock.getReusable()
+                )
+
+                        ? "Reusable"
+
+                        : "Consumable"
+
+        ).setHeader("Type");
+
+                stockGrid.addColumn(stock ->
+
+                Boolean.TRUE.equals(
+                        stock.getReusable()
+                )
+
+                        ? "Auto Calculated"
+
+                        : "Manual"
+
+        ).setHeader("Stock Mode");
+
         stockGrid.setHeight("650px");
 
         stockGrid.setWidthFull();
@@ -296,7 +389,59 @@ public class InventoryManagementView extends VerticalLayout {
         stockGrid.getStyle()
                 .set("background", "white")
                 .set("border-radius", "18px");
+
+        refreshData();
     }
+
+        private void configureAssetGrid() {
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getItemName
+                ).setHeader("Item");
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getAssetReferenceNumber
+                ).setHeader("Reference Number");
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getModelNumber
+                ).setHeader("Model Number");
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getPurchaseDate
+                ).setHeader("Purchase Date");
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getPurchasePrice
+                ).setHeader("Purchase Price");
+
+                assetGrid.addColumn(
+                        AssetItemDTO::getAssetStatus
+                ).setHeader("Status");
+
+                assetGrid.setWidthFull();
+
+                assetGrid.setHeight("650px");
+
+                assetGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
+
+                assetGrid.asSingleSelect()
+                        .addValueChangeListener(event -> {
+
+                                selectedAsset =
+                                        event.getValue();
+
+                                if(selectedAsset != null) {
+
+                                loadAssetToForm();
+
+                                assetDialog.open();
+                                }
+                        });
+        }
 
     private void configureDialog() {
 
@@ -337,12 +482,12 @@ public class InventoryManagementView extends VerticalLayout {
                 status,
                 description,
 
+                // allowReturn,
                 availableQty,
-                damagedQty,
-
-                reusable,
-                allowReturn
+                // damagedQty,
+                reusable
         );
+        
 
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0",1),
@@ -367,6 +512,22 @@ public class InventoryManagementView extends VerticalLayout {
             dialog.close();
 
             clearForm();
+        });
+
+        reusable.addValueChangeListener(event -> {
+
+                boolean reusableItem =
+                        Boolean.TRUE.equals(
+                                event.getValue()
+                        );
+
+                availableQty.setVisible(
+                        !reusableItem
+                );
+
+                // damagedQty.setVisible(
+                //         !reusableItem
+                // );
         });
 
         HorizontalLayout buttons =
@@ -442,9 +603,9 @@ public class InventoryManagementView extends VerticalLayout {
                     reusable.getValue()
             );
 
-            item.setAllowReturn(
-                    allowReturn.getValue()
-            );
+        //     item.setAllowReturn(
+        //             allowReturn.getValue()
+        //     );
 
             InventoryItemDTO savedItem =
                     itemService.saveItem(item);
@@ -479,14 +640,6 @@ public class InventoryManagementView extends VerticalLayout {
                     savedItem.getItemId()
             );
 
-            stockDTO.setAvailableQuantity(
-                    availableQty.getValue()
-            );
-
-            stockDTO.setDamagedQuantity(
-                    damagedQty.getValue()
-            );
-
             stockDTO.setIssuedQuantity(
 
                     existingStock != null
@@ -496,7 +649,22 @@ public class InventoryManagementView extends VerticalLayout {
                             : 0
             );
 
-            stockService.saveStock(stockDTO);
+                if(Boolean.FALSE.equals(
+                        savedItem.getIsReusable()
+                )) {
+
+                        stockDTO.setAvailableQuantity(
+                                availableQty.getValue()
+                        );
+
+                        // stockDTO.setDamagedQuantity(
+                        //         damagedQty.getValue()
+                        // );
+
+                        stockService.saveStock(stockDTO);
+                }
+
+
 
             // NOTIFICATION
             if(isUpdate){
@@ -526,156 +694,484 @@ public class InventoryManagementView extends VerticalLayout {
         }
     }
 
-    private void loadItemToForm() {
+    private void configureAssetDialog() {
 
-        itemName.setValue(
-                selectedItem.getItemName() != null
-                        ? selectedItem.getItemName()
-                        : ""
-        );
+                assetItem.setItems(
+                        assetItemService.getReusableItems()
+                );
 
-        itemCode.setValue(
-                selectedItem.getItemCode() != null
-                        ? selectedItem.getItemCode()
-                        : ""
-        );
+                assetItem.setItemLabelGenerator(
+                        InventoryItemDTO::getItemName
+                );
 
-        minimumStock.setValue(
-                selectedItem.getMinimumStock() != null
-                        ? selectedItem.getMinimumStock()
-                        : 0
-        );
+                // assetStatus.setItems(
+                //         AssetStatus.values()
+                // );
 
-        description.setValue(
-                selectedItem.getDescription() != null
-                        ? selectedItem.getDescription()
-                        : ""
-        );
+                assetStatus.setItems(
+                        AssetStatus.AVAILABLE
+                );
 
-        reusable.setValue(
-                Boolean.TRUE.equals(
-                        selectedItem.getIsReusable()
-                )
-        );
+                assetStatus.setValue(
+                        AssetStatus.AVAILABLE
+                );
 
-        allowReturn.setValue(
-                Boolean.TRUE.equals(
-                        selectedItem.getAllowReturn()
-                )
-        );
+assetStatus.setReadOnly(true);
 
-        if(selectedItem.getApprovalType() != null){
+                FormLayout form =
+                        new FormLayout();
 
-            approvalType.setValue(
-                    selectedItem.getApprovalType()
-            );
-        }
+                form.add(
 
-        if(selectedItem.getUnitType() != null){
+                        assetItem,
+                        assetReferenceNumber,
 
-            unitType.setValue(
-                    selectedItem.getUnitType()
-            );
-        }
+                        modelNumber,
+                        assetStatus,
 
-        if(selectedItem.getStatus() != null){
+                        purchaseDate,
+                        purchasePrice
+                );
 
-            status.setValue(
-                    selectedItem.getStatus()
-            );
-        }
+                form.setResponsiveSteps(
 
-        // CATEGORY MAPPING
-        if(selectedItem.getCategoryId() != null){
+                        new FormLayout.ResponsiveStep(
+                                "0",
+                                1
+                        ),
 
-            category.setValue(
-
-                    itemService.getActiveCategories()
-                            .stream()
-
-                            .filter(cat ->
-
-                                    cat.getCategoryId()
-                                            .equals(
-                                                    selectedItem.getCategoryId()
-                                            )
-                            )
-
-                            .findFirst()
-                            .orElse(null)
-            );
-        }
-
-        // STOCK MAPPING
-        InventoryStockDTO stock =
-                stockService.getAllStocks()
-                        .stream()
-
-                        .filter(s ->
-
-                                s.getItemId()
-                                        .equals(
-                                                selectedItem.getItemId()
-                                        )
+                        new FormLayout.ResponsiveStep(
+                                "700px",
+                                2
                         )
+                );
 
-                        .findFirst()
+                Button cancel =
+                        new Button("Cancel");
 
-                        .orElse(null);
+                cancel.addThemeVariants(
+                        ButtonVariant.LUMO_ERROR
+                );
 
-        if(stock != null){
+                assetSaveButton.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY
+                );
 
-            availableQty.setValue(
-                    stock.getAvailableQuantity()
-            );
+                assetSaveButton.addClickListener(
+                        event -> saveAsset()
+                );
 
-            damagedQty.setValue(
-                    stock.getDamagedQuantity()
-            );
+                cancel.addClickListener(event -> {
+
+                        assetDialog.close();
+
+                        clearAssetForm();
+                });
+
+                HorizontalLayout buttons =
+                        new HorizontalLayout(
+                                assetSaveButton,
+                                cancel
+                        );
+
+                VerticalLayout layout =
+                        new VerticalLayout(
+                                form,
+                                buttons
+                        );
+
+                layout.setWidth("800px");
+
+                assetDialog.setHeaderTitle(
+                        "Asset Item"
+                );
+
+                assetDialog.add(layout);
         }
 
-        saveButton.setText("Update");
-    }
+        private void saveAsset() {
 
-    private void clearForm() {
+                try {
 
-        selectedItem = null;
+                        boolean update =
+                                selectedAsset != null;
 
-        category.clear();
+                        AssetItemDTO dto =
+                                new AssetItemDTO();
 
-        itemName.clear();
+                        dto.setAssetItemId(
 
-        itemCode.clear();
+                                update
 
-        approvalType.clear();
+                                        ? selectedAsset.getAssetItemId()
 
-        unitType.clear();
+                                        : null
+                        );
 
-        minimumStock.clear();
+                        dto.setItemId(
+                                assetItem.getValue()
+                                        .getItemId()
+                        );
 
-        status.clear();
+                        dto.setAssetReferenceNumber(
+                                assetReferenceNumber.getValue()
+                        );
 
-        description.clear();
+                        dto.setModelNumber(
+                                modelNumber.getValue()
+                        );
 
-        availableQty.clear();
+                        dto.setPurchaseDate(
+                                purchaseDate.getValue()
+                        );
 
-        damagedQty.clear();
+                        dto.setPurchasePrice(
 
-        reusable.clear();
+                                purchasePrice.getValue() != null
 
-        allowReturn.clear();
+                                        ? java.math.BigDecimal.valueOf(
+                                                purchasePrice.getValue()
+                                        )
 
-        saveButton.setText("Save");
-    }
+                                        : null
+                        );
 
-    private void refreshData() {
+                        dto.setAssetStatus(
+                                assetStatus.getValue()
+                        );
 
-        itemGrid.setItems(
-                itemService.getAllItems()
-        );
+                        assetItemService.saveAsset(dto);
 
-        stockGrid.setItems(
-                stockService.getAllStocks()
-        );
-    }
+                        NotificationUtil.success(
+
+                                update
+
+                                        ? "Asset Updated Successfully"
+
+                                        : "Asset Saved Successfully"
+                        );
+
+                        assetGrid.setItems(
+                                assetItemService.getAllAssets()
+                        );
+
+                        assetDialog.close();
+
+                        clearAssetForm();
+
+                } catch (Exception e) {
+
+                        NotificationUtil.error(
+                                e.getMessage()
+                        );
+                }
+        }
+
+
+        private void loadAssetToForm() {
+
+                assetItem.setValue(
+
+                        assetItemService
+                                .getReusableItems()
+                                .stream()
+
+                                .filter(item ->
+
+                                        item.getItemId()
+                                                .equals(
+                                                        selectedAsset.getItemId()
+                                                )
+                                )
+
+                                .findFirst()
+                                .orElse(null)
+                );
+
+                assetReferenceNumber.setValue(
+
+                        selectedAsset.getAssetReferenceNumber() != null
+
+                                ? selectedAsset.getAssetReferenceNumber()
+
+                                : ""
+                );
+
+                modelNumber.setValue(
+
+                        selectedAsset.getModelNumber() != null
+
+                                ? selectedAsset.getModelNumber()
+
+                                : ""
+                );
+
+                purchaseDate.setValue(
+                        selectedAsset.getPurchaseDate()
+                );
+
+                if(selectedAsset.getPurchasePrice() != null) {
+
+                        purchasePrice.setValue(
+                                selectedAsset.getPurchasePrice()
+                                        .doubleValue()
+                        );
+                }
+
+                if(selectedAsset.getAssetStatus() != null) {
+
+                        assetStatus.setValue(
+                                selectedAsset.getAssetStatus()
+                        );
+                }
+
+                assetSaveButton.setText(
+                        "Update"
+                );
+
+                
+        }
+
+
+
+        private void loadItemToForm() {
+
+                itemName.setValue(
+                        selectedItem.getItemName() != null
+                                ? selectedItem.getItemName()
+                                : ""
+                );
+
+                itemCode.setValue(
+                        selectedItem.getItemCode() != null
+                                ? selectedItem.getItemCode()
+                                : ""
+                );
+
+                minimumStock.setValue(
+                        selectedItem.getMinimumStock() != null
+                                ? selectedItem.getMinimumStock()
+                                : 0
+                );
+
+                description.setValue(
+                        selectedItem.getDescription() != null
+                                ? selectedItem.getDescription()
+                                : ""
+                );
+
+                reusable.setValue(
+                        Boolean.TRUE.equals(
+                                selectedItem.getIsReusable()
+                        )
+                );
+
+                if(selectedItem.getApprovalType() != null){
+
+                        approvalType.setValue(
+                                selectedItem.getApprovalType()
+                        );
+                }
+
+                if(selectedItem.getUnitType() != null){
+
+                        unitType.setValue(
+                                selectedItem.getUnitType()
+                        );
+                }
+
+                if(selectedItem.getStatus() != null){
+
+                        status.setValue(
+                                selectedItem.getStatus()
+                        );
+                }
+
+                if(selectedItem.getCategoryId() != null){
+
+                        category.setValue(
+
+                                itemService.getActiveCategories()
+                                        .stream()
+
+                                        .filter(cat ->
+
+                                                cat.getCategoryId().equals(selectedItem.getCategoryId())
+                                        )
+
+                                        .findFirst()
+                                        .orElse(null)
+                        );
+                }
+
+                InventoryStockDTO stock =
+                        stockService.getAllStocks()
+                                .stream()
+
+                                .filter(s ->
+
+                                        s.getItemId()
+                                                .equals(
+                                                        selectedItem.getItemId()
+                                                )
+                                )
+
+                                .findFirst()
+
+                                .orElse(null);
+
+                boolean reusableItem =
+                        Boolean.TRUE.equals(
+                                selectedItem.getIsReusable()
+                        );
+
+                availableQty.setVisible(
+                        !reusableItem
+                );
+
+                if(stock != null && !reusableItem){
+
+                        availableQty.setValue(
+                                stock.getAvailableQuantity()
+                        );
+                }
+
+                /*
+                * LOCK REUSABLE FLAG
+                * IF ASSETS ALREADY EXIST
+                */
+
+                boolean hasAssets =
+                        assetItemService.getAllAssets()
+                                .stream()
+
+                                .anyMatch(asset ->
+
+                                        asset.getItemId()
+                                                .equals(
+                                                        selectedItem.getItemId()
+                                                )
+                                );
+
+                if(reusableItem && hasAssets) {
+
+                        reusable.setEnabled(false);
+
+                } else {
+
+                        reusable.setEnabled(true);
+                }
+
+                saveButton.setText("Update");
+        }
+
+        private Component createAssetHeader() {
+
+                H3 title =
+                        new H3("Asset Items");
+
+                Button addAssetButton =
+                        new Button(
+                                "Add Asset",
+                                VaadinIcon.PLUS.create()
+                        );
+
+                addAssetButton.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY
+                );
+
+                addAssetButton.addClickListener(event -> {
+
+                        clearAssetForm();
+
+                        assetDialog.open();
+                });
+
+                HorizontalLayout layout =
+                        new HorizontalLayout(
+                                title,
+                                addAssetButton
+                        );
+
+                layout.setWidthFull();
+
+                layout.expand(title);
+
+                layout.setAlignItems(
+                        Alignment.CENTER
+                );
+
+                return layout;
+        }
+
+        private void clearForm() {
+
+                selectedItem = null;
+
+                category.clear();
+
+                itemName.clear();
+
+                itemCode.clear();
+
+                approvalType.clear();
+
+                unitType.clear();
+
+                minimumStock.clear();
+
+                status.clear();
+
+                description.clear();
+
+                availableQty.clear();
+
+                reusable.clear();
+
+                reusable.setEnabled(true);
+
+                allowReturn.clear();
+
+                saveButton.setText("Save");
+        }
+
+        private void clearAssetForm() {
+
+                selectedAsset = null;
+
+                assetItem.clear();
+
+                assetReferenceNumber.clear();
+
+                modelNumber.clear();
+
+                purchaseDate.clear();
+
+                purchasePrice.clear();
+
+                assetStatus.clear();
+
+                assetStatus.setValue(
+                        AssetStatus.AVAILABLE
+                );
+
+                assetSaveButton.setText(
+                        "Save"
+                );
+        }
+
+        private void refreshData() {
+
+                itemGrid.setItems(
+                        itemService.getAllItems()
+                );
+
+                assetGrid.setItems(
+                        assetItemService.getAllAssets()
+                );
+
+                stockGrid.setItems(
+                        stockService.getAllStocks()
+                );
+        }
 }

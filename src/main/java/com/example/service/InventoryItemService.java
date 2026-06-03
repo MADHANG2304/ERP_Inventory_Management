@@ -11,6 +11,7 @@ import com.example.dto.InventoryItemDTO;
 import com.example.dto.InventoryItemFilterDTO;
 import com.example.entity.InventoryCategory;
 import com.example.entity.InventoryItem;
+import com.example.repository.AssetItemRepository;
 import com.example.repository.InventoryCategoryRepository;
 import com.example.repository.InventoryItemRepository;
 import com.example.specification.InventoryItemSpecification;
@@ -21,11 +22,13 @@ public class InventoryItemService {
     private final InventoryItemRepository itemRepository;
     private final InventoryCategoryRepository categoryRepository;
     private final AuditLogService auditLogService;
+    private final AssetItemRepository assetItemRepository;
 
-    public InventoryItemService(InventoryItemRepository itemRepository, InventoryCategoryRepository categoryRepository, AuditLogService auditLogService){
+    public InventoryItemService(InventoryItemRepository itemRepository, InventoryCategoryRepository categoryRepository, AuditLogService auditLogService, AssetItemRepository assetItemRepository){
         this.itemRepository = itemRepository;
         this.categoryRepository = categoryRepository;
         this.auditLogService = auditLogService;
+        this.assetItemRepository = assetItemRepository;
     }
 
     public InventoryItemDTO saveItem(InventoryItemDTO dto){
@@ -34,10 +37,32 @@ public class InventoryItemService {
 
         InventoryItem item;
 
-        if(dto.getItemId() != null){
-            item = itemRepository
-                .findById(dto.getItemId())
-                .orElse(new InventoryItem());
+        if(dto.getItemId() != null) {
+
+            item =
+                    itemRepository
+                            .findById(dto.getItemId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "Item not found"
+                                    )
+                            );
+
+            if(Boolean.TRUE.equals(item.getIsReusable())
+                    && Boolean.FALSE.equals(dto.getIsReusable())) {
+
+                long assetCount =
+                        assetItemRepository.countByItemItemId(
+                                item.getItemId()
+                        );
+
+                if(assetCount > 0) {
+
+                    throw new RuntimeException(
+                            "Reusable item cannot be converted to consumable because assets already exist."
+                    );
+                }
+            }
         }
         else{
             item = new InventoryItem();
@@ -82,12 +107,23 @@ public class InventoryItemService {
         return convertToDTO(saved);
     }
 
-    public List<InventoryItemDTO> getAllItems(){
+    public List<InventoryItemDTO> getAllItems() {
+
         return itemRepository
-            .findAll()
-            .stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
+                .findAll()
+                .stream()
+
+                .sorted((a,b) ->
+
+                        a.getItemName()
+                                .compareToIgnoreCase(
+                                        b.getItemName()
+                                )
+                )
+
+                .map(this::convertToDTO)
+
+                .collect(Collectors.toList());
     }
 
      public List<InventoryCategoryDTO> getActiveCategories() {
@@ -152,32 +188,51 @@ public class InventoryItemService {
         if(dto.getCategoryId() == null){
             throw new RuntimeException("Category is required");
         }
-        if(dto.getItemName() == null){
+
+        if(dto.getItemName() == null || dto.getItemName().trim().isEmpty()){
             throw new RuntimeException("Item Name is required");
         }
-        if(dto.getItemCode() == null){
+
+        if(dto.getItemCode() == null || dto.getItemCode().trim().isEmpty()){
             throw new RuntimeException("Item Code is required");
         }
+
+        if(dto.getIsReusable() == null){
+            throw new RuntimeException("Reusable field is required");
+        }
+
         if(dto.getApprovalType() == null){
             throw new RuntimeException("Approval Type is required");
         }
+
         if(dto.getUnitType() == null){
             throw new RuntimeException("Unit Type is required");
         }
+
         if(dto.getMinimumStock() == null || dto.getMinimumStock() < 0){
             throw new RuntimeException("Minimum stock must be valid");
         }
 
         boolean duplicateItem = itemRepository
-            .findAll()
-            .stream()
-            .anyMatch(i -> 
-                i.getItemCode().equalsIgnoreCase(dto.getItemCode()) &&
-                !i.getItemId().equals(dto.getItemId())
-        );
+                .findAll()
+                .stream()
+                .anyMatch(i ->
+
+                        i.getItemCode()
+                                .equalsIgnoreCase(
+                                        dto.getItemCode()
+                                )
+
+                        &&
+
+                        !i.getItemId()
+                                .equals(dto.getItemId())
+                );
 
         if(duplicateItem){
-            throw new RuntimeException("Item Code already exists");
+            throw new RuntimeException(
+                    "Item Code already exists"
+            );
         }
     }
 

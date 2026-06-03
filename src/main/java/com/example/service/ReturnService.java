@@ -2,6 +2,7 @@ package com.example.service;
 
 import com.example.dto.ReturnedItemDTO;
 import com.example.entity.*;
+import com.example.enums.AssetStatus;
 import com.example.enums.IssueStatus;
 import com.example.enums.ReferenceType;
 import com.example.enums.ReturnCondition;
@@ -31,6 +32,8 @@ public class ReturnService {
 
     private final EmployeeRepository employeeRepository;
 
+    private final AssetItemRepository assetItemRepository;
+
     private final AuditLogService auditLogService;
 
     public ReturnService(
@@ -40,7 +43,8 @@ public class ReturnService {
             InventoryTransactionRepository inventoryTransactionRepository,
             SecurityService securityService,
             EmployeeRepository employeeRepository,
-            AuditLogService auditLogService
+            AuditLogService auditLogService,
+            AssetItemRepository assetItemRepository
         ) {
 
         this.issuedItemRepository = issuedItemRepository;
@@ -56,6 +60,8 @@ public class ReturnService {
         this.employeeRepository = employeeRepository;
 
         this.auditLogService = auditLogService;
+
+        this.assetItemRepository = assetItemRepository;
     }
 
     public List<ReturnedItemDTO> getIssuedItemsForReturn() {
@@ -115,6 +121,14 @@ public class ReturnService {
 
                         dto.setIssuedQuantity(item.getIssuedQuantity());
 
+                        if(item.getAssetItem() != null) {
+
+                                dto.setAssetReferenceNumber(
+                                        item.getAssetItem()
+                                                .getAssetReferenceNumber()
+                                );
+                        }
+
                         dto.setReturnQuantity(item.getIssuedQuantity());
 
                         dto.setIssueStatus(item.getIssueStatus());
@@ -125,102 +139,179 @@ public class ReturnService {
                 .collect(Collectors.toList());
         }
 
-    public void returnItem(ReturnedItemDTO dto) {
+        public void returnItem(ReturnedItemDTO dto) {
 
-        IssuedItem issuedItem = issuedItemRepository
-                .findById(dto.getIssuedItemId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Issued item not found"));
+                IssuedItem issuedItem =
+                        issuedItemRepository
+                                .findById(dto.getIssuedItemId())
+                                .orElseThrow(() ->
+                                        new RuntimeException(
+                                                "Issued item not found"
+                                        )
+                                );
 
-        if (dto.getReturnQuantity() > issuedItem.getIssuedQuantity()) {
+                ReturnedItem returnedItem =
+                        new ReturnedItem();
 
-            throw new RuntimeException("Return quantity exceeds issued quantity");
+                returnedItem.setIssuedItem(
+                        issuedItem
+                );
+
+                returnedItem.setReturnReferenceNumber(
+                        generateReturnReference()
+                );
+
+                returnedItem.setReturnedQuantity(
+                        dto.getReturnQuantity()
+                );
+
+                returnedItem.setReturnCondition(
+                        dto.getReturnCondition()
+                );
+
+                returnedItem.setReturnRemarks(
+                        dto.getReturnRemarks()
+                );
+
+                returnedItem.setReturnedDate(
+                        LocalDateTime.now()
+                );
+
+                returnedItemRepository.save(
+                        returnedItem
+                );
+
+                boolean reusable =
+                        Boolean.TRUE.equals(
+                                issuedItem.getRequestItem()
+                                        .getItem()
+                                        .getIsReusable()
+                        );
+
+                if(reusable) {
+
+                        AssetItem asset =
+                                issuedItem.getAssetItem();
+
+                        if(asset != null) {
+
+                        if(dto.getReturnCondition()
+                                == ReturnCondition.DAMAGED) {
+
+                                asset.setAssetStatus(
+                                        AssetStatus.DAMAGED
+                                );
+
+                        } else {
+
+                                asset.setAssetStatus(
+                                        AssetStatus.AVAILABLE
+                                );
+                        }
+
+                        assetItemRepository.save(asset);
+                        }
+
+                } else {
+
+                        InventoryStock stock =
+                                inventoryStockRepository
+                                        .findAll()
+                                        .stream()
+                                        .filter(s ->
+
+                                                s.getItem()
+                                                        .getItemId()
+                                                        .equals(
+                                                                issuedItem.getRequestItem()
+                                                                        .getItem()
+                                                                        .getItemId()
+                                                        )
+                                        )
+                                        .findFirst()
+                                        .orElseThrow(() ->
+                                                new RuntimeException(
+                                                        "Stock not found"
+                                                )
+                                        );
+
+                        if(dto.getReturnCondition()
+                                == ReturnCondition.DAMAGED) {
+
+                        stock.setDamagedQuantity(
+                                stock.getDamagedQuantity()
+                                        + dto.getReturnQuantity()
+                        );
+
+                        } else {
+
+                        stock.setAvailableQuantity(
+                                stock.getAvailableQuantity()
+                                        + dto.getReturnQuantity()
+                        );
+                        }
+
+                        stock.setIssuedQuantity(
+                                stock.getIssuedQuantity()
+                                        - dto.getReturnQuantity()
+                        );
+
+                        inventoryStockRepository.save(stock);
+                }
+
+                issuedItem.setIssueStatus(
+                        IssueStatus.RETURNED
+                );
+
+                issuedItemRepository.save(
+                        issuedItem
+                );
+
+                InventoryTransaction transaction =
+                        new InventoryTransaction();
+
+                transaction.setItem(
+                        issuedItem.getRequestItem()
+                                .getItem()
+                );
+
+                transaction.setTransactionType(
+                        TransactionType.RETURN
+                );
+
+                transaction.setReferenceType(
+                        ReferenceType.RETURN_REQUEST
+                );
+
+                transaction.setReferenceNumber(
+                        returnedItem.getReturnReferenceNumber()
+                );
+
+                transaction.setQuantity(
+                        dto.getReturnQuantity()
+                );
+
+                transaction.setTransactionDate(
+                        LocalDateTime.now()
+                );
+
+                transaction.setRemarks(
+                        "Returned item"
+                );
+
+                inventoryTransactionRepository.save(
+                        transaction
+                );
+
+                auditLogService.logAction(
+                        "RETURN_MODULE",
+                        "RETURN",
+                        "Returned item : "
+                                + issuedItem.getRequestItem()
+                                        .getItem()
+                                        .getItemName()
+                );
         }
-
-        ReturnedItem returnedItem = new ReturnedItem();
-
-        returnedItem.setIssuedItem(issuedItem);
-
-        returnedItem.setReturnReferenceNumber(generateReturnReference());
-
-        returnedItem.setReturnedQuantity(dto.getReturnQuantity());
-
-        returnedItem.setReturnCondition(dto.getReturnCondition());
-
-        returnedItem.setReturnRemarks(dto.getReturnRemarks());
-
-        returnedItem.setReturnedDate(LocalDateTime.now());
-
-        returnedItemRepository.save(returnedItem);
-
-        int remainingQuantity = issuedItem.getIssuedQuantity() - dto.getReturnQuantity();
-
-        if (issuedItem.getIssueStatus() == null) {
-
-            issuedItem.setIssueStatus(IssueStatus.ISSUED);
-        }
-
-        if (remainingQuantity == 0) {
-
-            issuedItem.setIssueStatus(IssueStatus.RETURNED);
-
-        } else {
-
-            issuedItem.setIssueStatus(IssueStatus.PARTIALLY_RETURNED);
-        }
-
-        issuedItem.setIssuedQuantity(remainingQuantity);
-
-        issuedItemRepository.save(issuedItem);
-
-        InventoryStock stock = inventoryStockRepository
-                .findAll()
-                .stream()
-                .filter(s ->
-                        s.getItem().getItemId().equals(
-                                issuedItem.getRequestItem().getItem().getItemId()
-                        ))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Stock not found"));
-
-        if (dto.getReturnCondition() == ReturnCondition.GOOD) {
-
-            stock.setAvailableQuantity(stock.getAvailableQuantity() + dto.getReturnQuantity());
-        }
-
-        else if (dto.getReturnCondition() == ReturnCondition.DAMAGED) {
-
-            stock.setDamagedQuantity(stock.getDamagedQuantity() + dto.getReturnQuantity());
-        }
-
-        stock.setIssuedQuantity(stock.getIssuedQuantity() - dto.getReturnQuantity());
-
-        inventoryStockRepository.save(stock);
-
-        InventoryTransaction transaction = new InventoryTransaction();
-
-        transaction.setItem(issuedItem.getRequestItem().getItem());
-
-        transaction.setTransactionType(TransactionType.RETURN);
-
-        transaction.setReferenceType(ReferenceType.RETURN_REQUEST);
-
-        transaction.setReferenceNumber(returnedItem.getReturnReferenceNumber());
-
-        transaction.setQuantity(dto.getReturnQuantity());
-
-        transaction.setTransactionDate(LocalDateTime.now());
-
-        transaction.setRemarks("Returned item - " + dto.getReturnCondition().name());
-
-        inventoryTransactionRepository.save(transaction);
-
-        auditLogService.logAction(
-                "RETURN_MODULE",
-                "RETURN",
-                "Returned item : " + issuedItem.getRequestItem().getItem().getItemName()
-        );
-    }
 
     public List<ReturnedItemDTO> getReturnedHistory() {
 
@@ -263,6 +354,15 @@ public class ReturnService {
                     dto.setReturnQuantity(
                             item.getReturnedQuantity()
                     );
+
+                    if(item.getIssuedItem().getAssetItem() != null) {
+
+                        dto.setAssetReferenceNumber(
+                                item.getIssuedItem()
+                                        .getAssetItem()
+                                        .getAssetReferenceNumber()
+                        );
+                    }
 
                     dto.setIssueStatus(
                             item.getIssuedItem()

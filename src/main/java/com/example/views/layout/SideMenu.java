@@ -210,14 +210,14 @@ public class SideMenu extends SideNav {
                     )
             );
 
-            addItem(
-                    createModernNavItem(
-                            "Transactions",
-                            InventoryTransactionView.class,
-                            VaadinIcon.EXCHANGE,
-                            "#14b8a6"
-                    )
-            );
+        //     addItem(
+        //             createModernNavItem(
+        //                     "Transactions",
+        //                     InventoryTransactionView.class,
+        //                     VaadinIcon.EXCHANGE,
+        //                     "#14b8a6"
+        //             )
+        //     );
 
             addSectionTitle("APPROVAL");
 
@@ -236,6 +236,15 @@ public class SideMenu extends SideNav {
                     createModernNavItem(
                             "Issue Items",
                             IssueView.class,
+                            VaadinIcon.UPLOAD_ALT,
+                            "#16a34a"
+                    )
+            );
+
+            addItem(
+                    createModernNavItem(
+                            "Return Items",
+                            ReturnView.class,
                             VaadinIcon.UPLOAD_ALT,
                             "#16a34a"
                     )

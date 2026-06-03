@@ -6,6 +6,7 @@ public enum RequestStatus {
     PENDING_APPROVAL,
     APPROVED,
     REJECTED,
+    PARTIALLY_ISSUED,
     ISSUED,
     CLOSED
 }

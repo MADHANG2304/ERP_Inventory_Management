@@ -30,8 +30,7 @@ public class ApprovalConfig extends BaseEntity {
     private Long configId;
 
     @Column(name = "config_name",
-            nullable = false,
-            unique = true)
+            nullable = false)
     private String configName;
 
     @Enumerated(EnumType.STRING)

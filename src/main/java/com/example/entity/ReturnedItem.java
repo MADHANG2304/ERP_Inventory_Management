@@ -19,6 +19,10 @@ public class ReturnedItem extends BaseEntity {
     @JoinColumn(name = "issued_item_id")
     private IssuedItem issuedItem;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "asset_item_id")
+    private AssetItem assetItem;
+
     @Column(name = "return_reference_number")
     private String returnReferenceNumber;
 
@@ -112,6 +116,18 @@ public class ReturnedItem extends BaseEntity {
 
     public void setReturnReferenceNumber(String returnReferenceNumber) {
         this.returnReferenceNumber = returnReferenceNumber;
+    }
+
+
+
+    public AssetItem getAssetItem() {
+        return assetItem;
+    }
+
+
+
+    public void setAssetItem(AssetItem assetItem) {
+        this.assetItem = assetItem;
     }
 
     

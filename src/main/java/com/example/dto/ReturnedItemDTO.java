@@ -31,6 +31,10 @@ public class ReturnedItemDTO {
 
     private IssueStatus issueStatus;
 
+    private String assetReferenceNumber;
+
+    private Long assetItemId;
+
     public ReturnedItemDTO() {
     }
 
@@ -144,6 +148,22 @@ public class ReturnedItemDTO {
 
     public void setIssueStatus(IssueStatus issueStatus) {
         this.issueStatus = issueStatus;
+    }
+
+    public Long getAssetItemId(){
+        return assetItemId;
+    }
+
+    public void setAssetItemId(Long assetItemId){
+        this.assetItemId = assetItemId;
+    }
+
+    public String getAssetReferenceNumber() {
+        return assetReferenceNumber;
+    }
+
+    public void setAssetReferenceNumber(String assetReferenceNumber) {
+        this.assetReferenceNumber = assetReferenceNumber;
     }
 
     

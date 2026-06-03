@@ -18,6 +18,8 @@ public class InventoryStockDTO {
 
     private Boolean lowStock;
 
+    private Boolean reusable;
+
     public InventoryStockDTO() {
     }
 
@@ -31,6 +33,14 @@ public class InventoryStockDTO {
         this.issuedQuantity = issuedQuantity;
         this.damagedQuantity = damagedQuantity;
         this.lowStock = lowStock;
+    }
+
+    public Boolean getReusable() {
+        return reusable;
+    }
+
+    public void setReusable(Boolean reusable) {
+        this.reusable = reusable;
     }
 
     public Long getStockId() {

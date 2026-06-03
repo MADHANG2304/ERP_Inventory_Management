@@ -25,6 +25,7 @@ import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
 import com.example.enums.RequestType;
 import com.example.repository.ApprovalConfigRepository;
+import com.example.repository.AssetItemRepository;
 import com.example.repository.EmployeeRepository;
 import com.example.repository.InventoryItemRepository;
 import com.example.repository.InventoryRequestRepository;
@@ -56,6 +57,8 @@ public class InventoryRequestService {
 
         private final AuditLogService auditLogService;
 
+        private final AssetItemRepository assetItemRepository;
+
         public InventoryRequestService(
                         InventoryRequestRepository inventoryRequestRepository,
                         RequestItemRepository requestItemRepository,
@@ -65,7 +68,8 @@ public class InventoryRequestService {
                         ApprovalConfigRepository approvalConfigRepository,
                         RequestApprovalRepository requestApprovalRepository,
                         SecurityService securityService,
-                        AuditLogService auditLogService) {
+                        AuditLogService auditLogService,
+                        AssetItemRepository assetItemRepository) {
 
                 this.inventoryRequestRepository = inventoryRequestRepository;
 
@@ -84,6 +88,8 @@ public class InventoryRequestService {
                 this.securityService = securityService;
 
                 this.auditLogService = auditLogService;
+
+                this.assetItemRepository = assetItemRepository;
         }
 
         public InventoryRequestDTO saveDraft(InventoryRequestDTO dto) {
@@ -121,81 +127,187 @@ public class InventoryRequestService {
 
         private void generateApprovalWorkflow(Long requestId) {
 
-                InventoryRequest request = inventoryRequestRepository
+                InventoryRequest request =
+                        inventoryRequestRepository
                                 .findById(requestId)
-                                .orElseThrow(() -> new RuntimeException("Request not found"));
+                                .orElseThrow(() ->
+                                        new RuntimeException(
+                                                "Request not found"
+                                        )
+                                );
 
-                RequestType highestRequestType = determineHighestRequestType(request);
+                RequestType highestRequestType =
+                        determineHighestRequestType(request);
 
-                ApprovalConfig config = approvalConfigRepository
+                String employeeRole =
+                        request.getEmployee()
+                                .getRole()
+                                .getRoleName();
+
+                com.example.enums.RequesterRole requesterRole;
+
+                switch (employeeRole) {
+
+                        case "EMPLOYEE" ->
+
+                                requesterRole =
+                                        com.example.enums.RequesterRole.EMPLOYEE;
+
+                        case "MANAGER" ->
+
+                                requesterRole =
+                                        com.example.enums.RequesterRole.MANAGER;
+
+                        case "INVENTORY_ADMIN" ->
+
+                                requesterRole =
+                                        com.example.enums.RequesterRole.INVENTORY_ADMIN;
+
+                        default ->
+
+                                throw new RuntimeException(
+                                        "Requester role not supported : "
+                                                + employeeRole
+                                );
+                }
+
+                ApprovalConfig config =
+                        approvalConfigRepository
                                 .findAll()
                                 .stream()
-                                .filter(c -> Boolean.TRUE.equals(c.getIsActive()) && c.getRequestType() == highestRequestType)
+
+                                .filter(c ->
+
+                                        Boolean.TRUE.equals(
+                                                c.getIsActive()
+                                        )
+
+                                        &&
+
+                                        c.getRequestType()
+                                                == highestRequestType
+
+                                        &&
+
+                                        c.getRequesterRole()
+                                                == requesterRole
+                                )
+
                                 .findFirst()
-                                .orElseThrow(() -> new RuntimeException("Approval config not found"));
+
+                                .orElseThrow(() ->
+
+                                        new RuntimeException(
+
+                                                "Approval configuration not found for "
+
+                                                        + requesterRole
+
+                                                        + " - "
+
+                                                        + highestRequestType
+                                        )
+                                );
 
                 request.getApprovals().clear();
 
-                List<ApprovalConfigLevel> levels = config.getLevels()
+                List<ApprovalConfigLevel> levels =
+                        config.getLevels()
                                 .stream()
-                                .sorted((a, b) -> a.getApprovalOrder().compareTo(b.getApprovalOrder()))
+
+                                .sorted(
+                                        (a, b) ->
+
+                                                a.getApprovalOrder()
+                                                        .compareTo(
+                                                                b.getApprovalOrder()
+                                                        )
+                                )
+
                                 .toList();
 
                 for (int i = 0; i < levels.size(); i++) {
 
-                        ApprovalConfigLevel level = levels.get(i);
+                        ApprovalConfigLevel level =
+                                levels.get(i);
 
-                        RequestApproval approval = new RequestApproval();
+                        RequestApproval approval =
+                                new RequestApproval();
 
                         approval.setRequest(request);
 
-                        approval.setApprovalOrder(level.getApprovalOrder());
+                        approval.setApprovalOrder(
+                                level.getApprovalOrder()
+                        );
 
-                        approval.setApprovalRole(level.getApprovalRole());
+                        approval.setApprovalRole(
+                                level.getApprovalRole()
+                        );
 
-                        approval.setApprovalStatus(ApprovalStatus.PENDING);
+                        approval.setApprovalStatus(
+                                ApprovalStatus.PENDING
+                        );
 
-                        approval.setIsCurrentLevel(i == 0);
+                        approval.setIsCurrentLevel(
+                                i == 0
+                        );
 
-                        Employee manager = null;
+                        Employee approver = null;
 
-                        if(level.getApprovalRole().name().equals("MANAGER") && (i == 0)) {
+                        if(level.getApprovalRole().name().equals("MANAGER")) {
 
-                                manager = employeeRepository.findManagerByDepartmentAndRole(
-                                                        request.getEmployee()
-                                                                .getDepartment()
-                                                                .getDepartmentId(),
+                        approver =
+                                employeeRepository
+                                        .findManagerByDepartmentAndRole(
 
-                                                        "MANAGER"
-                                                );
+                                                request.getEmployee()
+                                                        .getDepartment()
+                                                        .getDepartmentId(),
 
+                                                "MANAGER"
+                                        );
 
-                                if(manager == null) {
-                                        throw new RuntimeException("Manager not found for department");
-                                }
+                        if(approver == null) {
 
+                                throw new RuntimeException(
+                                        "Manager not found for department"
+                                );
                         }
+                        }
+
                         else if(level.getApprovalRole().name().equals("INVENTORY_ADMIN")) {
-                                
-                                manager = employeeRepository.findByUserRoleRoleName("INVENTORY_ADMIN");
 
-                                if(manager == null) {
-                                        throw new RuntimeException("Inventory Admin not found");
-                                }
+                        approver =
+                                employeeRepository
+                                        .findByUserRoleRoleName(
+                                                "INVENTORY_ADMIN"
+                                        );
+
+                        if(approver == null) {
+
+                                throw new RuntimeException(
+                                        "Inventory Admin not found"
+                                );
                         }
-
-                        // SUPER ADMIN APPROVAL
+                        }
 
                         else if(level.getApprovalRole().name().equals("SUPER_ADMIN")) {
 
-                                manager = employeeRepository.findByUserRoleRoleName("SUPER_ADMIN");
+                        approver =
+                                employeeRepository
+                                        .findByUserRoleRoleName(
+                                                "SUPER_ADMIN"
+                                        );
 
-                                if(manager == null) {
-                                        throw new RuntimeException("Super Admin not found");
-                                }
+                        if(approver == null) {
+
+                                throw new RuntimeException(
+                                        "Super Admin not found"
+                                );
+                        }
                         }
 
-                        approval.setApprover(manager);
+                        approval.setApprover(approver);
 
                         request.getApprovals().add(approval);
                 }
@@ -375,6 +487,8 @@ public class InventoryRequestService {
                                         dto.setItemCode(
                                                         item.getItemCode());
 
+                                        dto.setUnitType(item.getUnitType());
+
                                         return dto;
                                 })
                                 .collect(Collectors.toList());
@@ -434,32 +548,102 @@ public class InventoryRequestService {
         private void validateRequest(InventoryRequestDTO dto) {
 
                 if (dto.getEmployeeId() == null) {
-                        throw new RuntimeException("Employee required");
+
+                        throw new RuntimeException(
+                                "Employee required"
+                        );
                 }
 
-                if (dto.getRequestItems() == null || dto.getRequestItems().isEmpty()) {
+                if (dto.getRequestItems() == null
+                                || dto.getRequestItems().isEmpty()) {
 
-                        throw new RuntimeException("At least one item required");
+                        throw new RuntimeException(
+                                "At least one item required"
+                        );
                 }
 
                 for (RequestItemDTO itemDTO : dto.getRequestItems()) {
 
-                        if (itemDTO.getRequestedQuantity() == null || itemDTO.getRequestedQuantity() <= 0) {
+                        if (itemDTO.getRequestedQuantity() == null
+                                        || itemDTO.getRequestedQuantity() <= 0) {
 
-                                throw new RuntimeException("Invalid quantity");
+                                throw new RuntimeException(
+                                        "Invalid quantity"
+                                );
                         }
 
-                        InventoryStock stock = inventoryStockRepository
-                                        .findAll()
-                                        .stream()
-                                        .filter(s ->
-                                        s.getItem().getItemId().equals(itemDTO.getItemId())).findFirst()
-                                        .orElseThrow(() -> new RuntimeException("Stock not found"));
+                        InventoryItem item =
+                                inventoryItemRepository
+                                        .findById(itemDTO.getItemId())
+                                        .orElseThrow(() ->
+                                                new RuntimeException(
+                                                        "Item not found"
+                                                )
+                                        );
 
-                        if (itemDTO.getRequestedQuantity() > stock.getAvailableQuantity()) {
+                        // REUSABLE ITEM
 
-                                throw new RuntimeException("Insufficient stock for " + stock.getItem().getItemName());
-                         }
+                        if(Boolean.TRUE.equals(
+                                item.getIsReusable()
+                        )) {
+
+                                Long availableAssets =
+                                        assetItemRepository
+                                                .countAvailableAssets(
+                                                        item.getItemId()
+                                                );
+
+                                if(itemDTO.getRequestedQuantity()
+                                        > availableAssets) {
+
+                                        throw new RuntimeException(
+
+                                                "Only "
+                                                        + availableAssets
+                                                        + " asset(s) available for "
+                                                        + item.getItemName()
+                                        );
+                                }
+                        }
+
+                        // NON REUSABLE ITEM
+
+                        else {
+
+                                InventoryStock stock =
+                                        inventoryStockRepository
+                                                .findAll()
+                                                .stream()
+
+                                                .filter(s ->
+
+                                                        s.getItem()
+                                                                .getItemId()
+                                                                .equals(
+                                                                        itemDTO.getItemId()
+                                                                )
+                                                )
+
+                                                .findFirst()
+
+                                                .orElseThrow(() ->
+
+                                                        new RuntimeException(
+                                                                "Stock not found"
+                                                        )
+                                                );
+
+                                if(itemDTO.getRequestedQuantity()
+                                        > stock.getAvailableQuantity()) {
+
+                                        throw new RuntimeException(
+
+                                                "Insufficient stock for "
+                                                        + stock.getItem()
+                                                                .getItemName()
+                                        );
+                                }
+                        }
                 }
         }
 

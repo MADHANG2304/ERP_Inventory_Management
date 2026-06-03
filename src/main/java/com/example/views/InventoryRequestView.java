@@ -85,6 +85,8 @@ public class InventoryRequestView extends VerticalLayout {
     private final ComboBox<InventoryItemDTO> itemComboBox = new ComboBox<>("Inventory Item");
 
     private final IntegerField quantityField = new IntegerField("Quantity");
+    
+    private final Span unitLabel = new Span("Pieces");
 
     private final TextArea remarks = new TextArea("Remarks");
 
@@ -240,7 +242,21 @@ public class InventoryRequestView extends VerticalLayout {
 
         requestLayout.expand(requestNumber);
 
-        HorizontalLayout itemLayout = new HorizontalLayout(itemComboBox, quantityField);
+        HorizontalLayout quantityLayout =
+                new HorizontalLayout(
+                        quantityField,
+                        unitLabel
+                );
+
+        quantityLayout.setAlignItems(
+                Alignment.END
+        );
+
+        HorizontalLayout itemLayout =
+                new HorizontalLayout(
+                        itemComboBox,
+                        quantityLayout
+                );
 
         itemLayout.setWidthFull();
 
@@ -431,18 +447,36 @@ public class InventoryRequestView extends VerticalLayout {
                 remarks.getStyle().set("border-radius", "10px");
         }
 
-    private void configureItemSection() {
+        private void configureItemSection() {
 
-        itemComboBox.setItems(inventoryRequestService.getAvailableItems());
+                itemComboBox.setItems(
+                        inventoryRequestService.getAvailableItems()
+                );
 
-        itemComboBox.setItemLabelGenerator(
-                item -> item.getItemName() + " - " + item.getItemCode()
-        );
+                itemComboBox.setItemLabelGenerator(
+                        item -> item.getItemName() + " - " + item.getItemCode()
+                );
 
-        quantityField.setMin(1);
+                itemComboBox.addValueChangeListener(event -> {
 
-        quantityField.setValue(1);
-    }
+                        InventoryItemDTO item = event.getValue();
+
+                        unitLabel.setText(
+                                item.getUnitType() != null
+                                        ? getUnitDisplay(item.getUnitType().name())
+                                        : "Units"
+                        );
+                });
+
+                quantityField.setMin(1);
+
+                quantityField.setValue(1);
+
+                unitLabel.getStyle()
+                        .set("font-weight", "600")
+                        .set("margin-top", "35px")
+                        .set("color", "#475569");
+        }
 
     private void configureItemGrid() {
 
@@ -579,7 +613,7 @@ public class InventoryRequestView extends VerticalLayout {
                 );
 
                 issuedGrid.addColumn(
-                        IssuedItemDTO::getIssueReferenceNumber
+                        IssuedItemDTO::getAssetReferenceNumber
                 ).setHeader("Issue Reference");
 
                 issuedGrid.addColumn(
@@ -1350,6 +1384,24 @@ public class InventoryRequestView extends VerticalLayout {
                 }
 
                 loggedInEmployee = employee;
+        }
+
+        private String getUnitDisplay(String unitType) {
+
+                return switch (unitType) {
+
+                        case "PCS" -> "Pieces";
+
+                        case "BOX" -> "Boxes";
+
+                        case "LITER" -> "Litres";
+
+                        case "KG" -> "Kg";
+
+                        case "SET" -> "Sets";
+
+                        default -> unitType;
+                };
         }
 
         private String generateRequestNumber() {

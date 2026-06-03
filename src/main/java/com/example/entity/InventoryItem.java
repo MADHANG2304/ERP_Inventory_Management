@@ -41,7 +41,7 @@ public class InventoryItem extends BaseEntity{
     private String description;
 
     @Column(name="is_reusable")
-    private Boolean isReusable;
+    private Boolean isReusable = true;
 
     @Column(name="minimum_stock")
     private Integer minimumStock;
