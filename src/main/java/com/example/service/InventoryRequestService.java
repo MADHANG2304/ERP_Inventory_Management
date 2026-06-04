@@ -19,8 +19,8 @@ import com.example.entity.InventoryRequest;
 import com.example.entity.InventoryStock;
 import com.example.entity.RequestApproval;
 import com.example.entity.RequestItems;
-import com.example.entity.Employee;
 import com.example.enums.ApprovalStatus;
+import com.example.enums.ApprovalType;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
 import com.example.enums.RequestType;
@@ -32,7 +32,6 @@ import com.example.repository.InventoryRequestRepository;
 import com.example.repository.InventoryStockRepository;
 import com.example.repository.RequestApprovalRepository;
 import com.example.repository.RequestItemRepository;
-import com.example.repository.EmployeeRepository;
 import com.example.security.SecurityService;
 import com.example.specification.InventoryRequestSpecification;
 
@@ -256,23 +255,18 @@ public class InventoryRequestService {
 
                         if(level.getApprovalRole().name().equals("MANAGER")) {
 
-                        approver =
-                                employeeRepository
-                                        .findManagerByDepartmentAndRole(
+                                approver =
+                                        request.getEmployee()
+                                                .getManager();
 
-                                                request.getEmployee()
-                                                        .getDepartment()
-                                                        .getDepartmentId(),
+                                if(approver == null) {
 
-                                                "MANAGER"
+                                        throw new RuntimeException(
+                                                "No manager assigned for employee : "
+                                                        + request.getEmployee()
+                                                                .getEmployeeName()
                                         );
-
-                        if(approver == null) {
-
-                                throw new RuntimeException(
-                                        "Manager not found for department"
-                                );
-                        }
+                                }
                         }
 
                         else if(level.getApprovalRole().name().equals("INVENTORY_ADMIN")) {
@@ -317,23 +311,41 @@ public class InventoryRequestService {
 
         private RequestType determineHighestRequestType(InventoryRequest request) {
 
-                boolean hasBulk = request.getRequestItems()
+                int totalHighValueQuantity =
+                        request.getRequestItems()
                                 .stream()
-                                .anyMatch(item -> item.getRequestedQuantity() >= 10);
 
-                if (hasBulk) {
+                                .filter(item ->
+
+                                        item.getItem()
+                                                .getApprovalType()
+                                                == ApprovalType.HIGH_VALUE
+                                )
+
+                                .mapToInt(
+                                        RequestItems::getRequestedQuantity
+                                )
+
+                                .sum();
+
+                if(totalHighValueQuantity >= 5) {
+
                         return RequestType.BULK_REQUEST;
                 }
 
-                boolean hasHighValue = request.getRequestItems()
+                boolean hasHighValueRequest =
+                        request.getRequestItems()
                                 .stream()
+
                                 .anyMatch(item ->
+
                                         item.getItem()
                                                 .getApprovalType()
-                                                .name()
-                                                .equals("HIGH_VALUE"));
+                                                == ApprovalType.HIGH_VALUE
+                                );
 
-                if (hasHighValue) {
+                if(hasHighValueRequest) {
+
                         return RequestType.HIGH_VALUE;
                 }
 

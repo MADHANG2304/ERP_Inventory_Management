@@ -1,5 +1,7 @@
 package com.example.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -32,5 +34,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     """)
     Employee findByUserRoleRoleName(
             String roleName
+    );
+
+    List<Employee> findByDepartment_DepartmentIdAndRole_RoleNameAndIsActive(
+            Long departmentId,
+            String roleName,
+            Boolean isActive
     );
 }

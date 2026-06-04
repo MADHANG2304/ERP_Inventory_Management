@@ -1,5 +1,7 @@
 package com.example.views;
 
+import java.util.List;
+
 import com.example.base.ui.MainLayout;
 import com.example.dto.ApprovalFilterDTO;
 import com.example.dto.InventoryRequestDTO;
@@ -23,6 +25,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -243,96 +246,245 @@ public class ApprovalProcessView extends VerticalLayout {
                                 .set("border", "1px solid #dbe2ea");
         }
 
-        private void openApprovalDialog(RequestApprovalDTO approvalDTO) {
+        private void openApprovalDialog(
+        RequestApprovalDTO approvalDTO
+        ) {
 
                 Dialog dialog = new Dialog();
 
-                dialog.setWidth("700px");
+                dialog.setWidth("1000px");
 
                 dialog.setHeaderTitle("Approval Details");
 
-                InventoryRequestDTO request = inventoryRequestService.getRequestById(approvalDTO.getRequestId());
+                InventoryRequestDTO request =
+                        inventoryRequestService
+                                .getRequestById(
+                                        approvalDTO.getRequestId()
+                                );
 
-                // REQUEST INFO
+                Span requestInfo =
+                        new Span(
 
-                Span requestInfo = new Span(
+                                "Request No : "
+                                        + request.getRequestNumber()
 
-                                "Request No : " + approvalDTO.getRequestNumber()
+                                        + " | Employee : "
+                                        + request.getEmployeeName()
 
-                                                + " | Role : " + approvalDTO.getApprovalRole().name()
+                                        + " ID: ("
+                                        + request.getEmployeeId()
+                                        + ")"
 
-                );
+                                        + " | Approval Role : "
+                                        + approvalDTO.getApprovalRole().name()
+                        );
 
                 requestInfo.getStyle()
 
-                                .set("font-size", "14px")
+                        .set("font-size", "14px")
 
-                                .set("font-weight", "600")
+                        .set("font-weight", "600")
 
-                                .set("color", "#475569");
+                        .set("color", "#475569");
 
-                // REMARKS
+                
+                Span remarksTitle =
+                        new Span("Remarks");
 
-                TextArea requestRemarks = new TextArea("Request Remarks");
+                remarksTitle.getStyle()
+                        .set("font-weight", "700")
+                        .set("font-size", "15px")
+                        .set("margin-top", "10px");
 
-                requestRemarks.setWidthFull();
+                Span remarksValue =
+                        new Span(
+                                approvalDTO.getRemarks() == null
+                                        ? "-"
+                                        : approvalDTO.getRemarks()
+                        );
 
-                requestRemarks.setReadOnly(true);
+                remarksValue.getStyle()
+                        .set("display", "block")
+                        .set("padding", "12px")
+                        .set("background", "#f8fafc")
+                        .set("border", "1px solid #e2e8f0")
+                        .set("border-radius", "10px")
+                        .set("color", "#334155");
 
-                requestRemarks.setValue(
-                                request.getRemarks() != null ? request.getRemarks() : "");
+                List<RequestItemDTO> approvalItems;
 
-                // ITEM GRID
+                if ("MANAGER".equalsIgnoreCase(
+                        approvalDTO.getApprovalRole().name())
+                ) {
 
-                Grid<RequestItemDTO> itemGrid = new Grid<>(RequestItemDTO.class, false);
+                        approvalItems = request.getRequestItems();
 
-                itemGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+                } else {
+
+                        approvalItems = request.getRequestItems()
+
+                                        .stream()
+
+                                        .filter(item ->
+
+                                                item.getApprovedQuantity() != null
+
+                                                &&
+
+                                                item.getApprovedQuantity() > 0
+                                        )
+
+                                        .toList();
+                }
+
+                Grid<RequestItemDTO> itemGrid =
+                        new Grid<>(RequestItemDTO.class, false);
+
+                itemGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
+
+                itemGrid.addComponentColumn(item -> {
+
+                        Checkbox checkbox =
+                                new Checkbox();
+
+                        checkbox.setValue(
+                                item.getSelected()
+                        );
+
+                        checkbox.addValueChangeListener(event ->
+
+                                item.setSelected(
+                                        event.getValue()
+                                )
+                        );
+
+                        return checkbox;
+
+                }).setHeader("Approve");
 
                 itemGrid.addColumn(
-                                RequestItemDTO::getItemName).setHeader("Item");
+                        RequestItemDTO::getItemName
+                ).setHeader("Item");
 
                 itemGrid.addColumn(
-                                RequestItemDTO::getItemCode).setHeader("Code");
+                        RequestItemDTO::getItemCode
+                ).setHeader("Code");
 
                 itemGrid.addColumn(
-                                RequestItemDTO::getRequestedQuantity).setHeader("Qty");
+                        RequestItemDTO::getRequestedQuantity
+                ).setHeader("Requested Qty");
 
-                itemGrid.setItems(request.getRequestItems());
+                itemGrid.addComponentColumn(item -> {
 
-                itemGrid.setHeight("220px");
+                        IntegerField approvedQty =
+                                new IntegerField();
 
-                // COMMENTS
+                        approvedQty.setWidth("120px");
 
-                TextArea comments = new TextArea("Comments");
+                        approvedQty.setMin(0);
+
+                        approvedQty.setValue(
+                                item.getApprovedQuantity()
+                        );
+
+                        approvedQty.addValueChangeListener(event -> {
+
+                                Integer value =
+                                        event.getValue();
+
+                                if(value == null) {
+
+                                        value = 0;
+                                }
+
+                                if(value > item.getRequestedQuantity()) {
+
+                                        approvedQty.setValue(
+                                                item.getRequestedQuantity()
+                                        );
+
+                                        NotificationUtil.warning(
+
+                                                "Approved quantity cannot exceed requested quantity"
+                                        );
+
+                                        value =
+                                                item.getRequestedQuantity();
+                                }
+
+                                item.setApprovedQuantity(
+                                        value
+                                );
+                        });
+
+                        return approvedQty;
+
+                }).setHeader("Approved Qty");
+
+                itemGrid.setItems(
+                        approvalItems
+                );
+
+                itemGrid.setHeight("350px");
+
+                TextArea comments =
+                        new TextArea("Comments");
 
                 comments.setWidthFull();
 
-                comments.setPlaceholder("Enter comments...");
+                comments.setPlaceholder(
+                        "Enter comments..."
+                );
 
-                // BUTTONS
+                Button approveButton =
+                        new Button(
+                                "Approve",
+                                VaadinIcon.CHECK.create()
+                        );
 
-                Button approveButton = new Button("Approve", VaadinIcon.CHECK.create());
+                approveButton.addThemeVariants(
+                        ButtonVariant.LUMO_SUCCESS
+                );
 
-                approveButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+                Button rejectButton =
+                        new Button(
+                                "Reject",
+                                VaadinIcon.CLOSE.create()
+                        );
 
-                Button rejectButton = new Button("Reject", VaadinIcon.CLOSE.create());
+                rejectButton.addThemeVariants(
+                        ButtonVariant.LUMO_ERROR
+                );
 
-                rejectButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+                Button cancelButton =
+                        new Button(
+                                "Close"
+                        );
 
-                Button cancelButton = new Button("Close");
-
-                cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+                cancelButton.addThemeVariants(
+                        ButtonVariant.LUMO_TERTIARY
+                );
 
                 approveButton.addClickListener(event -> {
 
                         try {
-                                approvalProcessService.approveRequest(
+
+                                approvalProcessService
+                                        .approveRequest(
 
                                                 approvalDTO.getApprovalId(),
 
-                                                comments.getValue());
+                                                comments.getValue(),
 
-                                NotificationUtil.success("Request approved successfully");
+                                                approvalItems
+                                        );
+
+                                NotificationUtil.success(
+                                        "Request approved successfully"
+                                );
 
                                 dialog.close();
 
@@ -340,20 +492,27 @@ public class ApprovalProcessView extends VerticalLayout {
 
                         } catch (Exception e) {
 
-                                NotificationUtil.error(e.getMessage());
+                                NotificationUtil.error(
+                                        e.getMessage()
+                                );
                         }
                 });
 
                 rejectButton.addClickListener(event -> {
 
                         try {
-                                approvalProcessService.rejectRequest(
+
+                                approvalProcessService
+                                        .rejectRequest(
 
                                                 approvalDTO.getApprovalId(),
 
-                                                comments.getValue());
+                                                comments.getValue()
+                                        );
 
-                                NotificationUtil.success("Request rejected successfully");
+                                NotificationUtil.success(
+                                        "Request rejected successfully"
+                                );
 
                                 dialog.close();
 
@@ -361,40 +520,53 @@ public class ApprovalProcessView extends VerticalLayout {
 
                         } catch (Exception e) {
 
-                                NotificationUtil.error(e.getMessage());
+                                NotificationUtil.error(
+                                        e.getMessage()
+                                );
                         }
                 });
 
-                cancelButton.addClickListener(event -> dialog.close());
+                cancelButton.addClickListener(event -> {
 
-                HorizontalLayout buttonLayout = new HorizontalLayout(
+                        dialog.close();
+                });
+
+                HorizontalLayout buttonLayout =
+                        new HorizontalLayout(
 
                                 cancelButton,
 
                                 rejectButton,
 
-                                approveButton);
+                                approveButton
+                        );
 
                 buttonLayout.setWidthFull();
 
-                buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+                buttonLayout.setJustifyContentMode(
+                        JustifyContentMode.END
+                );
 
-                VerticalLayout layout = new VerticalLayout(
+                VerticalLayout layout =
+                        new VerticalLayout(
 
                                 requestInfo,
 
-                                // requestRemarks,
+                                remarksTitle,
+
+                                remarksValue,
 
                                 itemGrid,
 
                                 comments,
 
-                                buttonLayout);
-
-                layout.setSpacing(true);
+                                buttonLayout
+                        );
 
                 layout.setPadding(false);
 
+                layout.setSpacing(true);
+                        
                 dialog.add(layout);
 
                 dialog.open();

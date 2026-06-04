@@ -1,5 +1,8 @@
 package com.example.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.enums.ApprovalRole;
 import com.example.enums.ApprovalStatus;
 
@@ -8,6 +11,10 @@ public class RequestApprovalDTO {
     private Long approvalId;
 
     private Long requestId;
+
+    private Long employeeId;
+
+    private String employeeName;
 
     private String requestNumber;
 
@@ -20,6 +27,10 @@ public class RequestApprovalDTO {
     private Boolean isCurrentLevel;
 
     private String comments;
+
+    private String remarks;
+
+    private List<RequestItemDTO> requestItems = new ArrayList<>();
 
     public RequestApprovalDTO() {
     }
@@ -34,6 +45,30 @@ public class RequestApprovalDTO {
         this.approvalStatus = approvalStatus;
         this.isCurrentLevel = isCurrentLevel;
         this.comments = comments;
+    }
+
+    public List<RequestItemDTO> getRequestItems() {
+        return requestItems;
+    }
+
+    public void setRequestItems(List<RequestItemDTO> requestItems) {
+        this.requestItems = requestItems;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 
     public Long getApprovalId() {
@@ -98,6 +133,14 @@ public class RequestApprovalDTO {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     

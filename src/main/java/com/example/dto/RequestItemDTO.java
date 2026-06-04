@@ -15,6 +15,8 @@ public class RequestItemDTO {
 
     private Integer approvedQuantity;
 
+    private Boolean selected = true;
+
     public RequestItemDTO() {
     }
 
@@ -74,6 +76,14 @@ public class RequestItemDTO {
 
     public void setApprovedQuantity(Integer approvedQuantity) {
         this.approvedQuantity = approvedQuantity;
+    }
+
+    public Boolean getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Boolean selected) {
+        this.selected = selected;
     }
 
     

@@ -1,6 +1,7 @@
 package com.example.views;
 
 import com.example.dto.ApprovalProgressDTO;
+import com.example.dto.ApprovalProgressItemDTO;
 import com.example.service.ApprovalProgressService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -22,7 +23,7 @@ public class ApprovalProgressDialog extends Dialog {
 
         setWidth("1000px");
 
-        setHeight("600px");
+        setHeight("800px");
 
         getElement().getStyle()
                 .set("border-radius", "22px")
@@ -236,6 +237,69 @@ public class ApprovalProgressDialog extends Dialog {
 
         gridWrapper.setSizeFull();
 
+        Grid<ApprovalProgressItemDTO> itemGrid =
+                new Grid<>(ApprovalProgressItemDTO.class, false);
+
+        itemGrid.addThemeVariants(
+                GridVariant.LUMO_ROW_STRIPES,
+                GridVariant.LUMO_COLUMN_BORDERS
+        );
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getItemName
+        )
+        .setHeader("Item");
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getItemCode
+        )
+        .setHeader("Code");
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getRequestedQuantity
+        )
+        .setHeader("Requested Qty");
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getApprovedQuantity
+        )
+        .setHeader("Approved Qty");
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getIssuedQuantity
+        )
+        .setHeader("Issued Qty");
+
+        itemGrid.addColumn(
+                ApprovalProgressItemDTO::getRemainingQuantity
+        )
+        .setHeader("Remaining Qty");
+
+        itemGrid.setItems(
+                approvalProgressService
+                        .getRequestItemSummary(requestId)
+        );
+
+        itemGrid.setHeight("250px");
+
+        Span itemSummaryTitle =
+                new Span("Request Item Summary");
+
+        itemSummaryTitle.getStyle()
+                .set("font-size", "18px")
+                .set("font-weight", "700")
+                .set("color", "#0f172a");
+
+        VerticalLayout itemSummaryLayout =
+                new VerticalLayout(
+                        itemSummaryTitle,
+                        itemGrid
+                );
+
+        itemSummaryLayout.setPadding(true);
+
+        itemSummaryLayout.setSpacing(true);
+
 
         Button closeButton = new Button("Close");
 
@@ -274,6 +338,7 @@ public class ApprovalProgressDialog extends Dialog {
         mainLayout.add(
                 headerLayout,
                 gridWrapper,
+                itemSummaryLayout,
                 footer
         );
 

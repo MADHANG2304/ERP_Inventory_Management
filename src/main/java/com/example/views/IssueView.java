@@ -1,20 +1,26 @@
 package com.example.views;
 
 import com.example.base.ui.MainLayout;
+import com.example.dto.AssetItemDTO;
 import com.example.dto.IssuedItemDTO;
 import com.example.security.SecurityService;
+import com.example.service.AssetItemService;
 import com.example.service.IssueService;
 import com.example.utils.NotificationUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -44,11 +50,21 @@ public class IssueView extends VerticalLayout {
 
     private IssuedItemDTO selectedItem;
 
-    public IssueView(IssueService issueService, SecurityService securityService) {
+    private final AssetItemService assetItemService;
+
+    private final MultiSelectListBox<AssetItemDTO> assetSelector =
+                new MultiSelectListBox<>();
+
+    private final IntegerField quantityField =
+                new IntegerField("Issue Quantity");
+
+    public IssueView(IssueService issueService, SecurityService securityService, AssetItemService assetItemService) {
 
                 this.issueService = issueService;
 
                 this.securityService = securityService;
+
+                this.assetItemService = assetItemService;
 
                 this.username = securityService.getAuthenticatedUser();
 
@@ -95,6 +111,8 @@ public class IssueView extends VerticalLayout {
                 headingSection.setSpacing(true);
 
                 configureGrid();
+
+                // configureAssetSelector();
 
                 Button issueButton = new Button("Issue Items", VaadinIcon.CHECK.create());
 
@@ -146,11 +164,8 @@ public class IssueView extends VerticalLayout {
                         new HorizontalLayout(
 
                                 issueButton,
-
                                 clearSelectionButton,
-
                                 refreshButton,
-
                                 selectedInfo
                         );
 
@@ -177,13 +192,16 @@ public class IssueView extends VerticalLayout {
                 refreshGrid();
         }
 
-    private void configureGrid() {
+        private void configureGrid() {
 
-                grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
+                grid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
 
                 grid.addColumn(
                         IssuedItemDTO::getRequestNumber
-                        ).setHeader("Request Number");
+                ).setHeader("Request Number");
 
                 grid.addColumn(
                         IssuedItemDTO::getEmployeeName
@@ -191,11 +209,11 @@ public class IssueView extends VerticalLayout {
 
                 grid.addColumn(
                         IssuedItemDTO::getItemName
-                        ).setHeader("Item");
+                ).setHeader("Item");
 
                 grid.addColumn(
                         IssuedItemDTO::getItemCode
-                        ).setHeader("Item Code");
+                ).setHeader("Item Code");
 
                 grid.addColumn(
                         dto -> dto.getAssetReferenceNumber() == null
@@ -205,7 +223,12 @@ public class IssueView extends VerticalLayout {
 
                 grid.addComponentColumn(item -> {
 
-                        Span quantityBadge = new Span(String.valueOf(item.getRequestedQuantity()));
+                        Span quantityBadge =
+                                new Span(
+                                        String.valueOf(
+                                                item.getRequestedQuantity()
+                                        )
+                                );
 
                         quantityBadge.getStyle()
 
@@ -225,6 +248,64 @@ public class IssueView extends VerticalLayout {
 
                 }).setHeader("Requested Qty");
 
+                grid.addComponentColumn(item -> {
+
+                        Span quantityBadge =
+                                new Span(
+                                        String.valueOf(
+                                                item.getIssuedQuantity()
+                                        )
+                                );
+
+                        quantityBadge.getStyle()
+
+                                .set("background", "#dcfce7")
+
+                                .set("color", "#16a34a")
+
+                                .set("padding", "6px 14px")
+
+                                .set("border-radius", "20px")
+
+                                .set("font-weight", "700")
+
+                                .set("font-size", "13px");
+
+                        return quantityBadge;
+
+                }).setHeader("Already Issued");
+
+                grid.addComponentColumn(item -> {
+
+                        int remaining =
+                                item.getRequestedQuantity()
+                                        - item.getIssuedQuantity();
+
+                        Span quantityBadge =
+                                new Span(
+                                        String.valueOf(
+                                                remaining
+                                        )
+                                );
+
+                        quantityBadge.getStyle()
+
+                                .set("background", "#fef3c7")
+
+                                .set("color", "#d97706")
+
+                                .set("padding", "6px 14px")
+
+                                .set("border-radius", "20px")
+
+                                .set("font-weight", "700")
+
+                                .set("font-size", "13px");
+
+                        return quantityBadge;
+
+                }).setHeader("Remaining");
+
                 grid.setWidthFull();
 
                 grid.setHeight("650px");
@@ -240,11 +321,13 @@ public class IssueView extends VerticalLayout {
                         .set("box-shadow", "0 6px 18px rgba(0,0,0,0.08)");
 
                 grid.asSingleSelect()
-                        .addValueChangeListener(event -> {
+                .addValueChangeListener(event -> {
 
-                                selectedItem = event.getValue();
+                        selectedItem = event.getValue();
 
-                                if(selectedItem != null) {
+                        if(selectedItem != null) {
+
+                                openIssueDialog(selectedItem);
 
                                 selectedInfo.setText(
 
@@ -255,53 +338,338 @@ public class IssueView extends VerticalLayout {
                                         + " | "
 
                                         + selectedItem.getItemName()
-
-                                        + " | "
-
-                                        + (
-
-                                                selectedItem.getAssetReferenceNumber() != null
-
-                                                        ? selectedItem.getAssetReferenceNumber()
-
-                                                        : "Consumable"
-                                        )
                                 );
 
-                                } else {
+                        } else {
 
-                                        selectedInfo.setText("No request selected");
+                                selectedInfo.setText(
+                                        "No request selected"
+                                );
+                        }
+                });
+        }
+
+        private void issueRequest() {
+
+                if(selectedItem == null) {
+
+                        NotificationUtil.warning(
+                                "Select a request first"
+                        );
+
+                        return;
+                }
+
+                // openIssueDialog(selectedItem);
+        }
+
+        private void openIssueDialog(
+        IssuedItemDTO item
+        ) {
+
+                Dialog dialog = new Dialog();
+
+                dialog.setWidth("650px");
+
+                dialog.setHeaderTitle("Issue Item");
+
+                VerticalLayout content = new VerticalLayout();
+
+                Span requestInfo =
+                        new Span(
+
+                                "Request : "
+
+                                + item.getRequestNumber()
+
+                                + " | Item : "
+
+                                + item.getItemName()
+                        );
+
+                requestInfo.getStyle()
+
+                        .set("font-weight", "600")
+
+                        .set("font-size", "15px");
+
+                int remaining =
+                        item.getRequestedQuantity()
+                        - item.getIssuedQuantity();
+
+                Span remainingInfo =
+                        new Span(
+                                "Remaining Quantity : "
+                                + remaining
+                        );
+
+                remainingInfo.getStyle()
+
+                        .set("color", "#d97706")
+
+                        .set("font-weight", "600");
+
+                content.add(
+                        requestInfo,
+                        remainingInfo
+                );
+
+                HorizontalLayout footer = new HorizontalLayout();
+
+                if(Boolean.TRUE.equals(item.getReusable())) {
+
+                        MultiSelectListBox<AssetItemDTO> dialogAssetSelector =
+                                new MultiSelectListBox<>();
+
+                        dialogAssetSelector.setWidthFull();
+
+                        dialogAssetSelector.setHeight("250px");
+
+                        dialogAssetSelector.setItems(
+
+                                assetItemService.getAvailableAssetsByItem(
+                                        item.getItemId()
+                                )
+                        );
+
+                        dialogAssetSelector.setItemLabelGenerator(asset ->
+
+                                asset.getAssetReferenceNumber()
+
+                                +
+
+                                (
+                                        asset.getModelNumber() != null
+
+                                                ? " - " + asset.getModelNumber()
+
+                                                : ""
+                                )
+                        );
+
+                        content.add(dialogAssetSelector);
+
+                        Button issueButton =
+                                new Button("Issue Selected Assets");
+
+                        issueButton.addThemeVariants(
+                                ButtonVariant.LUMO_SUCCESS
+                        );
+
+                        issueButton.addClickListener(event -> {
+
+                        try {
+
+                                if(dialogAssetSelector
+                                        .getSelectedItems()
+                                        .isEmpty()) {
+
+                                NotificationUtil.warning(
+                                        "Select asset(s)"
+                                );
+
+                                return;
+                                }
+
+                                if(dialogAssetSelector
+                                        .getSelectedItems()
+                                        .size() > remaining) {
+
+                                NotificationUtil.warning(
+
+                                        "Only "
+
+                                        + remaining
+
+                                        + " asset(s) can be issued"
+                                );
+
+                                return;
+                                }
+
+                                for(AssetItemDTO asset :
+
+                                        dialogAssetSelector.getSelectedItems()) {
+
+                                issueService.issueItem(
+
+                                        item.getRequestItemId(),
+
+                                        asset.getAssetItemId(),
+
+                                        1,
+
+                                        username
+                                );
+                                }
+
+                                NotificationUtil.success(
+                                        "Assets issued successfully"
+                                );
+
+                                dialog.close();
+
+                                refreshGrid();
+
+                        } catch(Exception ex) {
+
+                                NotificationUtil.error(
+                                        ex.getMessage()
+                                );
+                        }
+                        });
+
+                        footer.add(issueButton);
+                        // content.add(issueButton);
+
+                } else {
+
+                        IntegerField issueQuantity =
+                                new IntegerField(
+                                        "Issue Quantity"
+                                );
+
+                        issueQuantity.setMin(1);
+
+                        issueQuantity.setMax(remaining);
+
+                        issueQuantity.setValue(
+                                remaining
+                        );
+
+                        issueQuantity.setWidthFull();
+
+                        content.add(issueQuantity);
+
+                        Button issueButton =
+                                new Button(
+                                        "Issue Quantity"
+                                );
+
+                        issueButton.addThemeVariants(
+                                ButtonVariant.LUMO_SUCCESS
+                        );
+
+                        issueButton.addClickListener(event -> {
+
+                                try {
+
+                                        if(issueQuantity.getValue() == null
+                                                ||
+                                                issueQuantity.getValue() <= 0) {
+
+                                        NotificationUtil.warning(
+                                                "Enter quantity"
+                                        );
+
+                                        return;
+                                        }
+
+                                        if(issueQuantity.getValue() > remaining) {
+
+                                        NotificationUtil.warning(
+
+                                                "Only "
+
+                                                + remaining
+
+                                                + " quantity can be issued"
+                                        );
+
+                                        return;
+                                        }
+
+                                        issueService.issueItem(
+
+                                                item.getRequestItemId(),
+
+                                                null,
+
+                                                issueQuantity.getValue(),
+
+                                                username
+                                        );
+
+                                        NotificationUtil.success(
+                                                "Quantity issued successfully"
+                                        );
+
+                                        dialog.close();
+
+                                        refreshGrid();
+
+                                } catch(Exception ex) {
+
+                                        NotificationUtil.error(
+                                                ex.getMessage()
+                                        );
                                 }
                         });
+                        footer.add(issueButton);
+
+                }
+                Button cancelButton =
+                new Button("Cancel");
+
+                cancelButton.addThemeVariants(
+                        ButtonVariant.LUMO_ERROR
+                );
+
+                cancelButton.addClickListener(event -> {
+
+                        grid.deselectAll();
+
+                        selectedItem = null;
+
+                        selectedInfo.setText(
+                                "No request selected"
+                        );
+
+                        dialog.close();
+                });
+
+                footer.add(cancelButton);
+
+                content.add(footer);
+
+                dialog.add(content);
+
+                dialog.open();
         }
 
-    private void issueRequest() {
+        private void configureAssetSelector() {
 
-        try {
+                assetSelector.setWidthFull();
 
-            if(selectedItem == null) {
+                assetSelector.setHeight("140px");
 
-                NotificationUtil.warning("Select a request first");
-                
-                return;
-            }
+                assetSelector.setItemLabelGenerator(
+                        AssetItemDTO::getAssetReferenceNumber
+                );
 
-            issueService.issueItem(selectedItem.getRequestItemId(), username);
-            
-            NotificationUtil.success("Item issued successfully");
-            
-            refreshGrid();
-                
-        } catch (Exception e) {
-                
-                NotificationUtil.error(e.getMessage());
+                assetSelector.getStyle()
+
+                        .set("border", "1px solid #dbe2ea")
+
+                        .set("border-radius", "10px")
+
+                        .set("padding", "10px")
+
+                        .set("background", "#ffffff");
+
+                assetSelector.setVisible(false);
+
+                quantityField.setWidth("180px");
+
+                quantityField.setMin(1);
+
+                quantityField.setVisible(false);
         }
-    }
 
-    private void refreshGrid() {
+        private void refreshGrid() {
 
-        grid.setItems(
-                issueService.getApprovedRequests()
-        );
-    }
+                grid.setItems(
+                        issueService.getApprovedRequests()
+                );
+        }
 }

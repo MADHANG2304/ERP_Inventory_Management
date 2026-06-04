@@ -1,5 +1,12 @@
 package com.example.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.dto.DepartmentDTO;
 import com.example.dto.DesignationDTO;
 import com.example.dto.EmployeeDTO;
@@ -13,12 +20,6 @@ import com.example.repository.DesignationRepository;
 import com.example.repository.EmployeeRepository;
 import com.example.repository.RoleRepository;
 import com.example.specification.EmployeeSpecification;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -328,43 +329,126 @@ public class EmployeeService {
         return cleanName + "@123";
     }
 
-    private EmployeeDTO convertToDTO(Employee employee) {
 
-        EmployeeDTO dto = new EmployeeDTO();
+        public void assignManager(
+                Long employeeId,
+                Long managerId
+        ) {
 
-        dto.setEmployeeId(employee.getEmployeeId());
+                Employee employee =
+                        employeeRepository
+                                .findById(employeeId)
+                                .orElseThrow(() ->
+                                        new RuntimeException(
+                                                "Employee not found"
+                                        )
+                                );
 
-        dto.setDepartmentId(employee.getDepartment().getDepartmentId());
+                Employee manager =
+                        employeeRepository
+                                .findById(managerId)
+                                .orElseThrow(() ->
+                                        new RuntimeException(
+                                                "Manager not found"
+                                        )
+                                );
 
-        dto.setDepartmentName(employee.getDepartment().getDepartmentName());
+                if(employee.getEmployeeId().equals(manager.getEmployeeId())) {
 
-        dto.setDesignationId(employee.getDesignation().getDesignationId());
+                        throw new RuntimeException(
+                                "Employee cannot be assigned as their own manager"
+                        );
+                }
 
-        dto.setDesignationName(employee.getDesignation().getDesignationName());
+                if(!"MANAGER".equals(
+                        manager.getRole().getRoleName()
+                )) {
 
-        dto.setEmployeeName(employee.getEmployeeName());
+                        throw new RuntimeException(
+                                "Selected employee is not a manager"
+                        );
+                }
 
-        dto.setMobileNumber(employee.getMobileNumber());
+                if(!employee.getDepartment()
+                        .getDepartmentId()
+                        .equals(
+                                manager.getDepartment()
+                                        .getDepartmentId()
+                        )) {
 
-        dto.setEmail(employee.getEmail());
+                        throw new RuntimeException(
+                                "Manager must belong to same department"
+                        );
+                }
 
-        dto.setGender(employee.getGender());
+                employee.setManager(manager);
 
-        dto.setState(employee.getState());
-
-        dto.setCity(employee.getCity());
-
-        dto.setIsActive(employee.getIsActive());
-
-        if(employee.getRole() != null) {
-
-            dto.setRoleId(employee.getRole().getRoleId());
-
-            dto.setRoleName(employee.getRole().getRoleName());
+                employeeRepository.save(employee);
         }
 
-        dto.setUsername(employee.getUsername());
+        public List<EmployeeDTO> getManagersByDepartment(
+                Long departmentId
+        ) {
 
-        return dto;
-    }
+                return employeeRepository
+                        .findByDepartment_DepartmentIdAndRole_RoleNameAndIsActive(
+                                departmentId,
+                                "MANAGER",
+                                true
+                        )
+                        .stream()
+                        .map(this::convertToDTO)
+                        .toList();
+        }
+
+        private EmployeeDTO convertToDTO(Employee employee) {
+
+                EmployeeDTO dto = new EmployeeDTO();
+
+                dto.setEmployeeId(employee.getEmployeeId());
+
+                dto.setDepartmentId(employee.getDepartment().getDepartmentId());
+
+                dto.setDepartmentName(employee.getDepartment().getDepartmentName());
+
+                dto.setDesignationId(employee.getDesignation().getDesignationId());
+
+                dto.setDesignationName(employee.getDesignation().getDesignationName());
+
+                dto.setEmployeeName(employee.getEmployeeName());
+
+                dto.setMobileNumber(employee.getMobileNumber());
+
+                dto.setEmail(employee.getEmail());
+
+                dto.setGender(employee.getGender());
+
+                dto.setState(employee.getState());
+
+                dto.setCity(employee.getCity());
+
+                dto.setIsActive(employee.getIsActive());
+
+                if(employee.getRole() != null) {
+
+                        dto.setRoleId(employee.getRole().getRoleId());
+
+                        dto.setRoleName(employee.getRole().getRoleName());
+                }
+
+                if(employee.getManager() != null) {
+
+                        dto.setManagerEmployeeId(
+                                employee.getManager().getEmployeeId()
+                        );
+
+                        dto.setManagerEmployeeName(
+                                employee.getManager().getEmployeeName()
+                        );
+                }
+
+                dto.setUsername(employee.getUsername());
+
+                return dto;
+        }
 }

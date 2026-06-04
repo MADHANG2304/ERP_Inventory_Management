@@ -1,5 +1,7 @@
 package com.example.views;
 
+import org.hibernate.mapping.List;
+
 import com.example.base.ui.MainLayout;
 import com.example.dto.DepartmentDTO;
 import com.example.dto.DesignationDTO;
@@ -8,6 +10,7 @@ import com.example.dto.RoleDTO;
 import com.example.service.EmployeeService;
 import com.example.utils.ConfirmDialogUtil;
 import com.example.utils.NotificationUtil;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -17,6 +20,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -473,128 +477,237 @@ public class EmployeeView extends VerticalLayout {
         binder.setBean(currentEmployee);
     }
 
-    private void configureGrid() {
+        private void configureGrid() {
 
-        grid.addThemeVariants(
+                grid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
 
-                GridVariant.LUMO_ROW_STRIPES,
+                grid.addComponentColumn(employee -> {
 
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                        Button employeeButton =
+                                new Button(
+                                        employee.getEmployeeName()
+                                );
 
-        grid.addColumn(EmployeeDTO::getEmployeeName)
-                .setHeader("Employee")
-                .setAutoWidth(true);
+                        employeeButton.addThemeVariants(
+                                ButtonVariant.LUMO_TERTIARY_INLINE
+                        );
 
-        grid.addColumn(EmployeeDTO::getEmail)
-                .setHeader("Email");
+                        employeeButton.getStyle()
+                                .set("font-weight", "600")
+                                .set("color", "#2563eb");
 
-        grid.addColumn(EmployeeDTO::getMobileNumber)
-                .setHeader("Mobile");
+                        employeeButton.addClickListener(event ->
+                                openEmployeeDetailsDialog(employee)
+                        );
 
-        grid.addColumn(EmployeeDTO::getDepartmentName)
-                .setHeader("Department");
+                        return employeeButton;
 
-        grid.addColumn(EmployeeDTO::getDesignationName)
-                .setHeader("Designation");
+                }).setHeader("Employee");
 
-        grid.addColumn(
+                grid.addColumn(
                         EmployeeDTO::getUsername
                 ).setHeader("Username");
 
-        grid.addColumn(
+                grid.addColumn(
                         EmployeeDTO::getRoleName
                 ).setHeader("Role");
 
-        grid.addColumn(EmployeeDTO::getGender)
-                .setHeader("Gender");
+                // grid.addColumn(employee ->
 
-        grid.addComponentColumn(employee -> {
+                //         employee.getManagerEmployeeName() == null
+                //                 ? "-"
+                //                 : employee.getManagerEmployeeName()
 
-            Span status =
-                    new Span(
-                        Boolean.TRUE.equals(employee.getIsActive()) ? "ACTIVE" : "INACTIVE"
-                    );
+                // ).setHeader("Manager");
 
-            status.getStyle()
+                grid.addComponentColumn(employee -> {
 
-                    .set("padding", "6px 14px")
+                        if (employee.getManagerEmployeeName() == null
+                                || employee.getManagerEmployeeName().isBlank()) {
 
-                    .set("border-radius", "20px")
+                                Span badge =
+                                        new Span("Not Assigned");
 
-                    .set("font-size", "12px")
+                                badge.getStyle()
+                                        .set("background", "#ffedd5")
+                                        .set("color", "#ea580c")
+                                        .set("padding", "6px 12px")
+                                        .set("border-radius", "12px")
+                                        .set("font-weight", "600");
 
-                    .set("font-weight", "700")
+                                return badge;
+                        }
 
-                    .set("color", "white")
+                        Span badge =
+                                new Span(
+                                        employee.getManagerEmployeeName()
+                                );
 
-                    .set("background",
+                        badge.getStyle()
+                                .set("background", "#dcfce7")
+                                .set("color", "#15803d")
+                                .set("padding", "6px 12px")
+                                .set("border-radius", "12px")
+                                .set("font-weight", "600");
 
-                            Boolean.TRUE.equals(
-                                    employee.getIsActive()
-                            )
+                        return badge;
 
-                            ? "#16a34a"
+                        })
+                        .setHeader("Manager")
+                        .setAutoWidth(true);
 
-                            : "#dc2626"
-                    );
+                grid.addComponentColumn(employee -> {
 
-            return status;
+                        Span status =
+                                new Span(
+                                        Boolean.TRUE.equals(
+                                                employee.getIsActive()
+                                        )
+                                                ? "ACTIVE"
+                                                : "INACTIVE"
+                                );
 
-        }).setHeader("Status");
+                        status.getStyle()
 
-        grid.setHeight("600px");
+                                .set("padding", "6px 14px")
 
-        grid.setWidthFull();
+                                .set("border-radius", "20px")
 
-        grid.getStyle()
+                                .set("font-size", "12px")
 
-                .set("background", "white")
+                                .set("font-weight", "700")
 
-                .set("border-radius", "18px")
+                                .set("color", "white")
 
-                .set("overflow", "hidden")
+                                .set("background",
 
-                .set("box-shadow",
-                        "0 6px 18px rgba(0,0,0,0.08)");
+                                        Boolean.TRUE.equals(
+                                                employee.getIsActive()
+                                        )
 
-        grid.asSingleSelect()
-                .addValueChangeListener(event -> {
+                                                ? "#16a34a"
 
-                        if(event.getValue() != null) {
+                                                : "#dc2626"
+                                );
 
-                                selectedEmployee = event.getValue();
+                        return status;
 
-                                currentEmployee = selectedEmployee;
+                }).setHeader("Status");
 
-                                binder.setBean(currentEmployee);
+                grid.addComponentColumn(employee -> {
 
-                                DepartmentDTO selectedDepartment = employeeService
+                        HorizontalLayout actions =
+                                new HorizontalLayout();
+
+                        Button editButton =
+                                new Button(
+                                        VaadinIcon.EDIT.create()
+                                );
+
+                        editButton.addThemeVariants(
+                                ButtonVariant.LUMO_PRIMARY
+                        );
+
+                        editButton.addClickListener(event -> {
+
+                        selectedEmployee = employee;
+
+                        currentEmployee = employee;
+
+                        binder.setBean(currentEmployee);
+
+                        DepartmentDTO selectedDepartment =
+                                employeeService
                                         .getAllDepartments()
                                         .stream()
-                                        .filter(department -> department.getDepartmentId().equals(currentEmployee.getDepartmentId()))
+                                        .filter(department ->
+
+                                                department.getDepartmentId()
+                                                        .equals(
+                                                                currentEmployee.getDepartmentId()
+                                                        )
+                                        )
                                         .findFirst()
                                         .orElse(null);
 
-                                departmentId.setValue(selectedDepartment);
+                        departmentId.setValue(
+                                selectedDepartment
+                        );
 
-                                DesignationDTO selectedDesignation = employeeService
+                        DesignationDTO selectedDesignation =
+                                employeeService
                                         .getAllDesignations()
                                         .stream()
-                                        .filter(designation -> designation.getDesignationId().equals(currentEmployee.getDesignationId()))
+                                        .filter(designation ->
+
+                                                designation.getDesignationId()
+                                                        .equals(
+                                                                currentEmployee.getDesignationId()
+                                                        )
+                                        )
                                         .findFirst()
                                         .orElse(null);
 
-                                designationId.setValue(selectedDesignation);
+                        designationId.setValue(
+                                selectedDesignation
+                        );
 
-                                saveButton.setText("Update");
+                        saveButton.setText(
+                                "Update"
+                        );
 
-                                isEdit = true;
+                        isEdit = true;
 
-                                employeeDialog.open();
+                        employeeDialog.open();
+                        });
+
+                        actions.add(editButton);
+
+                        if(!"SUPER_ADMIN".equalsIgnoreCase(
+                                employee.getRoleName()
+                        )) {
+
+                        Button managerButton =
+                                new Button(
+
+                                        employee.getManagerEmployeeName() == null
+                                                ? "Assign Manager"
+                                                : "Change Manager"
+                                );
+
+                        managerButton.addThemeVariants(
+                                ButtonVariant.LUMO_SUCCESS
+                        );
+
+                        managerButton.addClickListener(event ->
+                                openAssignManagerDialog(employee)
+                        );
+
+                        actions.add(managerButton);
                         }
-                });
-    }
+
+                        return actions;
+
+                }).setHeader("Actions");
+
+                grid.setHeight("600px");
+
+                grid.setWidthFull();
+
+                grid.getStyle()
+
+                        .set("background", "white")
+
+                        .set("border-radius", "18px")
+
+                        .set("overflow", "hidden")
+
+                        .set("box-shadow",
+                                "0 6px 18px rgba(0,0,0,0.08)");
+        }
 
     private void saveEmployee() {
 
@@ -654,6 +767,323 @@ public class EmployeeView extends VerticalLayout {
 
         refreshGrid();
     }
+
+        private void openAssignManagerDialog(EmployeeDTO employee) {
+
+                Dialog dialog = new Dialog();
+
+                dialog.setWidth("500px");
+
+                dialog.setHeaderTitle(
+                        employee.getManagerEmployeeId() == null
+                                ? "Assign Manager"
+                                : "Change Manager"
+                );
+
+                ComboBox<EmployeeDTO> managerBox =
+                        new ComboBox<>("Manager");
+
+                java.util.List<EmployeeDTO> managers =
+                        employeeService
+                                .getManagersByDepartment(
+                                        employee.getDepartmentId()
+                                )
+                                .stream()
+
+                                .filter(manager ->
+
+                                        !manager.getEmployeeId()
+                                                .equals(
+                                                        employee.getEmployeeId()
+                                                )
+                                )
+
+                                .toList();
+
+                if (managers.isEmpty()) {
+
+                        NotificationUtil.warning(
+                                "No managers found for this department"
+                        );
+
+                        return;
+                }
+
+                managerBox.setItems(managers);
+
+                managerBox.setWidthFull();
+
+                managerBox.setItemLabelGenerator(
+                        EmployeeDTO::getEmployeeName
+                );
+
+                if(employee.getManagerEmployeeId() != null) {
+
+                        managers.stream()
+
+                                .filter(manager ->
+
+                                        manager.getEmployeeId()
+                                                .equals(
+                                                        employee.getManagerEmployeeId()
+                                                )
+                                )
+
+                                .findFirst()
+
+                                .ifPresent(managerBox::setValue);
+                }
+
+                Button save =
+                        new Button("Save");
+
+                save.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY
+                );
+
+                save.addClickListener(event -> {
+
+                        if(managerBox.getValue() == null) {
+
+                        NotificationUtil.warning(
+                                "Please select a manager"
+                        );
+
+                        return;
+                        }
+
+                        employeeService.assignManager(
+
+                                employee.getEmployeeId(),
+
+                                managerBox.getValue()
+                                        .getEmployeeId()
+                        );
+
+                        refreshGrid();
+
+                        dialog.close();
+
+                        NotificationUtil.success(
+                                "Manager assigned successfully"
+                        );
+                });
+
+                Button cancel =
+                        new Button(
+                                "Cancel",
+                                e -> dialog.close()
+                        );
+
+                HorizontalLayout buttons =
+                        new HorizontalLayout(
+                                save,
+                                cancel
+                        );
+
+                VerticalLayout content =
+                        new VerticalLayout(
+                                managerBox,
+                                buttons
+                        );
+
+                content.setPadding(true);
+
+                dialog.add(content);
+
+                dialog.open();
+        }
+
+
+        private void openEmployeeDetailsDialog(EmployeeDTO employee) {
+
+                Dialog dialog = new Dialog();
+
+                dialog.setWidth("900px");
+
+                dialog.setHeaderTitle("Employee Details");
+
+                FormLayout formLayout = new FormLayout();
+
+                formLayout.setResponsiveSteps(
+
+                        new FormLayout.ResponsiveStep("0", 1),
+
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                formLayout.addFormItem(
+                        new Span(employee.getEmployeeName()),
+                        "Employee Name"
+                );
+
+                formLayout.addFormItem(
+                        new Span(employee.getUsername()),
+                        "Username"
+                );
+
+                formLayout.addFormItem(
+                        new Span(employee.getRoleName()),
+                        "Role"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getDepartmentName()
+                        ),
+                        "Department"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getDesignationName()
+                        ),
+                        "Designation"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getEmail()
+                        ),
+                        "Email"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getMobileNumber()
+                        ),
+                        "Mobile Number"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getGender()
+                        ),
+                        "Gender"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getState()
+                        ),
+                        "State"
+                );
+
+                formLayout.addFormItem(
+                        new Span(
+                                employee.getCity()
+                        ),
+                        "City"
+                );
+
+                String managerName =
+
+                        employee.getManagerEmployeeName() == null
+
+                                ? "Not Assigned"
+
+                                : employee.getManagerEmployeeName();
+
+                Span managerBadge =
+                        new Span(managerName);
+
+                managerBadge.getStyle()
+
+                        .set("padding", "6px 12px")
+
+                        .set("border-radius", "12px")
+
+                        .set("font-weight", "600")
+
+                        .set(
+
+                                "background",
+
+                                employee.getManagerEmployeeName() == null
+
+                                        ? "#ffedd5"
+
+                                        : "#dcfce7"
+                        )
+
+                        .set(
+
+                                "color",
+
+                                employee.getManagerEmployeeName() == null
+
+                                        ? "#ea580c"
+
+                                        : "#15803d"
+                        );
+
+                formLayout.addFormItem(
+                        managerBadge,
+                        "Manager"
+                );
+
+                Span statusBadge =
+                        new Span(
+
+                                Boolean.TRUE.equals(
+                                        employee.getIsActive()
+                                )
+
+                                        ? "ACTIVE"
+
+                                        : "INACTIVE"
+                        );
+
+                statusBadge.getStyle()
+
+                        .set("padding", "6px 12px")
+
+                        .set("border-radius", "12px")
+
+                        .set("font-weight", "600")
+
+                        .set("color", "white")
+
+                        .set(
+
+                                "background",
+
+                                Boolean.TRUE.equals(
+                                        employee.getIsActive()
+                                )
+
+                                        ? "#16a34a"
+
+                                        : "#dc2626"
+                        );
+
+                formLayout.addFormItem(
+                        statusBadge,
+                        "Status"
+                );
+
+                Button close =
+                        new Button(
+                                "Close",
+                                e -> dialog.close()
+                        );
+
+                close.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY
+                );
+
+                VerticalLayout content =
+                        new VerticalLayout(
+                                formLayout,
+                                close
+                        );
+
+                content.setPadding(true);
+
+                dialog.add(content);
+
+                dialog.open();
+        }
 
     private void clearForm() {
 

@@ -12,6 +12,8 @@ public class IssuedItemDTO {
 
     private String employeeName;
 
+    private Long itemId;
+
     private String itemName;
 
     private String itemCode;
@@ -27,6 +29,8 @@ public class IssuedItemDTO {
     private Long assetItemId;
 
     private String assetReferenceNumber;
+
+    private Boolean reusable;
 
     
     public IssuedItemDTO() {
@@ -149,6 +153,22 @@ public class IssuedItemDTO {
 
     public void setAssetItemId(Long assetItemId){
         this.assetItemId = assetItemId;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public Boolean getReusable() {
+        return reusable;
+    }
+
+    public void setReusable(Boolean reusable) {
+        this.reusable = reusable;
     }
     
 }

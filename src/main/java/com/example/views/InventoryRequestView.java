@@ -613,7 +613,10 @@ public class InventoryRequestView extends VerticalLayout {
                 );
 
                 issuedGrid.addColumn(
-                        IssuedItemDTO::getAssetReferenceNumber
+                        // IssuedItemDTO::getAssetReferenceNumber
+                        dto -> dto.getAssetReferenceNumber() == null
+                                ? "Consumables"
+                                : dto.getAssetReferenceNumber()
                 ).setHeader("Issue Reference");
 
                 issuedGrid.addColumn(

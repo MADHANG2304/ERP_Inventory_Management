@@ -8,18 +8,17 @@ import com.example.utils.ConfirmDialogUtil;
 import com.example.utils.NotificationUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -127,7 +126,9 @@ public class ReturnView extends VerticalLayout {
         ).setHeader("Item Code");
 
         grid.addColumn(
-                ReturnedItemDTO::getReturnReferenceNumber
+                dto -> dto.getAssetReferenceNumber() == null
+                        ? "-"
+                        : dto.getAssetReferenceNumber()
         ).setHeader("Asset Ref");
 
         grid.addColumn(
@@ -219,7 +220,9 @@ public class ReturnView extends VerticalLayout {
                         "Item : "
                         + item.getItemName()
                         + " | Asset : "
-                        + item.getIssueReferenceNumber()
+                        + (
+                                item.getAssetReferenceNumber() != null ? item.getAssetReferenceNumber() : "-"
+                          )
                 );
 
         itemInfo.getStyle()

@@ -348,7 +348,7 @@ public class InventoryManagementView extends VerticalLayout {
 
         stockGrid.addColumn(
                 InventoryStockDTO::getAvailableQuantity
-        ).setHeader("Available");
+        ).setHeader("Currently Available");
 
         stockGrid.addColumn(
                 InventoryStockDTO::getIssuedQuantity
