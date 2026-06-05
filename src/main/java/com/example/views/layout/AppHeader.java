@@ -22,20 +22,6 @@ public class AppHeader extends HorizontalLayout {
 
         setAlignItems(Alignment.CENTER);
 
-        // getStyle()
-
-        //         .set("background", "#ffffff")
-
-        //         .set("padding", "14px 24px")
-
-        //         .set("margin", "0")
-
-        //         .set("border-bottom",
-        //                 "1px solid #dbe2ea")
-
-        //         .set("box-shadow",
-        //                 "0 1px 4px rgba(0,0,0,0.04)");
-
 
         DrawerToggle toggle = new DrawerToggle();
 

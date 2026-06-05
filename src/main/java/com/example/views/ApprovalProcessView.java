@@ -268,15 +268,12 @@ public class ApprovalProcessView extends VerticalLayout {
                                 "Request No : "
                                         + request.getRequestNumber()
 
-                                        + " | Employee : "
+                                        + "     |     Requester : "
                                         + request.getEmployeeName()
 
-                                        + " ID: ("
+                                        + "     |      Requester ID: ("
                                         + request.getEmployeeId()
                                         + ")"
-
-                                        + " | Approval Role : "
-                                        + approvalDTO.getApprovalRole().name()
                         );
 
                 requestInfo.getStyle()

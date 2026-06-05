@@ -19,5 +19,7 @@ public interface RequestApprovalRepository extends
         void deleteByRequest_RequestId(Long requestId);
 
         Long countByApprovalStatus(ApprovalStatus status);
+
+        List<RequestApproval> findByApproverEmployeeIdOrderByModifiedAtDesc(Long employeeId);
                 
 }

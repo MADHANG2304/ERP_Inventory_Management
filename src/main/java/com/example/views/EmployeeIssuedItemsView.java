@@ -124,10 +124,10 @@ public class EmployeeIssuedItemsView
                                 .set("color",
                                         "green");
 
-                case LOST ->
-                        status.getStyle()
-                                .set("color",
-                                        "red");
+                // case LOST ->
+                //         status.getStyle()
+                //                 .set("color",
+                //                         "red");
 
                 case DAMAGED ->
                         status.getStyle()

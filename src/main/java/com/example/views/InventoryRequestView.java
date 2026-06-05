@@ -218,7 +218,7 @@ public class InventoryRequestView extends VerticalLayout {
 
         HorizontalLayout headerLayout = new HorizontalLayout(headingSection);
 
-        if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")){
+        if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE") || securityService.getAuthenticatedRole().equals("ROLE_MANAGER")){
                 headerLayout.add(openDialogButton);
         }
 
@@ -763,7 +763,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                 // EMPLOYEE TABS
 
-                if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")) {
+                if(securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE") || securityService.getAuthenticatedRole().equals("ROLE_MANAGER")) {
 
                         requestsTab = createTabButton(
                                 "All Requests",
@@ -797,7 +797,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         returnedTab = createTabButton(
                                 "Returned",
-                                (int) returnService.getReturnedHistory().size(),
+                                (int) returnService.getReturnedHistory(loggedInEmployee).size(),
                                 "#838585"
                         );
 
@@ -866,7 +866,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         returnedTab = createTabButton(
                                 "Returned",
-                                (int) returnService.getReturnedHistory().size(),
+                                (int) returnService.getReturnedHistory(loggedInEmployee).size(),
                                 "#838585"
                         );
 
@@ -1053,7 +1053,7 @@ public class InventoryRequestView extends VerticalLayout {
                 contentLayout.removeAll();
 
                 returnedGrid.setItems(
-                        returnService.getReturnedHistory()
+                        returnService.getReturnedHistory(loggedInEmployee)
                 );
 
                 contentLayout.add(returnedGrid);

@@ -150,16 +150,18 @@ public class ReturnService {
                                         )
                                 );
 
-                ReturnedItem returnedItem =
-                        new ReturnedItem();
+                ReturnedItem returnedItem = new ReturnedItem();
 
-                returnedItem.setIssuedItem(
-                        issuedItem
-                );
+                returnedItem.setIssuedItem(issuedItem);
 
-                returnedItem.setReturnReferenceNumber(
-                        generateReturnReference()
-                );
+                if (issuedItem.getAssetItem() != null) {
+
+                        returnedItem.setAssetItem(
+                                issuedItem.getAssetItem()
+                        );
+                }
+
+                returnedItem.setReturnReferenceNumber(generateReturnReference());
 
                 returnedItem.setReturnedQuantity(
                         dto.getReturnQuantity()
@@ -313,67 +315,67 @@ public class ReturnService {
                 );
         }
 
-    public List<ReturnedItemDTO> getReturnedHistory() {
+        public List<ReturnedItemDTO> getReturnedHistory(Employee employee) {
 
-    return returnedItemRepository
-            .findAll()
-            .stream()
+        return returnedItemRepository
+                .findAll()
+                .stream()
+                .filter(e -> e.getIssuedItem().getIssuedToEmployee().getEmployeeId().equals(employee.getEmployeeId()))
+                .map(item -> {
 
-            .map(item -> {
+                        ReturnedItemDTO dto =
+                                new ReturnedItemDTO();
 
-                    ReturnedItemDTO dto =
-                            new ReturnedItemDTO();
-
-                    dto.setIssuedItemId(
-                            item.getReturnedItemId()
-                    );
-
-                    dto.setIssueReferenceNumber(
-                            item.getIssuedItem()
-                                    .getIssueReferenceNumber()
-                    );
-
-                    dto.setReturnReferenceNumber(
-                            item.getReturnReferenceNumber()
-                    );
-
-                    dto.setItemName(
-                            item.getIssuedItem()
-                                    .getRequestItem()
-                                    .getItem()
-                                    .getItemName()
-                    );
-
-                    dto.setItemCode(
-                            item.getIssuedItem()
-                                    .getRequestItem()
-                                    .getItem()
-                                    .getItemCode()
-                    );
-
-                    dto.setReturnQuantity(
-                            item.getReturnedQuantity()
-                    );
-
-                    if(item.getIssuedItem().getAssetItem() != null) {
-
-                        dto.setAssetReferenceNumber(
-                                item.getIssuedItem()
-                                        .getAssetItem()
-                                        .getAssetReferenceNumber()
+                        dto.setIssuedItemId(
+                                item.getReturnedItemId()
                         );
-                    }
 
-                    dto.setIssueStatus(
-                            item.getIssuedItem()
-                                    .getIssueStatus()
-                    );
+                        dto.setIssueReferenceNumber(
+                                item.getIssuedItem()
+                                        .getIssueReferenceNumber()
+                        );
 
-                    return dto;
-            })
+                        dto.setReturnReferenceNumber(
+                                item.getReturnReferenceNumber()
+                        );
 
-            .toList();
-}
+                        dto.setItemName(
+                                item.getIssuedItem()
+                                        .getRequestItem()
+                                        .getItem()
+                                        .getItemName()
+                        );
+
+                        dto.setItemCode(
+                                item.getIssuedItem()
+                                        .getRequestItem()
+                                        .getItem()
+                                        .getItemCode()
+                        );
+
+                        dto.setReturnQuantity(
+                                item.getReturnedQuantity()
+                        );
+
+                        if(item.getIssuedItem().getAssetItem() != null) {
+
+                                dto.setAssetReferenceNumber(
+                                        item.getIssuedItem()
+                                                .getAssetItem()
+                                                .getAssetReferenceNumber()
+                                );
+                        }
+
+                        dto.setIssueStatus(
+                                item.getIssuedItem()
+                                        .getIssueStatus()
+                        );
+
+                        return dto;
+                })
+
+                .toList();
+        }
 
         public void cancelReturn(Long returnedItemId) {
 

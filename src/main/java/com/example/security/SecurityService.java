@@ -21,7 +21,7 @@ public class SecurityService {
         }
         return authentication.getName();
     }
-
+    
     public String getAuthenticatedRole() {
 
         Authentication authentication = SecurityContextHolder

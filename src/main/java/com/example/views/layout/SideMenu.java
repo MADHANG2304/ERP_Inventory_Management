@@ -12,10 +12,9 @@ import com.example.views.EmployeeView;
 import com.example.views.InventoryCategoryView;
 import com.example.views.InventoryManagementView;
 import com.example.views.InventoryRequestView;
-import com.example.views.InventoryTransactionView;
 import com.example.views.IssueView;
+import com.example.views.ProductTrackingView;
 import com.example.views.ReturnView;
-// import com.example.views.UserView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -23,6 +22,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.example.views.RequestTrackingView;
 
 public class SideMenu extends SideNav {
 
@@ -118,61 +118,52 @@ public class SideMenu extends SideNav {
 
             addSectionTitle("ORGANIZATION");
 
-            addItem(
-                    createModernNavItem(
-                            "Departments",
-                            DepartmentView.class,
-                            VaadinIcon.OFFICE,
-                            "#7c3aed"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Departments",
+                                DepartmentView.class,
+                                VaadinIcon.OFFICE,
+                                "#7c3aed"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Designations",
-                            DesignationView.class,
-                            VaadinIcon.BRIEFCASE,
-                            "#06b6d4"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Designations",
+                                DesignationView.class,
+                                VaadinIcon.BRIEFCASE,
+                                "#06b6d4"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Employees",
-                            EmployeeView.class,
-                            VaadinIcon.USERS,
-                            "#10b981"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Employees",
+                                EmployeeView.class,
+                                VaadinIcon.USERS,
+                                "#10b981"
+                        )
+                );
 
-        //     addItem(
-        //             createModernNavItem(
-        //                     "Users",
-        //                     UserView.class,
-        //                     VaadinIcon.USER,
-        //                     "#f59e0b"
-        //             )
-        //     );
+                addSectionTitle("WORKFLOW");
 
-            addSectionTitle("WORKFLOW");
+                addItem(
+                        createModernNavItem(
+                                "Approval Config",
+                                ApprovalConfigView.class,
+                                VaadinIcon.COGS,
+                                "#ef4444"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Approval Config",
-                            ApprovalConfigView.class,
-                            VaadinIcon.COGS,
-                            "#ef4444"
-                    )
-            );
-
-            addItem(
-                    createModernNavItem(
-                            "Audit Logs",
-                            AuditLogView.class,
-                            VaadinIcon.COGS,
-                            "#ef4444"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Audit Logs",
+                                AuditLogView.class,
+                                VaadinIcon.COGS,
+                                "#ef4444"
+                        )
+                );
 
         }
 
@@ -183,140 +174,167 @@ public class SideMenu extends SideNav {
 
             addSectionTitle("INVENTORY");
 
-            addItem(
-                    createModernNavItem(
-                            "Inventory Categories",
-                            InventoryCategoryView.class,
-                            VaadinIcon.ARCHIVES,
-                            "#ec4899"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Inventory Categories",
+                                InventoryCategoryView.class,
+                                VaadinIcon.ARCHIVES,
+                                "#ec4899"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Inventory Management",
-                            InventoryManagementView.class,
-                            VaadinIcon.STORAGE,
-                            "#22c55e"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Inventory Management",
+                                InventoryManagementView.class,
+                                VaadinIcon.STORAGE,
+                                "#22c55e"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Inventory Request",
-                            InventoryRequestView.class,
-                            VaadinIcon.CART,
-                            "#f97316"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Inventory Request",
+                                InventoryRequestView.class,
+                                VaadinIcon.CART,
+                                "#f97316"
+                        )
+                );
 
-        //     addItem(
-        //             createModernNavItem(
-        //                     "Transactions",
-        //                     InventoryTransactionView.class,
-        //                     VaadinIcon.EXCHANGE,
-        //                     "#14b8a6"
-        //             )
-        //     );
+                addSectionTitle("APPROVAL");
 
-            addSectionTitle("APPROVAL");
+                addItem(
+                        createModernNavItem(
+                                "Approval Process",
+                                ApprovalProcessView.class,
+                                VaadinIcon.CLIPBOARD_CHECK,
+                                "#6366f1"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Approval Process",
-                            ApprovalProcessView.class,
-                            VaadinIcon.CLIPBOARD_CHECK,
-                            "#6366f1"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Request Tracking",
+                                RequestTrackingView.class,
+                                VaadinIcon.SEARCH,
+                                "#0891b2"
+                        )
+                );
 
-            addSectionTitle("OPERATIONS");
+                addItem(
+                      createModernNavItem(
+                                "Product Tracking",
+                                ProductTrackingView.class,
+                                VaadinIcon.CUBE,
+                                "#7c3aed"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Issue Items",
-                            IssueView.class,
-                            VaadinIcon.UPLOAD_ALT,
-                            "#16a34a"
-                    )
-            );
+                addSectionTitle("OPERATIONS");
 
-            addItem(
-                    createModernNavItem(
-                            "Return Items",
-                            ReturnView.class,
-                            VaadinIcon.UPLOAD_ALT,
-                            "#16a34a"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Issue Items",
+                                IssueView.class,
+                                VaadinIcon.UPLOAD_ALT,
+                                "#16a34a"
+                        )
+                );
+
+                addItem(
+                        createModernNavItem(
+                                "Return Items",
+                                ReturnView.class,
+                                VaadinIcon.DOWNLOAD_ALT,
+                                "#dc2626x"
+                        )
+                );
         }
 
         // MANAGER
 
         if(role.equals("ROLE_MANAGER")) {
 
-            addSectionTitle("MANAGER");
+                addSectionTitle("MANAGER");
 
-            addItem(
-                    createModernNavItem(
-                            "Approval Process",
-                            ApprovalProcessView.class,
-                            VaadinIcon.CLIPBOARD_CHECK,
-                            "#6366f1"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Approval Process",
+                                ApprovalProcessView.class,
+                                VaadinIcon.CLIPBOARD_CHECK,
+                                "#6366f1"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Change Password",
-                            ChangePasswordView.class,
-                            VaadinIcon.LOCK,
-                            "#f59e0b"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Request Tracking",
+                                RequestTrackingView.class,
+                                VaadinIcon.SEARCH,
+                                "#0891b2"
+                        )
+                );
+
+                addItem(
+                        createModernNavItem(
+                                "Inventory Request",
+                                InventoryRequestView.class,
+                                VaadinIcon.CART,
+                                "#f97316"
+                        )
+                );
+
+                addItem(
+                        createModernNavItem(
+                                "Change Password",
+                                ChangePasswordView.class,
+                                VaadinIcon.LOCK,
+                                "#f59e0b"
+                        )
+                );
         }
 
         // EMPLOYEE
 
         if(role.equals("ROLE_EMPLOYEE")) {
 
-            addSectionTitle("EMPLOYEE");
+                addSectionTitle("EMPLOYEE");
 
-            addItem(
-                    createModernNavItem(
-                            "Inventory Request",
-                            InventoryRequestView.class,
-                            VaadinIcon.CART,
-                            "#2563eb"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Inventory Request",
+                                InventoryRequestView.class,
+                                VaadinIcon.CART,
+                                "#2563eb"
+                        )
+                );
 
-        //     addItem(
-        //             createModernNavItem(
-        //                     "My Issued Items",
-        //                     EmployeeIssuedItemsView.class,
-        //                     VaadinIcon.PACKAGE,
-        //                     "#10b981"
-        //             )
-        //     );
+                addItem(
+                        createModernNavItem(
+                                "Request Tracking",
+                                RequestTrackingView.class,
+                                VaadinIcon.SEARCH,
+                                "#0891b2"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Return Items",
-                            ReturnView.class,
-                            VaadinIcon.DOWNLOAD_ALT,
-                            "#dc2626"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Return Items",
+                                ReturnView.class,
+                                VaadinIcon.DOWNLOAD_ALT,
+                                "#dc2626"
+                        )
+                );
 
-            addItem(
-                    createModernNavItem(
-                            "Change Password",
-                            ChangePasswordView.class,
-                            VaadinIcon.LOCK,
-                            "#f59e0b"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Change Password",
+                                ChangePasswordView.class,
+                                VaadinIcon.LOCK,
+                                "#f59e0b"
+                        )
+                );
         }
 
 
@@ -324,14 +342,14 @@ public class SideMenu extends SideNav {
 
             addSectionTitle("INVENTORY ADMIN");
 
-            addItem(
-                    createModernNavItem(
-                            "Change Password",
-                            ChangePasswordView.class,
-                            VaadinIcon.LOCK,
-                            "#f59e0b"
-                    )
-            );
+                addItem(
+                        createModernNavItem(
+                                "Change Password",
+                                ChangePasswordView.class,
+                                VaadinIcon.LOCK,
+                                "#f59e0b"
+                        )
+                );
         }
 
 
