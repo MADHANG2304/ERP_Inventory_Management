@@ -417,7 +417,7 @@ public class IssueService {
                                 .findAll()
                                 .stream()
 
-                                .filter(item -> item.getIssueStatus() != IssueStatus.RETURNED)
+                                .filter(item -> item.getIssueStatus() == IssueStatus.ISSUED)
 
                                 .filter(item -> {
 
@@ -442,34 +442,6 @@ public class IssueService {
                                         dto.setItemName(item.getRequestItem().getItem().getItemName());
 
                                         dto.setItemCode(item.getRequestItem().getItem().getItemCode());
-
-                                        // if(Boolean.TRUE.equals(
-                                        //         item.getRequestItem().getItem().getIsReusable())) {
-
-                                        //         AssetItem asset =
-                                        //                 assetItemRepository.findAll()
-                                        //                         .stream()
-                                        //                         .filter(a ->
-
-                                        //                                 a.getItem()
-                                        //                                         .getItemId()
-                                        //                                         .equals(
-                                        //                                                 item.getRequestItem().getItem().getItemId()
-                                        //                                         )
-
-                                        //                                 && a.getAssetStatus()
-                                        //                                         == AssetStatus.AVAILABLE
-                                        //                         )
-                                        //                         .findFirst()
-                                        //                         .orElse(null);
-
-                                        //         if(asset != null) {
-
-                                        //                 dto.setAssetReferenceNumber(
-                                        //                         asset.getAssetReferenceNumber()
-                                        //                 );
-                                        //         }
-                                        // }
 
                                         dto.setIssuedQuantity(item.getIssuedQuantity());
 

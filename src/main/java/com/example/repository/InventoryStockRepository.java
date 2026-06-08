@@ -11,10 +11,27 @@ public interface InventoryStockRepository
         JpaSpecificationExecutor<InventoryStock> {
 
     @Query("""
-        SELECT COUNT(s)
-        FROM InventoryStock s
-        WHERE s.item.isReusable = false
-        AND s.availableQuantity <= s.item.minimumStock
-    """)
+    SELECT COUNT(i)
+    FROM InventoryItem i
+    WHERE
+        (
+            i.isReusable = false
+            AND EXISTS (
+                SELECT s
+                FROM InventoryStock s
+                WHERE s.item = i
+                AND s.availableQuantity <= i.minimumStock
+            )
+        )
+        OR
+        (
+            i.isReusable = true
+            AND (
+                SELECT COUNT(a)
+                FROM AssetItem a
+                WHERE a.item = i
+            ) <= i.minimumStock
+        )
+""")
     Long countLowStockItems();
 }

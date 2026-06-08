@@ -1,5 +1,7 @@
 package com.example.views;
 
+import java.time.format.DateTimeFormatter;
+
 import com.example.base.ui.MainLayout;
 import com.example.dto.RequestTrackingDTO;
 import com.example.security.SecurityService;
@@ -198,9 +200,16 @@ public class RequestTrackingView extends VerticalLayout {
 
         }).setHeader("Status");
 
-        grid.addColumn(
-                RequestTrackingDTO::getRequestDate
-        )
+        grid.addColumn(request -> {
+
+                        if(request.getRequestDate() == null) {
+                                return "-";
+                        }
+
+                        return request.getRequestDate()
+                                .toLocalDate()
+                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        })
         .setHeader("Request Date")
         .setAutoWidth(true);
 

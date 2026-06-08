@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -58,6 +59,8 @@ public class AuditLogService {
                 return auditLogRepository
                                 .findAll()
                                 .stream()
+                                .sorted(
+                                Comparator.comparing(AuditLog::getActionTime).reversed())
                                 .map(this::convertToDTO)
                                 .toList();
         }

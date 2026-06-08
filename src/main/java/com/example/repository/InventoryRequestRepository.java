@@ -17,8 +17,14 @@ public interface InventoryRequestRepository extends
 
         Long countByEmployee(Employee employee);
 
+        // Long countByRequestId();
+
+        long count();
+
         Long countByEmployeeAndRequestStatus(
                 Employee employee,
                 RequestStatus status
         );
+
+        
 }

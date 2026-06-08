@@ -617,7 +617,7 @@ public class InventoryRequestView extends VerticalLayout {
                         dto -> dto.getAssetReferenceNumber() == null
                                 ? "Consumables"
                                 : dto.getAssetReferenceNumber()
-                ).setHeader("Issue Reference");
+                ).setHeader("Asset Reference");
 
                 issuedGrid.addColumn(
                         IssuedItemDTO::getItemName
@@ -671,6 +671,12 @@ public class InventoryRequestView extends VerticalLayout {
                         String color = "#475569";
 
                         if(item.getIssueStatus() == IssueStatus.CLOSED) {
+
+                                String role = securityService.getAuthenticatedRole().toString();
+
+                                if(!role.equals("ROLE_SUPER_ADMIN") && !role.equals("ROLE_INVENTORY_ADMIN")){
+                                        status.setText("RETURNED");
+                                }
                                 color = "#475569";
                         }
 
@@ -708,7 +714,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                                         Button closeButton =
                                                 new Button(
-                                                        "Close",
+                                                        "Accept Return",
                                                         VaadinIcon.LOCK.create()
                                                 );
 
@@ -716,7 +722,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                                         closeButton.addClickListener(event -> {
 
-                                                returnService.closeReturn(item.getIssuedItemId());
+                                                returnService.closeReturn(item.getReturnedItemId());
 
                                                 NotificationUtil.success("Return closed successfully");
 
@@ -739,7 +745,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                                                 cancelButton.addClickListener(event -> {
 
-                                                        returnService.cancelReturn(item.getIssuedItemId());
+                                                        returnService.cancelReturn(item.getReturnedItemId());
 
                                                         NotificationUtil.success("Return cancelled successfully");
 
@@ -791,7 +797,7 @@ public class InventoryRequestView extends VerticalLayout {
 
                         issuedTab = createTabButton(
                                 "Issued",
-                                (int) issuedService.getIssuedHistory().size(),
+                                (int) inventoryRequestService.getIssuedRequestCount(),
                                 "#838585"
                         );
 

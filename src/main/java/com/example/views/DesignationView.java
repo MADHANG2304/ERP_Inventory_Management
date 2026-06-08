@@ -51,6 +51,8 @@ public class DesignationView extends VerticalLayout{
 
     Button saveButton = new Button("Save");
 
+    private final Button deleteButton = new Button("Delete");
+
     private final Dialog designationDialog =
         new Dialog();
 
@@ -132,6 +134,8 @@ public class DesignationView extends VerticalLayout{
 
             clearForm();
 
+            deleteButton.setVisible(false);
+
             designationDialog.open();
         });
 
@@ -173,8 +177,6 @@ public class DesignationView extends VerticalLayout{
         clearButton.getStyle()
                 .set("border-radius", "10px");
 
-        Button deleteButton =
-                new Button("Delete");
 
         deleteButton.addThemeVariants(
                 ButtonVariant.LUMO_ERROR
@@ -445,6 +447,8 @@ public class DesignationView extends VerticalLayout{
 
                         isEdit = true;
 
+                        deleteButton.setVisible(true);
+
                         designationDialog.open();
                     }
                 });
@@ -510,6 +514,8 @@ public class DesignationView extends VerticalLayout{
         isActive.setValue(true);
 
         saveButton.setText("Save");
+
+        deleteButton.setVisible(true);
 
         isEdit = false;
 

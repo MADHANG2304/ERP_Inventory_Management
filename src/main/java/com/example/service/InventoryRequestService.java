@@ -659,6 +659,19 @@ public class InventoryRequestService {
                 }
         }
 
+        public int getIssuedRequestCount() {
+                String user = securityService.getAuthenticatedUser();
+
+                Employee employee = employeeRepository.findByUsername(user);
+
+                return inventoryRequestRepository
+                        .countByEmployeeAndRequestStatus(
+                                employee,
+                                RequestStatus.ISSUED
+                        )
+                        .intValue();
+        }
+
 
         private InventoryRequestDTO convertToDTO(InventoryRequest request) {
 

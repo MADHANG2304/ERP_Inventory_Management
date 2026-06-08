@@ -19,4 +19,6 @@ public interface ReturnedItemRepository
                 Long issuedItemId
         );
 
+        List<ReturnedItem> findByIssuedItemIssuedToEmployeeEmployeeId(Long employeeId);
+
 }

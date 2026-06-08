@@ -408,8 +408,7 @@ public class ApprovalProcessView extends VerticalLayout {
                                                 "Approved quantity cannot exceed requested quantity"
                                         );
 
-                                        value =
-                                                item.getRequestedQuantity();
+                                        value = item.getRequestedQuantity();
                                 }
 
                                 item.setApprovedQuantity(

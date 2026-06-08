@@ -276,7 +276,6 @@ public class InventoryItemView extends VerticalLayout{
         HorizontalLayout buttonLayout =
                 new HorizontalLayout(
                         saveButton,
-                        // clearButton,
                         deleteButton,
                         cancelButton
                 );

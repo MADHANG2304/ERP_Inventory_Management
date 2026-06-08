@@ -37,105 +37,120 @@ public class RequestTrackingService {
                 employeeRepository;
     }
 
-    public List<RequestTrackingDTO> getTrackingRequests(
-            String username,
-            String role) {
+        public List<RequestTrackingDTO> getTrackingRequests(String username, String role) {
 
-        Employee employee =
-                employeeRepository.findByUsername(
-                        username
-                );
+                Employee employee = employeeRepository.findByUsername(username);
 
-        if(employee == null) {
+                if(employee == null) {
 
-            throw new RuntimeException(
-                    "Employee not found"
-            );
-        }
+                        throw new RuntimeException(
+                                "Employee not found"
+                        );
+                }
 
-        if("ROLE_SUPER_ADMIN".equals(role)) {
+                if("ROLE_SUPER_ADMIN".equals(role) || "ROLE_INVENTORY_ADMIN".equals(role)) {
 
-            return inventoryRequestRepository
-                    .findAll()
-                    .stream()
-                    .sorted(
-                            Comparator.comparing(
-                                    InventoryRequest::getRequestDate
-                            ).reversed()
-                    )
-                    .map(this::convertToDTO)
-                    .toList();
-        }
+                        return inventoryRequestRepository
+                                .findAll()
+                                .stream()
+                                .sorted(
+                                        Comparator.comparing(
+                                                InventoryRequest::getRequestDate
+                                        ).reversed()
+                                )
+                                .map(this::convertToDTO)
+                                .toList();
+                }
 
-        if("ROLE_EMPLOYEE".equals(role)) {
+                if("ROLE_MANAGER".equals(role)) {
 
-            return inventoryRequestRepository
-                    .findAll()
-                    .stream()
+                        List<Long> requestIds =
 
-                    .filter(request ->
+                                requestApprovalRepository
+                                        .findAll()
+                                        .stream()
 
-                            request.getEmployee()
-                                    .getEmployeeId()
-                                    .equals(
-                                            employee.getEmployeeId()
-                                    )
-                    )
+                                        .filter(approval ->
 
-                    .sorted(
-                            Comparator.comparing(
-                                    InventoryRequest::getRequestDate
-                            ).reversed()
-                    )
+                                                approval.getApprover() != null
 
-                    .map(this::convertToDTO)
+                                                &&
 
-                    .toList();
-        }
+                                                approval.getApprover()
+                                                        .getEmployeeId()
+                                                        .equals(
+                                                                employee.getEmployeeId()
+                                                        )
+                                        )
 
-        List<Long> requestIds =
+                                        .map(approval ->
 
-                requestApprovalRepository
-                        .findAll()
+                                                approval.getRequest()
+                                                        .getRequestId()
+                                        )
+
+                                        .distinct()
+
+                                        .toList();
+
+                        return inventoryRequestRepository
+                                .findAllById(requestIds)
+                                .stream()
+
+                                .sorted(
+                                        Comparator.comparing(
+                                                InventoryRequest::getRequestDate
+                                        ).reversed()
+                                )
+
+                                .map(this::convertToDTO)
+
+                                .toList();
+                }
+
+                List<Long> requestIds =
+
+                        requestApprovalRepository
+                                .findAll()
+                                .stream()
+
+                                .filter(approval ->
+
+                                        approval.getApprover() != null
+
+                                        &&
+
+                                        approval.getApprover()
+                                                .getEmployeeId()
+                                                .equals(
+                                                        employee.getEmployeeId()
+                                                )
+                                )
+
+                                .map(approval ->
+
+                                        approval.getRequest()
+                                                .getRequestId()
+                                )
+
+                                .distinct()
+
+                                .toList();
+
+                return inventoryRequestRepository
+                        .findAllById(requestIds)
                         .stream()
 
-                        .filter(approval ->
-
-                                approval.getApprover() != null
-
-                                &&
-
-                                approval.getApprover()
-                                        .getEmployeeId()
-                                        .equals(
-                                                employee.getEmployeeId()
-                                        )
+                        .sorted(
+                                Comparator.comparing(
+                                        InventoryRequest::getRequestDate
+                                ).reversed()
                         )
 
-                        .map(approval ->
-
-                                approval.getRequest()
-                                        .getRequestId()
-                        )
-
-                        .distinct()
+                        .map(this::convertToDTO)
 
                         .toList();
-
-        return inventoryRequestRepository
-                .findAllById(requestIds)
-                .stream()
-
-                .sorted(
-                        Comparator.comparing(
-                                InventoryRequest::getRequestDate
-                        ).reversed()
-                )
-
-                .map(this::convertToDTO)
-
-                .toList();
-    }
+        }
 
     private RequestTrackingDTO convertToDTO(
             InventoryRequest request) {

@@ -1,5 +1,7 @@
 package com.example.views;
 
+import java.util.Arrays;
+
 import com.example.base.ui.MainLayout;
 import com.example.dto.AssetItemDTO;
 import com.example.dto.InventoryCategoryDTO;
@@ -241,8 +243,7 @@ public class InventoryManagementView extends VerticalLayout {
 
         tabs.setWidthFull();
 
-        VerticalLayout content =
-                new VerticalLayout(itemGrid);
+        VerticalLayout content = new VerticalLayout(itemGrid);
 
         tabs.addSelectedChangeListener(event -> {
 
@@ -251,6 +252,8 @@ public class InventoryManagementView extends VerticalLayout {
                 if(event.getSelectedTab() == itemTab){
 
                         content.add(itemGrid);
+
+                        refreshData();
 
                 }
 
@@ -270,12 +273,15 @@ public class InventoryManagementView extends VerticalLayout {
 
                         content.add(assetLayout);
 
+                        refreshData();
                 }
 
                 else {
 
                         content.add(stockGrid);
+                        refreshData();
                 }
+
         });
 
         add(
@@ -454,7 +460,9 @@ public class InventoryManagementView extends VerticalLayout {
         );
 
         approvalType.setItems(
-                ApprovalType.values()
+                Arrays.stream(ApprovalType.values())
+                        .filter(type -> type != ApprovalType.BULK_REQUEST)
+                        .toList()
         );
 
         unitType.setItems(
@@ -704,19 +712,19 @@ public class InventoryManagementView extends VerticalLayout {
                         InventoryItemDTO::getItemName
                 );
 
+                assetStatus.setItems(   
+                        AssetStatus.values()
+                );
+
                 // assetStatus.setItems(
-                //         AssetStatus.values()
+                //         AssetStatus.AVAILABLE
                 // );
 
-                assetStatus.setItems(
-                        AssetStatus.AVAILABLE
-                );
+                // assetStatus.setValue(
+                //         AssetStatus.AVAILABLE
+                // );
 
-                assetStatus.setValue(
-                        AssetStatus.AVAILABLE
-                );
-
-assetStatus.setReadOnly(true);
+                // assetStatus.setReadOnly(true);
 
                 FormLayout form =
                         new FormLayout();

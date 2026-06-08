@@ -13,6 +13,7 @@ import com.example.views.InventoryCategoryView;
 import com.example.views.InventoryManagementView;
 import com.example.views.InventoryRequestView;
 import com.example.views.IssueView;
+import com.example.views.MyCurrentStockView;
 import com.example.views.ProductTrackingView;
 import com.example.views.ReturnView;
 import com.vaadin.flow.component.Component;
@@ -221,14 +222,14 @@ public class SideMenu extends SideNav {
                         )
                 );
 
-                addItem(
-                      createModernNavItem(
-                                "Product Tracking",
-                                ProductTrackingView.class,
-                                VaadinIcon.CUBE,
-                                "#7c3aed"
-                        )
-                );
+                // addItem(
+                //       createModernNavItem(
+                //                 "Product Tracking",
+                //                 ProductTrackingView.class,
+                //                 VaadinIcon.CUBE,
+                //                 "#7c3aed"
+                //         )
+                // );
 
                 addSectionTitle("OPERATIONS");
 
@@ -241,14 +242,14 @@ public class SideMenu extends SideNav {
                         )
                 );
 
-                addItem(
-                        createModernNavItem(
-                                "Return Items",
-                                ReturnView.class,
-                                VaadinIcon.DOWNLOAD_ALT,
-                                "#dc2626x"
-                        )
-                );
+                // addItem(
+                //         createModernNavItem(
+                //                 "Return Items",
+                //                 ReturnView.class,
+                //                 VaadinIcon.DOWNLOAD_ALT,
+                //                 "#dc2626x"
+                //         )
+                // );
         }
 
         // MANAGER
@@ -265,6 +266,15 @@ public class SideMenu extends SideNav {
                                 "#6366f1"
                         )
                 );
+                
+                addItem(
+                        createModernNavItem(
+                                "Inventory Request",
+                                InventoryRequestView.class,
+                                VaadinIcon.CART,
+                                "#f97316"
+                        )
+                );
 
                 addItem(
                         createModernNavItem(
@@ -277,12 +287,14 @@ public class SideMenu extends SideNav {
 
                 addItem(
                         createModernNavItem(
-                                "Inventory Request",
-                                InventoryRequestView.class,
-                                VaadinIcon.CART,
-                                "#f97316"
+                                "My Current Stock",
+                                MyCurrentStockView.class,
+                                VaadinIcon.SEARCH,
+                                "#0891b2"
+                                
                         )
                 );
+
 
                 addItem(
                         createModernNavItem(
@@ -309,12 +321,22 @@ public class SideMenu extends SideNav {
                         )
                 );
 
+                // addItem(
+                //         createModernNavItem(
+                //                 "Request Tracking",
+                //                 RequestTrackingView.class,
+                //                 VaadinIcon.SEARCH,
+                //                 "#0891b2"
+                //         )
+                // );
+                
                 addItem(
                         createModernNavItem(
-                                "Request Tracking",
-                                RequestTrackingView.class,
+                                "My Current Stock",
+                                MyCurrentStockView.class,
                                 VaadinIcon.SEARCH,
                                 "#0891b2"
+                                
                         )
                 );
 

@@ -40,5 +40,9 @@ public interface IssuedItemRepository
         List<IssuedItem> findByAssetItemAssetItemIdOrderByIssuedDateDesc(
                 Long assetItemId
         );
+
+        List<IssuedItem> findByIssuedToEmployeeEmployeeId(Long employeeId);
+
+        
         
 }

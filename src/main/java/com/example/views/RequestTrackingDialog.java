@@ -1,5 +1,7 @@
 package com.example.views;
 
+import java.time.format.DateTimeFormatter;
+
 import com.example.dto.ApprovalProgressDTO;
 import com.example.dto.ApprovalProgressItemDTO;
 import com.example.dto.RequestTrackingDTO;
@@ -29,8 +31,6 @@ public class RequestTrackingDialog extends Dialog {
                 new VerticalLayout();
 
         mainLayout.setSizeFull();
-
-
 
 
         H3 requestInfoTitle =
@@ -203,7 +203,17 @@ public class RequestTrackingDialog extends Dialog {
         }).setHeader("Status");
 
         approvalGrid.addColumn(
-                ApprovalProgressDTO::getActionDate
+
+                approval -> {
+
+                        if(approval.getActionDate() == null) {
+                                return "-";
+                        }
+
+                        return approval.getActionDate()
+                                .toLocalDate()
+                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        }
         ).setHeader("Updated Date");
 
         approvalGrid.setItems(

@@ -780,23 +780,21 @@ public class EmployeeView extends VerticalLayout {
                                 : "Change Manager"
                 );
 
-                ComboBox<EmployeeDTO> managerBox =
-                        new ComboBox<>("Manager");
+                ComboBox<EmployeeDTO> managerBox = new ComboBox<>("Manager");
 
                 java.util.List<EmployeeDTO> managers =
-                        employeeService
-                                .getManagersByDepartment(
-                                        employee.getDepartmentId()
+                                employeeService.getManagersByDepartment(
+                                        employee.getDepartmentId(),
+                                        employee.getEmployeeId()
                                 )
                                 .stream()
-
                                 .filter(manager ->
 
-                                        !manager.getEmployeeId()
-                                                .equals(
-                                                        employee.getEmployeeId()
-                                                )
+                                        !manager.getEmployeeId().equals(employee.getEmployeeId())
                                 )
+                                // .filter(manager ->
+                                //         !manager.getManagerEmployeeId().equals(employee.getManagerEmployeeId())
+                                // )
 
                                 .toList();
 
@@ -984,8 +982,7 @@ public class EmployeeView extends VerticalLayout {
 
                                 : employee.getManagerEmployeeName();
 
-                Span managerBadge =
-                        new Span(managerName);
+                Span managerBadge = new Span(managerName);
 
                 managerBadge.getStyle()
 

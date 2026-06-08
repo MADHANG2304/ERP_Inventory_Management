@@ -1,6 +1,7 @@
 package com.example.service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -387,8 +388,21 @@ public class EmployeeService {
         }
 
         public List<EmployeeDTO> getManagersByDepartment(
-                Long departmentId
+                Long departmentId,
+                Long employeeId
         ) {
+
+                Employee employee =
+                        employeeRepository
+                                .findById(employeeId)
+                                .orElseThrow(() ->
+                                        new RuntimeException(
+                                                "Employee not found"
+                                        )
+                                );
+
+                List<Long> subordinateIds =
+                        getSubordinateIds(employee);
 
                 return employeeRepository
                         .findByDepartment_DepartmentIdAndRole_RoleNameAndIsActive(
@@ -397,8 +411,69 @@ public class EmployeeService {
                                 true
                         )
                         .stream()
+
+                        .filter(manager ->
+
+                                !manager.getEmployeeId()
+                                        .equals(employeeId)
+
+                                &&
+
+                                !subordinateIds.contains(
+                                        manager.getEmployeeId()
+                                )
+                        )
+
                         .map(this::convertToDTO)
+
                         .toList();
+        }
+
+        private List<Long> getSubordinateIds(
+                Employee employee
+        ) {
+
+                List<Long> subordinateIds = new ArrayList<>();
+
+                collectSubordinates(
+                        employee,
+                        subordinateIds
+                );
+
+                return subordinateIds;
+        }
+
+        private void collectSubordinates(
+                Employee manager,
+                List<Long> subordinateIds
+        ) {
+
+                employeeRepository
+                        .findAll()
+                        .stream()
+
+                        .filter(employee ->
+
+                                employee.getManager() != null
+
+                                &&
+
+                                employee.getManager()
+                                        .getEmployeeId()
+                                        .equals(manager.getEmployeeId())
+                        )
+
+                        .forEach(subordinate -> {
+
+                                subordinateIds.add(
+                                        subordinate.getEmployeeId()
+                                );
+
+                                collectSubordinates(
+                                        subordinate,
+                                        subordinateIds
+                                );
+                });
         }
 
         private EmployeeDTO convertToDTO(Employee employee) {

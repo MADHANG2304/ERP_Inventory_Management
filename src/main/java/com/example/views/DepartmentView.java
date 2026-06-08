@@ -43,8 +43,9 @@ public class DepartmentView extends VerticalLayout{
 
     Button saveButton = new Button("Save");
 
-    private final Dialog departmentDialog =
-        new Dialog();
+    private final Button deleteButton = new Button("Delete");
+
+    private final Dialog departmentDialog = new Dialog();
 
     private final Button openDialogButton =
             new Button(VaadinIcon.PLUS.create());
@@ -129,6 +130,8 @@ public class DepartmentView extends VerticalLayout{
 
                 clearForm();
 
+                deleteButton.setVisible(false);
+
                 departmentDialog.open();
         });
 
@@ -170,8 +173,7 @@ public class DepartmentView extends VerticalLayout{
         clearButton.getStyle()
                 .set("border-radius", "10px");
 
-        Button deleteButton =
-                new Button("Delete");
+
 
         deleteButton.addThemeVariants(
                 ButtonVariant.LUMO_ERROR
@@ -221,7 +223,7 @@ public class DepartmentView extends VerticalLayout{
                 new HorizontalLayout(
                         saveButton,
                         // clearButton,
-                        // deleteButton,
+                        deleteButton,
                         cancelButton
                 );
 
@@ -425,87 +427,89 @@ public class DepartmentView extends VerticalLayout{
 
                         if(event.getValue() != null) {
 
-                        selectedDepartment =
-                                event.getValue();
+                                selectedDepartment = event.getValue();
 
-                        loadDepartmentToForm(
-                                selectedDepartment
-                        );
+                                loadDepartmentToForm(
+                                        selectedDepartment
+                                );
 
-                        departmentDialog.open();
+                                deleteButton.setVisible(true);
+
+                                departmentDialog.open();
                         }
                 });
         }
 
-    private void loadDepartmentToForm(
-        DepartmentDTO department
-        ) {
+        private void loadDepartmentToForm(
+                DepartmentDTO department
+                ) {
 
-        currentDepartment = department;
+                currentDepartment = department;
 
-        binder.setBean(currentDepartment);
+                binder.setBean(currentDepartment);
 
-        departmentName.setValue(
-                department.getDepartmentName()
-        );
-
-        departmentCode.setValue(
-                department.getDepartmentCode()
-        );
-
-        isActive.setValue(
-                department.getIsActive()
-        );
-
-        saveButton.setText("Update Department");
-
-        isEdit = true;
-        }
-
-    public void saveDepartment() {
-
-        try {
-
-            binder.writeBean(currentDepartment);
-
-            departmentService.saveDepartment(
-                    currentDepartment
-            );
-
-            if(isEdit) {
-
-                NotificationUtil.success(
-                        "Department updated successfully"
+                departmentName.setValue(
+                        department.getDepartmentName()
                 );
 
-            } else {
-
-                NotificationUtil.success(
-                        "Department saved successfully"
+                departmentCode.setValue(
+                        department.getDepartmentCode()
                 );
-            }
 
-            clearForm();
+                isActive.setValue(
+                        department.getIsActive()
+                );
 
-            refreshGrid();
+                saveButton.setText("Update Department");
 
-            departmentDialog.close();
-
-        } catch (ValidationException e) {
-
-            NotificationUtil.error(
-                    "Validation Failed"
-            );
-
-        } catch (Exception e) {
-
-            NotificationUtil.error(
-                    e.getMessage()
-            );
+                isEdit = true;
         }
-    }
+
+        public void saveDepartment() {
+
+                try {
+
+                binder.writeBean(currentDepartment);
+
+                departmentService.saveDepartment(
+                        currentDepartment
+                );
+
+                if(isEdit) {
+
+                        NotificationUtil.success(
+                                "Department updated successfully"
+                        );
+
+                } else {
+
+                        NotificationUtil.success(
+                                "Department saved successfully"
+                        );
+                }
+
+                clearForm();
+
+                refreshGrid();
+
+                departmentDialog.close();
+
+                } catch (ValidationException e) {
+
+                        NotificationUtil.error(
+                                "Validation Failed"
+                        );
+
+                } catch (Exception e) {
+
+                        NotificationUtil.error(
+                                e.getMessage()
+                        );
+                }
+        }
 
     private void deleteDepartment(){
+
         if(currentDepartment.getDepartmentId() == null ){
             NotificationUtil.warning("Select a department first");
             
@@ -537,6 +541,8 @@ public class DepartmentView extends VerticalLayout{
         isActive.setValue(true);
 
         saveButton.setText("Save");
+
+        deleteButton.setVisible(true);
 
         isEdit = false;
 

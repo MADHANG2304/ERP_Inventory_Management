@@ -11,6 +11,7 @@ import com.example.repository.InventoryStockRepository;
 import com.example.repository.InventoryRequestRepository;
 import com.example.repository.RequestApprovalRepository;
 import com.example.security.SecurityService;
+import com.example.utils.NotificationUtil;
 
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class DashboardService {
 
     private final EmployeeRepository employeeRepository;
 
+    
 
     private final SecurityService securityService;
 
@@ -90,6 +92,7 @@ public class DashboardService {
             );
 
             dto.setIssuedRequests(
+
                     requestRepository.countByEmployeeAndRequestStatus(
                             employee,
                             RequestStatus.ISSUED
@@ -98,7 +101,7 @@ public class DashboardService {
         }
 
         // MANAGER / INVENTORY ADMIN / SUPER ADMIN
-        else {
+        else{
 
             dto.setPendingApprovals(
                     approvalRepository.countByApprovalStatus(
@@ -113,7 +116,8 @@ public class DashboardService {
             );
 
             dto.setIssuedRequests(
-                    requestRepository.countByRequestStatus(
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
                             RequestStatus.ISSUED
                     )
             );
@@ -136,10 +140,10 @@ public class DashboardService {
         }
 
         // SUPER ADMIN EXTRA
-        if(role.equals("ROLE_SUPER_ADMIN")) {
+        if(role.equals("ROLE_SUPER_ADMIN") || role.equals("ROLE_INVENTORY_ADMIN")) {
 
             dto.setTotalRequests(
-                    requestRepository.countByEmployee(employee)
+                requestRepository.count()
             );
 
             dto.setTotalEmployees(
@@ -148,6 +152,21 @@ public class DashboardService {
 
             dto.setTotalItems(
                     itemRepository.count()
+            );
+
+            dto.setIssuedRequests(
+                    requestRepository.countByRequestStatus(
+                            RequestStatus.ISSUED
+                    )
+            );
+        }
+
+        else if(role.equals("ROLE_MANAGER")){
+                dto.setIssuedRequests(
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
+                            RequestStatus.ISSUED
+                    )
             );
         }
 

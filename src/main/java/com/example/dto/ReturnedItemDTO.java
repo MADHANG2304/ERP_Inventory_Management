@@ -9,6 +9,8 @@ public class ReturnedItemDTO {
 
     private Long issuedItemId;
 
+    private Long returnedItemId;
+
     private String issueReferenceNumber;
 
     private String returnReferenceNumber;
@@ -164,6 +166,14 @@ public class ReturnedItemDTO {
 
     public void setAssetReferenceNumber(String assetReferenceNumber) {
         this.assetReferenceNumber = assetReferenceNumber;
+    }
+
+    public Long getReturnedItemId() {
+        return returnedItemId;
+    }
+
+    public void setReturnedItemId(Long returnedItemId) {
+        this.returnedItemId = returnedItemId;
     }
 
     
