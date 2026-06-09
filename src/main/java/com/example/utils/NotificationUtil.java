@@ -56,6 +56,6 @@ public class NotificationUtil {
             Notification.Position.TOP_END
         );
 
-        notification.setDuration(2000);
+        notification.setDuration(5000);
     }
 }

@@ -19,11 +19,13 @@ import com.example.entity.InventoryRequest;
 import com.example.entity.InventoryStock;
 import com.example.entity.RequestApproval;
 import com.example.entity.RequestItems;
+import com.example.enums.ApprovalRole;
 import com.example.enums.ApprovalStatus;
 import com.example.enums.ApprovalType;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
 import com.example.enums.RequestType;
+import com.example.enums.RequesterRole;
 import com.example.repository.ApprovalConfigRepository;
 import com.example.repository.AssetItemRepository;
 import com.example.repository.EmployeeRepository;
@@ -143,31 +145,37 @@ public class InventoryRequestService {
                                 .getRole()
                                 .getRoleName();
 
-                com.example.enums.RequesterRole requesterRole;
+                RequesterRole requesterRole;
 
-                switch (employeeRole) {
+                if(employeeRole.equals("EMPLOYEE")) {
 
-                        case "EMPLOYEE" ->
+                        requesterRole =
+                                RequesterRole.EMPLOYEE;
+                }
+                else if(employeeRole.equals("MANAGER")) {
 
-                                requesterRole =
-                                        com.example.enums.RequesterRole.EMPLOYEE;
+                        if(request.getEmployee().getManager() == null) {
 
-                        case "MANAGER" ->
+                        requesterRole =
+                                RequesterRole.TOP_LEVEL_MANAGER;
+                        }
+                        else {
 
-                                requesterRole =
-                                        com.example.enums.RequesterRole.MANAGER;
+                        requesterRole =
+                                RequesterRole.MANAGER;
+                        }
+                }
+                else if(employeeRole.equals("INVENTORY_ADMIN")) {
 
-                        case "INVENTORY_ADMIN" ->
+                        requesterRole =
+                                RequesterRole.INVENTORY_ADMIN;
+                }
+                else {
 
-                                requesterRole =
-                                        com.example.enums.RequesterRole.INVENTORY_ADMIN;
-
-                        default ->
-
-                                throw new RuntimeException(
-                                        "Requester role not supported : "
-                                                + employeeRole
-                                );
+                        throw new RuntimeException(
+                                "Requester role not supported : "
+                                        + employeeRole
+                        );
                 }
 
                 ApprovalConfig config =
@@ -253,7 +261,7 @@ public class InventoryRequestService {
 
                         Employee approver = null;
 
-                        if(level.getApprovalRole().name().equals("MANAGER")) {
+                        if(level.getApprovalRole() == ApprovalRole.MANAGER) {
 
                                 approver =
                                         request.getEmployee()
@@ -269,41 +277,44 @@ public class InventoryRequestService {
                                 }
                         }
 
-                        else if(level.getApprovalRole().name().equals("INVENTORY_ADMIN")) {
+                        else if(level.getApprovalRole() == ApprovalRole.INVENTORY_ADMIN) {
 
-                        approver =
-                                employeeRepository
-                                        .findByUserRoleRoleName(
-                                                "INVENTORY_ADMIN"
+                                approver =
+                                        employeeRepository
+                                                .findByUserRoleRoleName(
+                                                        "INVENTORY_ADMIN"
+                                                );
+
+                                if(approver == null) {
+
+                                        throw new RuntimeException(
+                                                "Inventory Admin not found"
                                         );
-
-                        if(approver == null) {
-
-                                throw new RuntimeException(
-                                        "Inventory Admin not found"
-                                );
-                        }
+                                }
                         }
 
-                        else if(level.getApprovalRole().name().equals("SUPER_ADMIN")) {
+                        else if(level.getApprovalRole() == ApprovalRole.SUPER_ADMIN) {
 
-                        approver =
-                                employeeRepository
-                                        .findByUserRoleRoleName(
-                                                "SUPER_ADMIN"
+                                approver =
+                                        employeeRepository
+                                                .findByUserRoleRoleName(
+                                                        "SUPER_ADMIN"
+                                                );
+
+                                if(approver == null) {
+
+                                        throw new RuntimeException(
+                                                "Super Admin not found"
                                         );
-
-                        if(approver == null) {
-
-                                throw new RuntimeException(
-                                        "Super Admin not found"
-                                );
-                        }
+                                }
                         }
 
-                        approval.setApprover(approver);
+                        approval.setApprover(
+                                approver
+                        );
 
-                        request.getApprovals().add(approval);
+                        request.getApprovals()
+                                .add(approval);
                 }
 
                 inventoryRequestRepository.save(request);

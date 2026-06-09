@@ -7,11 +7,13 @@ public class DashboardStatsDTO {
     private Long pendingRequests;
     private Long approvedRequests;
     private Long issuedRequests;
+    private Long partiallyIssuedRequests;
     private Long pendingApprovals;
     private Long lowStockItems;
     private Long outOfStockItems;
     private Long totalEmployees;
     private Long totalItems;
+    private Long rejected;
    
     public DashboardStatsDTO() {
     }
@@ -37,6 +39,14 @@ public class DashboardStatsDTO {
 
     public void setTotalRequests(Long totalRequests) {
         this.totalRequests = totalRequests;
+    }
+
+    public Long getRejected() {
+        return rejected;
+    }
+
+    public void setRejected(Long rejected) {
+        this.rejected = rejected;
     }
 
     public Long getDraftRequests() {
@@ -69,6 +79,14 @@ public class DashboardStatsDTO {
 
     public void setIssuedRequests(Long issuedRequests) {
         this.issuedRequests = issuedRequests;
+    }
+
+    public Long getPartiallyIssuedRequests() {
+        return partiallyIssuedRequests;
+    }
+
+    public void setPartiallyIssuedRequests(Long partiallyIssuedRequests) {
+        this.partiallyIssuedRequests = partiallyIssuedRequests;
     }
 
     public Long getPendingApprovals() {

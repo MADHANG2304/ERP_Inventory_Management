@@ -29,7 +29,8 @@ import jakarta.annotation.security.RolesAllowed;
 @RolesAllowed({
         "INVENTORY_ADMIN",
         "SUPER_ADMIN",
-        "EMPLOYEE"
+        "EMPLOYEE",
+        "MANAGER"
 })
 public class ReturnView extends VerticalLayout {
 

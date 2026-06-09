@@ -233,14 +233,14 @@ public class DashboardView extends VerticalLayout {
                             "#2563eb"
                     ),
 
-                    createCard(
-                            "Draft Requests",
-                            String.valueOf(
-                                    stats.getDraftRequests()
-                            ),
-                            VaadinIcon.EDIT,
-                            "#7c3aed"
-                    ),
+                //     createCard(
+                //             "Draft Requests",
+                //             String.valueOf(
+                //                     stats.getDraftRequests()
+                //             ),
+                //             VaadinIcon.EDIT,
+                //             "#7c3aed"
+                //     ),
 
                     createCard(
                             "Pending Requests",
@@ -249,6 +249,15 @@ public class DashboardView extends VerticalLayout {
                             ),
                             VaadinIcon.CLOCK,
                             "#ea580c"
+                    ),
+
+                    createCard(
+                            "Rejected",
+                            String.valueOf(
+                                    stats.getRejected()
+                            ),
+                            VaadinIcon.PACKAGE,
+                            "#0891b2"
                     )
             );
 
@@ -270,7 +279,25 @@ public class DashboardView extends VerticalLayout {
                             ),
                             VaadinIcon.PACKAGE,
                             "#0891b2"
+                    ),
+                    
+                    createCard(
+                            "Paritally Issued",
+                            String.valueOf(
+                                    stats.getPartiallyIssuedRequests()
+                            ),
+                            VaadinIcon.PACKAGE,
+                            "#0891b2"
                     )
+
+                //     createCard(
+                //             "Rejected",
+                //             String.valueOf(
+                //                     stats.getRejected()
+                //             ),
+                //             VaadinIcon.PACKAGE,
+                //             "#0891b2"
+                //     )
             );
         }
 
@@ -314,6 +341,24 @@ public class DashboardView extends VerticalLayout {
                             "Issued Requests",
                             String.valueOf(
                                     stats.getIssuedRequests()
+                            ),
+                            VaadinIcon.PACKAGE,
+                            "#2563eb"
+                    ),
+
+                    createCard(
+                            "Partially Issued",
+                            String.valueOf(
+                                    stats.getPartiallyIssuedRequests()
+                            ),
+                            VaadinIcon.PACKAGE,
+                            "#2563eb"
+                    ),
+
+                    createCard(
+                            "Rejected Requests",
+                            String.valueOf(
+                                    stats.getRejected()
                             ),
                             VaadinIcon.PACKAGE,
                             "#2563eb"

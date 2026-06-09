@@ -21,5 +21,10 @@ public interface RequestApprovalRepository extends
         Long countByApprovalStatus(ApprovalStatus status);
 
         List<RequestApproval> findByApproverEmployeeIdOrderByModifiedAtDesc(Long employeeId);
+
+        Long countByApproverEmployeeIdAndApprovalStatus(
+                Long employeeId,
+                ApprovalStatus status
+        );
                 
 }

@@ -111,8 +111,8 @@ public class ApprovalProcessService {
         }
 
         public void approveRequest(
-        Long approvalId,
-        String comments,
+                Long approvalId,
+                String comments,
         List<RequestItemDTO> approvedItems
         ) {
 

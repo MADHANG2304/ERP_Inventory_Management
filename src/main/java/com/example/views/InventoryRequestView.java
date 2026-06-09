@@ -268,8 +268,6 @@ public class InventoryRequestView extends VerticalLayout {
 
         if(!securityService.getAuthenticatedRole().equals("ROLE_EMPLOYEE")) {
                 filterLayout.add(
-                        employeeSearchField,
-                        // statusFilter,
                         fromDateFilter,
                         toDateFilter,
                         clearFilterButton
@@ -277,7 +275,6 @@ public class InventoryRequestView extends VerticalLayout {
 
         } else {
                 filterLayout.add(
-                        // statusFilter,
                         fromDateFilter,
                         toDateFilter,
                         clearFilterButton

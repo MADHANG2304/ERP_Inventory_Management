@@ -29,294 +29,298 @@ import jakarta.annotation.security.RolesAllowed;
 })
 public class MyCurrentStockView extends VerticalLayout {
 
-    private final MyCurrentStockService myCurrentStockService;
+        private final MyCurrentStockService myCurrentStockService;
 
-    private final Grid<CurrentAssetDTO> assetGrid =
-            new Grid<>(CurrentAssetDTO.class, false);
+        private final Grid<CurrentAssetDTO> assetGrid =
+                new Grid<>(CurrentAssetDTO.class, false);
 
-    private final Grid<CurrentConsumableDTO> consumableGrid =
-            new Grid<>(CurrentConsumableDTO.class, false);
+        private final Grid<CurrentConsumableDTO> consumableGrid =
+                new Grid<>(CurrentConsumableDTO.class, false);
 
-    private final Grid<ReturnedItemDTO> pendingReturnGrid =
-            new Grid<>(ReturnedItemDTO.class, false);
+        private final Grid<ReturnedItemDTO> pendingReturnGrid =
+                new Grid<>(ReturnedItemDTO.class, false);
 
-    private final VerticalLayout contentLayout =
-            new VerticalLayout();
+        private final VerticalLayout contentLayout =
+                new VerticalLayout();
 
-    private final Button assetsTab =
-            new Button("Assets");
+        private final Button assetsTab =
+                new Button("Assets");
 
-    private final Button consumablesTab =
-            new Button("Consumables");
+        private final Button consumablesTab =
+                new Button("Consumables");
 
-    private final Button pendingReturnsTab =
-            new Button("Pending Returns");
+        private final Button pendingReturnsTab =
+                new Button("Pending Returns");
 
-    public MyCurrentStockView(
-            MyCurrentStockService myCurrentStockService
-    ) {
+        public MyCurrentStockView(
+                MyCurrentStockService myCurrentStockService
+        ) {
 
-        this.myCurrentStockService =
-                myCurrentStockService;
+                this.myCurrentStockService =
+                        myCurrentStockService;
 
-        setSizeFull();
+                setSizeFull();
 
-        setPadding(true);
+                setPadding(true);
 
-        setSpacing(true);
+                setSpacing(true);
 
-        add(createHeader());
+                add(createHeader());
 
-        configureAssetGrid();
+                configureAssetGrid();
 
-        configureConsumableGrid();
+                configureConsumableGrid();
 
-        configurePendingReturnGrid();
+                configurePendingReturnGrid();
 
-        HorizontalLayout tabs =
-                new HorizontalLayout(
-                        assetsTab,
-                        consumablesTab,
-                        pendingReturnsTab
+                HorizontalLayout tabs =
+                        new HorizontalLayout(
+                                assetsTab,
+                                consumablesTab,
+                                pendingReturnsTab
+                        );
+
+                tabs.setSpacing(true);
+
+                add(tabs);
+
+                contentLayout.setSizeFull();
+
+                add(contentLayout);
+
+                assetsTab.addClickListener(
+                        e -> showAssets()
                 );
 
-        tabs.setSpacing(true);
-
-        add(tabs);
-
-        contentLayout.setSizeFull();
-
-        add(contentLayout);
-
-        assetsTab.addClickListener(
-                e -> showAssets()
-        );
-
-        consumablesTab.addClickListener(
-                e -> showConsumables()
-        );
-
-        pendingReturnsTab.addClickListener(
-                e -> showPendingReturns()
-        );
-
-        showAssets();
-    }
-
-    private VerticalLayout createHeader() {
-
-        H2 title =
-                new H2(
-                        "My Current Stock"
+                consumablesTab.addClickListener(
+                        e -> showConsumables()
                 );
 
-        title.getStyle()
-
-                .set("margin", "0")
-
-                .set("font-size", "28px")
-
-                .set("font-weight", "700");
-
-        Span description =
-                new Span(
-                        "Track all assets, consumables and pending returns currently assigned to you"
+                pendingReturnsTab.addClickListener(
+                        e -> showPendingReturns()
                 );
 
-        description.getStyle()
+                showAssets();
+        }
 
-                .set("color", "#64748b")
+        private VerticalLayout createHeader() {
 
-                .set("font-size", "14px");
+                H2 title = new H2("My Current Stock");
 
-        VerticalLayout layout =
-                new VerticalLayout(
-                        title,
-                        description
+                title.getStyle()
+
+                        .set("margin", "0")
+
+                        .set("font-size", "28px")
+
+                        .set("font-weight", "700");
+
+                Span description =
+                        new Span(
+                                "Track all assets, consumables and pending returns currently assigned to you"
+                        );
+
+                description.getStyle()
+
+                        .set("color", "#64748b")
+
+                        .set("font-size", "14px");
+
+                VerticalLayout layout =
+                        new VerticalLayout(
+                                title,
+                                description
+                        );
+
+                layout.setPadding(true);
+
+                layout.setSpacing(true);
+
+                return layout;
+        }
+
+        private void configureAssetGrid() {
+
+                assetGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
                 );
 
-        layout.setPadding(true);
+                assetGrid.addColumn(
+                        CurrentAssetDTO::getIssueReferenceNumber
+                ).setHeader("Issue Ref");
 
-        layout.setSpacing(true);
+                assetGrid.addColumn(
+                        CurrentAssetDTO::getItemName
+                ).setHeader("Item");
 
-        return layout;
-    }
+                assetGrid.addColumn(
+                        CurrentAssetDTO::getItemCode
+                ).setHeader("Item Code");
 
-    private void configureAssetGrid() {
+                assetGrid.addColumn(
+                        CurrentAssetDTO::getAssetReferenceNumber
+                ).setHeader("Asset Ref");
 
-        assetGrid.addThemeVariants(
-                GridVariant.LUMO_ROW_STRIPES,
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                assetGrid.addColumn(
+                        CurrentAssetDTO::getModelNumber
+                ).setHeader("Model");
 
-        assetGrid.addColumn(
-                CurrentAssetDTO::getIssueReferenceNumber
-        ).setHeader("Issue Ref");
+                assetGrid.addColumn(
+                        dto ->
 
-        assetGrid.addColumn(
-                CurrentAssetDTO::getItemName
-        ).setHeader("Item");
+                                dto.getPurchaseDate() == null
 
-        assetGrid.addColumn(
-                CurrentAssetDTO::getItemCode
-        ).setHeader("Item Code");
+                                        ? "-"
 
-        assetGrid.addColumn(
-                CurrentAssetDTO::getAssetReferenceNumber
-        ).setHeader("Asset Ref");
+                                        : dto.getPurchaseDate()
+                                                .toString()
 
-        assetGrid.addColumn(
-                CurrentAssetDTO::getModelNumber
-        ).setHeader("Model");
+                ).setHeader("Purchase Date");
 
-        assetGrid.addColumn(
-                dto ->
+                assetGrid.addColumn(
+                        dto ->
 
-                        dto.getPurchaseDate() == null
+                                dto.getIssuedDate() == null
 
-                                ? "-"
+                                        ? "-"
 
-                                : dto.getPurchaseDate()
-                                        .toString()
+                                        : dto.getIssuedDate()
+                                                .toLocalDate()
+                                                .toString()
 
-        ).setHeader("Purchase Date");
+                ).setHeader("Issued Date");
 
-        assetGrid.addColumn(
-                dto ->
+                assetGrid.setSizeFull();
 
-                        dto.getIssuedDate() == null
+                assetGrid.setWidth("1000px");
 
-                                ? "-"
+                assetGrid.setHeight("380px");
+        }
 
-                                : dto.getIssuedDate()
-                                        .toLocalDate()
-                                        .toString()
+        private void configureConsumableGrid() {
 
-        ).setHeader("Issued Date");
+                consumableGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
 
-        assetGrid.setSizeFull();
-    }
+                consumableGrid.addColumn(
+                        CurrentConsumableDTO::getItemName
+                ).setHeader("Item");
 
-    private void configureConsumableGrid() {
+                consumableGrid.addColumn(
+                        CurrentConsumableDTO::getItemCode
+                ).setHeader("Item Code");
 
-        consumableGrid.addThemeVariants(
-                GridVariant.LUMO_ROW_STRIPES,
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                consumableGrid.addColumn(
+                        CurrentConsumableDTO::getTotalIssued
+                ).setHeader("Total Issued");
 
-        consumableGrid.addColumn(
-                CurrentConsumableDTO::getItemName
-        ).setHeader("Item");
+                // consumableGrid.addColumn(
+                //         CurrentConsumableDTO::getTotalReturned
+                // ).setHeader("Total Returned");
 
-        consumableGrid.addColumn(
-                CurrentConsumableDTO::getItemCode
-        ).setHeader("Item Code");
+                // consumableGrid.addColumn(
+                //         CurrentConsumableDTO::getCurrentBalance
+                // ).setHeader("Current Balance");
 
-        consumableGrid.addColumn(
-                CurrentConsumableDTO::getTotalIssued
-        ).setHeader("Total Issued");
+                consumableGrid.setSizeFull();
 
-        consumableGrid.addColumn(
-                CurrentConsumableDTO::getTotalReturned
-        ).setHeader("Total Returned");
+                consumableGrid.setWidth("1000px");
 
-        consumableGrid.addColumn(
-                CurrentConsumableDTO::getCurrentBalance
-        ).setHeader("Current Balance");
+                consumableGrid.setHeight("380px");
+        }
 
-        consumableGrid.setSizeFull();
-    }
+        private void configurePendingReturnGrid() {
 
-    private void configurePendingReturnGrid() {
+                pendingReturnGrid.addThemeVariants(
+                        GridVariant.LUMO_ROW_STRIPES,
+                        GridVariant.LUMO_COLUMN_BORDERS
+                );
 
-        pendingReturnGrid.addThemeVariants(
-                GridVariant.LUMO_ROW_STRIPES,
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                pendingReturnGrid.addColumn(
+                        ReturnedItemDTO::getIssueReferenceNumber
+                ).setHeader("Issue Ref");
 
-        pendingReturnGrid.addColumn(
-                ReturnedItemDTO::getIssueReferenceNumber
-        ).setHeader("Issue Ref");
+                pendingReturnGrid.addColumn(
+                        ReturnedItemDTO::getReturnReferenceNumber
+                ).setHeader("Return Ref");
 
-        pendingReturnGrid.addColumn(
-                ReturnedItemDTO::getReturnReferenceNumber
-        ).setHeader("Return Ref");
+                pendingReturnGrid.addColumn(
+                        ReturnedItemDTO::getItemName
+                ).setHeader("Item");
 
-        pendingReturnGrid.addColumn(
-                ReturnedItemDTO::getItemName
-        ).setHeader("Item");
+                pendingReturnGrid.addColumn(
+                        ReturnedItemDTO::getItemCode
+                ).setHeader("Item Code");
 
-        pendingReturnGrid.addColumn(
-                ReturnedItemDTO::getItemCode
-        ).setHeader("Item Code");
+                pendingReturnGrid.addColumn(
+                        dto ->
 
-        pendingReturnGrid.addColumn(
-                dto ->
+                                dto.getReturnedDate() == null
 
-                        dto.getReturnedDate() == null
+                                        ? "-"
 
-                                ? "-"
+                                        : dto.getReturnedDate()
+                                                .toLocalDate()
+                                                .toString()
 
-                                : dto.getReturnedDate()
-                                        .toLocalDate()
-                                        .toString()
+                ).setHeader("Return Date");
 
-        ).setHeader("Return Date");
+                pendingReturnGrid.addColumn(
+                        dto ->
 
-        pendingReturnGrid.addColumn(
-                dto ->
+                                dto.getIssueStatus() == null
 
-                        dto.getIssueStatus() == null
+                                        ? "-"
 
-                                ? "-"
+                                        : dto.getIssueStatus()
+                                                .name()
 
-                                : dto.getIssueStatus()
-                                        .name()
+                ).setHeader("Status");
 
-        ).setHeader("Status");
+                pendingReturnGrid.setSizeFull();
 
-        pendingReturnGrid.setSizeFull();
-    }
+                pendingReturnGrid.setWidth("1000px");
 
-    private void showAssets() {
+                pendingReturnGrid.setHeight("380px");
+        }
 
-        assetGrid.setItems(
-                myCurrentStockService
-                        .getCurrentAssets()
-        );
+        private void showAssets() {
 
-        contentLayout.removeAll();
+                assetGrid.setItems(myCurrentStockService.getCurrentAssets());
 
-        contentLayout.add(
-                new Scroller(assetGrid)
-        );
-    }
+                contentLayout.removeAll();
 
-    private void showConsumables() {
+                contentLayout.add(new Scroller(assetGrid));
+        }
 
-        consumableGrid.setItems(
-                myCurrentStockService
-                        .getCurrentConsumables()
-        );
+        private void showConsumables() {
 
-        contentLayout.removeAll();
+                consumableGrid.setItems(
+                        myCurrentStockService
+                                .getCurrentConsumables()
+                );
 
-        contentLayout.add(
-                new Scroller(consumableGrid)
-        );
-    }
+                contentLayout.removeAll();
 
-    private void showPendingReturns() {
+                contentLayout.add(
+                        new Scroller(consumableGrid)
+                );
+        }
 
-        pendingReturnGrid.setItems(
-                myCurrentStockService
-                        .getPendingReturns()
-        );
+        private void showPendingReturns() {
 
-        contentLayout.removeAll();
+                pendingReturnGrid.setItems(
+                        myCurrentStockService
+                                .getPendingReturns()
+                );
 
-        contentLayout.add(
-                new Scroller(pendingReturnGrid)
-        );
-    }
+                contentLayout.removeAll();
+
+                contentLayout.add(
+                        new Scroller(pendingReturnGrid)
+                );
+        }
 }

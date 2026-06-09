@@ -98,13 +98,33 @@ public class DashboardService {
                             RequestStatus.ISSUED
                     )
             );
+
+            dto.setPartiallyIssuedRequests(
+
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
+                            RequestStatus.PARTIALLY_ISSUED
+                    )
+            );
+
+            dto.setRejected(
+
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
+                            RequestStatus.REJECTED
+                    )
+            );
+
+
+
         }
 
         // MANAGER / INVENTORY ADMIN / SUPER ADMIN
         else{
 
             dto.setPendingApprovals(
-                    approvalRepository.countByApprovalStatus(
+                    approvalRepository.countByApproverEmployeeIdAndApprovalStatus(
+                            employee.getEmployeeId(),
                             ApprovalStatus.PENDING
                     )
             );
@@ -167,7 +187,38 @@ public class DashboardService {
                             employee,
                             RequestStatus.ISSUED
                     )
-            );
+                );
+
+                dto.setApprovedRequests(
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
+                            RequestStatus.APPROVED
+                    )
+                );
+
+                dto.setPendingRequests(
+                    requestRepository.countByEmployeeAndRequestStatus(
+                        employee,
+                        RequestStatus.PENDING_APPROVAL
+                    )
+                );
+
+                dto.setPartiallyIssuedRequests(
+
+                    requestRepository.countByEmployeeAndRequestStatus(
+                            employee,
+                            RequestStatus.PARTIALLY_ISSUED
+                    )
+                );
+
+                dto.setRejected(
+
+                        requestRepository.countByEmployeeAndRequestStatus(
+                                employee,
+                                RequestStatus.REJECTED
+                        )
+                );
+                
         }
 
         return dto;

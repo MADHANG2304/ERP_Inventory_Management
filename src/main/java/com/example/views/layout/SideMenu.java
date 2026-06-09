@@ -215,7 +215,7 @@ public class SideMenu extends SideNav {
 
                 addItem(
                         createModernNavItem(
-                                "Request Tracking",
+                                "My Approvals",
                                 RequestTrackingView.class,
                                 VaadinIcon.SEARCH,
                                 "#0891b2"
@@ -278,7 +278,7 @@ public class SideMenu extends SideNav {
 
                 addItem(
                         createModernNavItem(
-                                "Request Tracking",
+                                "My Approvals",
                                 RequestTrackingView.class,
                                 VaadinIcon.SEARCH,
                                 "#0891b2"
@@ -295,6 +295,14 @@ public class SideMenu extends SideNav {
                         )
                 );
 
+                addItem(
+                        createModernNavItem(
+                                "Return Items",
+                                ReturnView.class,
+                                VaadinIcon.DOWNLOAD_ALT,
+                                "#dc2626"
+                        )
+                );
 
                 addItem(
                         createModernNavItem(
@@ -323,7 +331,7 @@ public class SideMenu extends SideNav {
 
                 // addItem(
                 //         createModernNavItem(
-                //                 "Request Tracking",
+                //                 "My Approvals",
                 //                 RequestTrackingView.class,
                 //                 VaadinIcon.SEARCH,
                 //                 "#0891b2"

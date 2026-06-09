@@ -26,5 +26,11 @@ public interface InventoryRequestRepository extends
                 RequestStatus status
         );
 
+        // Long countByEmployeeAndRequestStatusOrRequestStatus(
+        //         Employee employee,
+        //         RequestStatus status1,
+        //         RequestStatus status2
+        // );
+
         
 }

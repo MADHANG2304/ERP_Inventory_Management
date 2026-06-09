@@ -247,7 +247,7 @@ public class ApprovalProcessView extends VerticalLayout {
         }
 
         private void openApprovalDialog(
-        RequestApprovalDTO approvalDTO
+                RequestApprovalDTO approvalDTO
         ) {
 
                 Dialog dialog = new Dialog();
@@ -284,7 +284,7 @@ public class ApprovalProcessView extends VerticalLayout {
 
                         .set("color", "#475569");
 
-                
+
                 Span remarksTitle =
                         new Span("Remarks");
 
@@ -310,15 +310,16 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 List<RequestItemDTO> approvalItems;
 
-                if ("MANAGER".equalsIgnoreCase(
-                        approvalDTO.getApprovalRole().name())
-                ) {
+                // First approver should see all requested items
+                if (approvalDTO.getApprovalOrder() == 1) {
 
-                        approvalItems = request.getRequestItems();
+                        approvalItems =
+                                request.getRequestItems();
 
                 } else {
 
-                        approvalItems = request.getRequestItems()
+                        approvalItems =
+                                request.getRequestItems()
 
                                         .stream()
 
@@ -399,16 +400,24 @@ public class ApprovalProcessView extends VerticalLayout {
 
                                 if(value > item.getRequestedQuantity()) {
 
-                                        approvedQty.setValue(
-                                                item.getRequestedQuantity()
-                                        );
+                                        // approvedQty.setValue(
+                                        //         item.getRequestedQuantity()
+                                        // );
 
                                         NotificationUtil.warning(
 
-                                                "Approved quantity cannot exceed requested quantity"
+                                                "Approved quantity cannot exceed requested quantity, so actual value is considered"
                                         );
 
-                                        value = item.getRequestedQuantity();
+                                        approvedQty.setValue(
+                                                item.getApprovedQuantity() == null
+                                                        ? 0
+                                                        : item.getApprovedQuantity()
+                                        );
+
+                                        return;
+                                        
+                                        // value = item.getRequestedQuantity();
                                 }
 
                                 item.setApprovedQuantity(
@@ -562,7 +571,7 @@ public class ApprovalProcessView extends VerticalLayout {
                 layout.setPadding(false);
 
                 layout.setSpacing(true);
-                        
+
                 dialog.add(layout);
 
                 dialog.open();
