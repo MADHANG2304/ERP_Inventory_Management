@@ -133,18 +133,18 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 filterLayout.setAlignItems(Alignment.END);
 
-                filterLayout.add(requestSearchField);
+                // filterLayout.add(requestSearchField);
 
-                if (userRole.equals("ROLE_SUPER_ADMIN")) {
+                // if (userRole.equals("ROLE_SUPER_ADMIN")) {
 
-                        filterLayout.add(
-                                        statusFilter,
-                                        roleFilter
-                                        // currentLevelFilter
-                                );
-                }
+                //         filterLayout.add(
+                //                         statusFilter,
+                //                         roleFilter
+                //                         // currentLevelFilter
+                //                 );
+                // }
 
-                filterLayout.add(clearFilterButton);
+                // filterLayout.add(clearFilterButton);
 
                 configureGrid();
 
@@ -568,7 +568,7 @@ public class ApprovalProcessView extends VerticalLayout {
                                 buttonLayout
                         );
 
-                layout.setPadding(false);
+                layout.setPadding(true);
 
                 layout.setSpacing(true);
 

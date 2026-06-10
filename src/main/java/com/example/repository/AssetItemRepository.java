@@ -13,7 +13,6 @@ import com.example.enums.AssetStatus;
 public interface AssetItemRepository
         extends JpaRepository<AssetItem, Long>,
         JpaSpecificationExecutor<AssetItem> {
-
         
 
     @Query("""

@@ -31,8 +31,7 @@ public class SideMenu extends SideNav {
             SecurityService securityService
     ) {
 
-        String role =
-                securityService.getAuthenticatedRole();
+        String role = securityService.getAuthenticatedRole();
 
         setWidth("280px");
 
@@ -55,8 +54,7 @@ public class SideMenu extends SideNav {
 
         // LOGO SECTION
 
-        Div logoContainer =
-                new Div();
+        Div logoContainer = new Div();
 
         logoContainer.getStyle()
 
@@ -73,8 +71,7 @@ public class SideMenu extends SideNav {
                 .set("border-bottom",
                         "1px solid #e2e8f0");
 
-        Icon logoIcon =
-                VaadinIcon.CUBE.create();
+        Icon logoIcon = VaadinIcon.CUBE.create();
 
         logoIcon.setSize("28px");
 

@@ -179,8 +179,7 @@ public class IssueService {
                         .orElseThrow(() ->
                                 new RuntimeException("Request item not found"));
 
-                InventoryRequest request =
-                        requestItem.getRequest();
+                InventoryRequest request = requestItem.getRequest();
 
                 Employee issuedBy =
                         employeeRepository.findAll()
@@ -191,13 +190,9 @@ public class IssueService {
                                 .orElseThrow(() ->
                                         new RuntimeException("User not found"));
 
-                boolean reusable =
-                        Boolean.TRUE.equals(
-                                requestItem.getItem().getIsReusable()
-                        );
+                boolean reusable = Boolean.TRUE.equals(requestItem.getItem().getIsReusable());
 
-                IssuedItem issuedItem =
-                        new IssuedItem();
+                IssuedItem issuedItem = new IssuedItem();
 
                 issuedItem.setRequest(request);
 

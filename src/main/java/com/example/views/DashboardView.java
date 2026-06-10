@@ -382,25 +382,25 @@ public class DashboardView extends VerticalLayout {
                     ),
 
                     createCard(
-                            "Approved Requests",
+                            "Inventory Categories",
                             String.valueOf(
-                                    stats.getApprovedRequests()
+                                    stats.getTotalCategory()
                             ),
-                            VaadinIcon.CHECK,
-                            "#059669"
-                    ),
-
-                    createCard(
-                            "Issued Requests",
-                            String.valueOf(
-                                    stats.getIssuedRequests()
-                            ),
-                            VaadinIcon.TRUCK,
-                            "#0891b2"
+                            VaadinIcon.STOCK,
+                            "#ea580c"
                     )
-            );
-
-            row2.add(
+                );
+                
+                row2.add(
+                        
+                        createCard(
+                                "Inventory Items",
+                                String.valueOf(
+                                        stats.getTotalItems()
+                                ),
+                                VaadinIcon.PACKAGE,
+                                "#7c3aed"
+                        ),
 
                     createCard(
                             "Low Stock",
@@ -409,15 +409,6 @@ public class DashboardView extends VerticalLayout {
                             ),
                             VaadinIcon.STOCK,
                             "#ea580c"
-                    ),
-
-                    createCard(
-                            "Out Of Stock",
-                            String.valueOf(
-                                    stats.getOutOfStockItems()
-                            ),
-                            VaadinIcon.CLOSE_CIRCLE,
-                            "#dc2626"
                     )
             );
         }
@@ -474,15 +465,6 @@ public class DashboardView extends VerticalLayout {
                             ),
                             VaadinIcon.STOCK,
                             "#0891b2"
-                    ),
-
-                    createCard(
-                            "Out Of Stock",
-                            String.valueOf(
-                                    stats.getOutOfStockItems()
-                            ),
-                            VaadinIcon.CLOSE_CIRCLE,
-                            "#dc2626"
                     )
             );
         }

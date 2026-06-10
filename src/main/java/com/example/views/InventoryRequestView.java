@@ -1334,7 +1334,6 @@ public class InventoryRequestView extends VerticalLayout {
         private void submitRequest() {
 
                 try {
-
                         prepareRequest();
 
                         InventoryRequestDTO savedRequest = inventoryRequestService.submitRequest(currentRequest);

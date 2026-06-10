@@ -10,7 +10,8 @@ import com.example.enums.RequestStatus;
 public class InventoryRequestSpecification {
 
         public static Specification<InventoryRequest> searchRequest(
-                        String keyword) {
+        String keyword)
+        {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -42,25 +43,19 @@ public class InventoryRequestSpecification {
                 };
         }
 
-        public static Specification<InventoryRequest>
-        hasRequestId(
-                Long requestId
-        ) {
+        public static Specification<InventoryRequest> hasRequestId(Long requestId) {
 
-        return (root, query, criteriaBuilder) ->
+                return (root, query, criteriaBuilder) ->
 
-                criteriaBuilder.equal(
+                        criteriaBuilder.equal(
 
-                        root.get("requestId"),
+                                root.get("requestId"),
 
-                        requestId
-                );
+                                requestId
+                        );
         }
 
-        public static Specification<InventoryRequest>
-                hasRequestNumber(
-                        String requestNumber
-                ) {
+        public static Specification<InventoryRequest> hasRequestNumber(String requestNumber) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -84,9 +79,7 @@ public class InventoryRequestSpecification {
         }
 
         public static Specification<InventoryRequest>
-                hasEmployeeName(
-                        String employeeName
-                ) {
+        hasEmployeeName(String employeeName) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -112,9 +105,8 @@ public class InventoryRequestSpecification {
         }
 
         public static Specification<InventoryRequest>
-                hasStatus(
-                        RequestStatus status
-                ) {
+                hasStatus(RequestStatus status
+        ) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -132,9 +124,7 @@ public class InventoryRequestSpecification {
         }
 
         public static Specification<InventoryRequest>
-                hasFromDate(
-                        LocalDate fromDate
-                ) {
+        hasFromDate(LocalDate fromDate) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -153,9 +143,8 @@ public class InventoryRequestSpecification {
         }
 
         public static Specification<InventoryRequest>
-                hasToDate(
-                        LocalDate toDate
-                ) {
+                hasToDate(LocalDate toDate
+        ) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -174,9 +163,8 @@ public class InventoryRequestSpecification {
         }
 
         public static Specification<InventoryRequest>
-                hasEmployeeId(
-                        Long employeeId
-                ) {
+                hasEmployeeId(Long employeeId
+        ) {
 
                 return (root, query, criteriaBuilder) -> {
 

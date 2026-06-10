@@ -14,6 +14,7 @@ public class DashboardStatsDTO {
     private Long totalEmployees;
     private Long totalItems;
     private Long rejected;
+    private Long totalCategory;
    
     public DashboardStatsDTO() {
     }
@@ -47,6 +48,14 @@ public class DashboardStatsDTO {
 
     public void setRejected(Long rejected) {
         this.rejected = rejected;
+    }
+
+    public Long getTotalCategory() {
+        return totalCategory;
+    }
+
+    public void setTotalCategory(Long totalCategory) {
+        this.totalCategory = totalCategory;
     }
 
     public Long getDraftRequests() {

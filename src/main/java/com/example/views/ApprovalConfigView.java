@@ -87,6 +87,12 @@ public class ApprovalConfigView extends VerticalLayout {
     Button saveButton =
                 new Button("Save Config");
 
+    private final Button deleteButton =
+                new Button(
+                        "Delete",
+                        VaadinIcon.TRASH.create()
+                );
+
     private Boolean isEdit = false;
 
     private final Dialog configDialog =
@@ -96,11 +102,6 @@ public class ApprovalConfigView extends VerticalLayout {
         new Button(
                 VaadinIcon.PLUS.create()
         );
-
-    private final Span selectedFlowInfo =
-        new Span("No workflow selected");
-
-
 
         
 
@@ -316,11 +317,11 @@ public class ApprovalConfigView extends VerticalLayout {
                         event -> clearForm()
                 );
 
-                Button deleteButton =
-                        new Button(
-                                "Delete",
-                                VaadinIcon.TRASH.create()
-                        );
+                // Button deleteButton =
+                //         new Button(
+                //                 "Delete",
+                //                 VaadinIcon.TRASH.create()
+                //         );
 
                 deleteButton.addThemeVariants(
                         ButtonVariant.LUMO_ERROR
@@ -365,17 +366,10 @@ public class ApprovalConfigView extends VerticalLayout {
                 HorizontalLayout actionButtons =
                         new HorizontalLayout(
                                 saveButton,
-                                clearButton,
+                                // clearButton,
                                 deleteButton, 
                                 cancelButton
                         );
-
-                // if(isEdit){
-                //         actionButtons.add(deleteButton, cancelButton);
-                // }
-                // else{
-                //         actionButtons.add(cancelButton);
-                // }
 
                 VerticalLayout levelSection =
                         new VerticalLayout(
@@ -704,6 +698,8 @@ public class ApprovalConfigView extends VerticalLayout {
                                                 event.getValue()
                                         );
                                 }
+
+                                deleteButton.setVisible(true);
                         });
         }
 
@@ -813,6 +809,8 @@ public class ApprovalConfigView extends VerticalLayout {
 
             refreshGrid();
 
+            deleteButton.setVisible(false);
+
             configDialog.close();
 
         } catch (Exception e) {
@@ -840,6 +838,8 @@ public class ApprovalConfigView extends VerticalLayout {
         clearForm();
 
         refreshGrid();
+
+        deleteButton.setVisible(false);
 
         configDialog.close();
     }
@@ -931,5 +931,7 @@ public class ApprovalConfigView extends VerticalLayout {
                 isEdit = false;
 
                 configGrid.deselectAll();
+
+                deleteButton.setVisible(false);
         }
 }

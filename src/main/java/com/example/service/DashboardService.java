@@ -6,6 +6,7 @@ import com.example.enums.ApprovalStatus;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
 import com.example.repository.EmployeeRepository;
+import com.example.repository.InventoryCategoryRepository;
 import com.example.repository.InventoryItemRepository;
 import com.example.repository.InventoryStockRepository;
 import com.example.repository.InventoryRequestRepository;
@@ -22,11 +23,15 @@ public class DashboardService {
 
     private final RequestApprovalRepository approvalRepository;
 
+    private final InventoryCategoryRepository categoryRepository;
+
     private final InventoryItemRepository itemRepository;
 
     private final InventoryStockRepository stockRepository;
 
     private final EmployeeRepository employeeRepository;
+
+    private final ApprovalProcessService approvalProcessService;
 
     
 
@@ -38,7 +43,9 @@ public class DashboardService {
             InventoryItemRepository itemRepository,
             InventoryStockRepository stockRepository,
             EmployeeRepository employeeRepository,
-            SecurityService securityService
+            SecurityService securityService,
+            ApprovalProcessService approvalProcessService,
+            InventoryCategoryRepository categoryRepository
     ) {
 
         this.requestRepository = requestRepository;
@@ -47,6 +54,8 @@ public class DashboardService {
         this.stockRepository = stockRepository;
         this.employeeRepository = employeeRepository;
         this.securityService = securityService;
+        this.approvalProcessService = approvalProcessService;
+        this.categoryRepository = categoryRepository;
     }
 
     public DashboardStatsDTO getDashboardStats() {
@@ -123,10 +132,12 @@ public class DashboardService {
         else{
 
             dto.setPendingApprovals(
-                    approvalRepository.countByApproverEmployeeIdAndApprovalStatus(
-                            employee.getEmployeeId(),
-                            ApprovalStatus.PENDING
-                    )
+                //     approvalRepository.countByApproverEmployeeIdAndApprovalStatus(
+                //             employee.getEmployeeId(),
+                //             ApprovalStatus.PENDING
+                //     )
+                (long) approvalProcessService.getPendingApprovals(username).size()
+
             );
 
             dto.setApprovedRequests(
@@ -156,6 +167,10 @@ public class DashboardService {
                     itemRepository.countByStatus(
                             ItemStatus.OUT_OF_STOCK
                     )
+            );
+
+            dto.setTotalCategory(
+                categoryRepository.count()
             );
         }
 

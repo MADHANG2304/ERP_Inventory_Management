@@ -25,8 +25,7 @@ public class ApprovalSpecification {
 
                     criteriaBuilder.lower(
 
-                            root.get("request")
-                                    .get("requestNumber")
+                            root.get("request").get("requestNumber")
                     ),
 
                     "%" +

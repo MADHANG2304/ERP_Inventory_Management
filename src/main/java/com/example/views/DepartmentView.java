@@ -21,444 +21,391 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
- 
+
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "departments", layout = MainLayout.class)
 @PageTitle("Departments")
 @RolesAllowed("SUPER_ADMIN")
-public class DepartmentView extends VerticalLayout{
-    private final DepartmentService departmentService;
+public class DepartmentView extends VerticalLayout {
+        private final DepartmentService departmentService;
 
-    private final Grid<DepartmentDTO> grid = new Grid<>(DepartmentDTO.class, false);
+        private final Grid<DepartmentDTO> grid = new Grid<>(DepartmentDTO.class, false);
 
-    private final BeanValidationBinder<DepartmentDTO> binder = new BeanValidationBinder<>(DepartmentDTO.class);
-    
-    private DepartmentDTO currentDepartment = new DepartmentDTO();
+        private final BeanValidationBinder<DepartmentDTO> binder = new BeanValidationBinder<>(DepartmentDTO.class);
 
-    private final TextField departmentName = new TextField("Department Name");
-    private final TextField departmentCode = new TextField("Department Code");
+        private DepartmentDTO currentDepartment = new DepartmentDTO();
 
-    private final Checkbox isActive = new Checkbox("Active");
+        private final TextField departmentName = new TextField("Department Name");
+        private final TextField departmentCode = new TextField("Department Code");
 
-    Button saveButton = new Button("Save");
+        private final Checkbox isActive = new Checkbox("Active");
 
-    private final Button deleteButton = new Button("Delete");
+        Button saveButton = new Button("Save");
 
-    private final Dialog departmentDialog = new Dialog();
+        private final Button deleteButton = new Button("Delete");
 
-    private final Button openDialogButton =
-            new Button(VaadinIcon.PLUS.create());
+        private final Dialog departmentDialog = new Dialog();
 
-    private final TextField searchField =
-            new TextField();
+        private final Button openDialogButton = new Button(VaadinIcon.PLUS.create());
 
-    private DepartmentDTO selectedDepartment;
+        private final TextField searchField = new TextField();
 
-    private Boolean isEdit = false;
+        private DepartmentDTO selectedDepartment;
 
-    public DepartmentView(DepartmentService departmentService){
+        private Boolean isEdit = false;
 
-        this.departmentService = departmentService;
+        public DepartmentView(DepartmentService departmentService) {
 
-        setSizeFull();
+                this.departmentService = departmentService;
 
-        setPadding(true);
+                setSizeFull();
 
-        setSpacing(true);
+                setPadding(true);
 
-        getStyle()
-                .set("background", "#f4f7fb")
-                .set("padding", "20px");
+                setSpacing(true);
 
-        H2 heading =
-                new H2("Department Management");
+                getStyle()
+                                .set("background", "#f4f7fb")
+                                .set("padding", "20px");
 
-        heading.getStyle()
+                H2 heading = new H2("Department Management");
 
-                .set("margin", "0")
+                heading.getStyle()
 
-                .set("font-size", "32px")
+                                .set("margin", "0")
 
-                .set("font-weight", "700")
+                                .set("font-size", "32px")
 
-                .set("color", "#1e293b");
+                                .set("font-weight", "700")
 
-        Span subHeading =
-                new Span(
-                        "Manage all departments and organizational structure"
-                );
+                                .set("color", "#1e293b");
 
-        subHeading.getStyle()
+                Span subHeading = new Span(
+                                "Manage all departments and organizational structure");
 
-                .set("color", "#64748b")
+                subHeading.getStyle()
 
-                .set("font-size", "15px");
+                                .set("color", "#64748b")
 
-        VerticalLayout headingLayout =
-                new VerticalLayout(
-                        heading,
-                        subHeading
-                );
+                                .set("font-size", "15px");
 
-        headingLayout.setPadding(true);
+                VerticalLayout headingLayout = new VerticalLayout(
+                                heading,
+                                subHeading);
 
-        headingLayout.setSpacing(true);
+                headingLayout.setPadding(true);
 
-        openDialogButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY
-        );
+                headingLayout.setSpacing(true);
 
-        openDialogButton.setText("Add Department");
+                openDialogButton.addThemeVariants(
+                                ButtonVariant.LUMO_PRIMARY);
 
-        openDialogButton.setIcon(
-                VaadinIcon.PLUS.create()
-        );
+                openDialogButton.setText("Add Department");
 
-        openDialogButton.getStyle()
+                openDialogButton.setIcon(
+                                VaadinIcon.PLUS.create());
 
-                .set("border-radius", "10px")
+                openDialogButton.getStyle()
 
-                .set("height", "42px")
+                                .set("border-radius", "10px")
 
-                .set("font-weight", "600")
+                                .set("height", "42px")
 
-                .set("background",
-                        "linear-gradient(135deg,#2563eb,#1d4ed8)");
+                                .set("font-weight", "600")
 
-        openDialogButton.addClickListener(event -> {
+                                .set("background",
+                                                "linear-gradient(135deg,#2563eb,#1d4ed8)");
 
-                clearForm();
+                openDialogButton.addClickListener(event -> {
 
-                deleteButton.setVisible(false);
+                        clearForm();
 
-                departmentDialog.open();
-        });
+                        deleteButton.setVisible(false);
 
-        HorizontalLayout headerLayout =
-                new HorizontalLayout(
-                        headingLayout,
-                        openDialogButton
-                );
+                        departmentDialog.open();
+                });
 
-        headerLayout.setWidthFull();
+                HorizontalLayout headerLayout = new HorizontalLayout(
+                                headingLayout,
+                                openDialogButton);
 
-        headerLayout.expand(headingLayout);
+                headerLayout.setWidthFull();
 
-        headerLayout.setAlignItems(
-                Alignment.CENTER
-        );
+                headerLayout.expand(headingLayout);
 
-        configureForm();
+                headerLayout.setAlignItems(
+                                Alignment.CENTER);
 
-        configureGrid();
+                configureForm();
 
-        saveButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY
-        );
+                configureGrid();
 
-        saveButton.getStyle()
+                saveButton.addThemeVariants(
+                                ButtonVariant.LUMO_PRIMARY);
 
-                .set("border-radius", "10px")
+                saveButton.getStyle()
 
-                .set("font-weight", "600");
+                                .set("border-radius", "10px")
 
-        Button clearButton =
-                new Button("Clear");
+                                .set("font-weight", "600");
 
-        clearButton.addThemeVariants(
-                ButtonVariant.LUMO_CONTRAST
-        );
+                Button clearButton = new Button("Clear");
 
-        clearButton.getStyle()
-                .set("border-radius", "10px");
+                clearButton.addThemeVariants(
+                                ButtonVariant.LUMO_CONTRAST);
 
+                clearButton.getStyle()
+                                .set("border-radius", "10px");
 
+                deleteButton.addThemeVariants(
+                                ButtonVariant.LUMO_ERROR);
 
-        deleteButton.addThemeVariants(
-                ButtonVariant.LUMO_ERROR
-        );
+                deleteButton.getStyle()
+                                .set("border-radius", "10px");
 
-        deleteButton.getStyle()
-                .set("border-radius", "10px");
+                saveButton.addClickListener(
+                                event -> saveDepartment());
 
-        saveButton.addClickListener(
-                event -> saveDepartment()
-        );
+                clearButton.addClickListener(
+                                event -> clearForm());
 
-        clearButton.addClickListener(
-                event -> clearForm()
-        );
+                deleteButton.addClickListener(event -> {
 
-        deleteButton.addClickListener(event -> {
+                        ConfirmDialogUtil.showConfirmDialog(
 
-                ConfirmDialogUtil.showConfirmDialog(
+                                        "Delete",
 
-                        "Delete",
+                                        "Are you sure you want to delete?",
 
-                        "Are you sure you want to delete?",
+                                        this::deleteDepartment);
+                });
 
-                        this::deleteDepartment
-                );
-        });
+                Button cancelButton = new Button("Cancel");
 
-        Button cancelButton =
-                new Button("Cancel");
+                cancelButton.addThemeVariants(
+                                ButtonVariant.LUMO_TERTIARY);
 
-        cancelButton.addThemeVariants(
-                ButtonVariant.LUMO_TERTIARY
-        );
+                cancelButton.getStyle()
+                                .set("border-radius", "10px");
 
-        cancelButton.getStyle()
-                .set("border-radius", "10px");
+                cancelButton.addClickListener(event -> {
 
-        cancelButton.addClickListener(event -> {
+                        clearForm();
 
-                clearForm();
+                        departmentDialog.close();
+                });
 
-                departmentDialog.close();
-        });
+                HorizontalLayout buttonLayout = new HorizontalLayout(
+                                saveButton,
+                                // clearButton,
+                                deleteButton,
+                                cancelButton);
 
-        HorizontalLayout buttonLayout =
-                new HorizontalLayout(
-                        saveButton,
-                        // clearButton,
-                        deleteButton,
-                        cancelButton
-                );
+                departmentName.setWidthFull();
 
-        departmentName.setWidthFull();
+                departmentCode.setWidthFull();
 
-        departmentCode.setWidthFull();
+                VerticalLayout formSection = new VerticalLayout(
 
-        VerticalLayout formSection =
-                new VerticalLayout(
+                                departmentName,
 
-                        departmentName,
+                                departmentCode,
 
-                        departmentCode,
+                                isActive);
 
-                        isActive
-                );
+                formSection.setPadding(false);
 
-        formSection.setPadding(false);
+                formSection.setSpacing(true);
 
-        formSection.setSpacing(true);
+                VerticalLayout dialogLayout = new VerticalLayout(
 
-        VerticalLayout dialogLayout =
-                new VerticalLayout(
+                                formSection,
 
-                        formSection,
+                                buttonLayout);
 
-                        buttonLayout
-                );
+                dialogLayout.getStyle()
 
-        dialogLayout.getStyle()
+                                .set("background", "white")
 
-                .set("background", "white")
+                                .set("border-radius", "18px")
 
-                .set("border-radius", "18px")
+                                .set("padding", "20px");
 
-                .set("padding", "20px");
+                dialogLayout.setWidth("550px");
 
-        dialogLayout.setWidth("550px");
+                departmentDialog.add(dialogLayout);
 
-        departmentDialog.add(dialogLayout);
+                departmentDialog.setHeaderTitle(
+                                "Department Details");
 
-        departmentDialog.setHeaderTitle(
-                "Department Details"
-        );
+                departmentDialog.setModal(true);
 
-        departmentDialog.setModal(true);
+                departmentDialog.setDraggable(true);
 
-        departmentDialog.setDraggable(true);
+                departmentDialog.setResizable(true);
 
-        departmentDialog.setResizable(true);
+                departmentDialog.setWidth("600px");
 
-        departmentDialog.setWidth("600px");
+                searchField.setPlaceholder(
+                                "Search department...");
 
-        searchField.setPlaceholder(
-                "Search department..."
-        );
+                searchField.setPrefixComponent(
+                                VaadinIcon.SEARCH.create());
 
-        searchField.setPrefixComponent(
-                VaadinIcon.SEARCH.create()
-        );
+                searchField.setWidth("350px");
 
-        searchField.setWidth("350px");
+                searchField.getStyle()
 
-        searchField.getStyle()
+                                .set("background", "white")
 
-                .set("background", "white")
+                                .set("border-radius", "12px")
 
-                .set("border-radius", "12px")
+                                .set("box-shadow",
+                                                "0 2px 8px rgba(0,0,0,0.08)");
 
-                .set("box-shadow",
-                        "0 2px 8px rgba(0,0,0,0.08)");
+                searchField.addValueChangeListener(event -> {
 
-        searchField.addValueChangeListener(event -> {
+                        grid.setItems(
 
-                grid.setItems(
+                                        departmentService.searchDepartments(
+                                                        searchField.getValue()));
+                });
 
-                        departmentService.searchDepartments(
-                                searchField.getValue()
-                        )
-                );
-        });
+                HorizontalLayout toolbar = new HorizontalLayout(
+                                searchField);
 
-        HorizontalLayout toolbar =
-                new HorizontalLayout(
-                        searchField
-                );
+                toolbar.setWidthFull();
 
-        toolbar.setWidthFull();
+                add(
+                                headerLayout,
+                                toolbar,
+                                grid);
 
-        add(
-                headerLayout,
-                toolbar,
-                grid
-        );
-
-        refreshGrid();
+                refreshGrid();
         }
 
-    private void configureForm(){
-       binder.forField(departmentName)
-            .asRequired("Department Name is Required")
-            .bind(
-                    DepartmentDTO::getDepartmentName,
-                    DepartmentDTO::setDepartmentName
-            );
+        private void configureForm() {
+                binder.forField(departmentName)
+                                .asRequired("Department Name is Required")
+                                .bind(
+                                                DepartmentDTO::getDepartmentName,
+                                                DepartmentDTO::setDepartmentName);
 
-        binder.forField(departmentCode)
-                .asRequired("Department Code is Required")
-                .bind(
-                        DepartmentDTO::getDepartmentCode,
-                        DepartmentDTO::setDepartmentCode
-                );
+                binder.forField(departmentCode)
+                                .asRequired("Department Code is Required")
+                                .bind(
+                                                DepartmentDTO::getDepartmentCode,
+                                                DepartmentDTO::setDepartmentCode);
 
-        binder.forField(isActive)
-                .bind(
-                        DepartmentDTO::getIsActive,
-                        DepartmentDTO::setIsActive
-                );
+                binder.forField(isActive)
+                                .bind(
+                                                DepartmentDTO::getIsActive,
+                                                DepartmentDTO::setIsActive);
 
-        binder.setBean(currentDepartment);
-    }
+                binder.setBean(currentDepartment);
+        }
 
-    private void configureGrid(){
+        private void configureGrid() {
 
-        grid.addThemeVariants(
+                grid.addThemeVariants(
 
-                GridVariant.LUMO_ROW_STRIPES,
+                                GridVariant.LUMO_ROW_STRIPES,
 
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                                GridVariant.LUMO_COLUMN_BORDERS);
 
-        grid.addColumn(
-                DepartmentDTO::getDepartmentName
-        )
-        .setHeader("Department Name")
-        .setAutoWidth(true);
+                grid.addColumn(
+                                DepartmentDTO::getDepartmentName)
+                                .setHeader("Department Name")
+                                .setAutoWidth(true);
 
-        grid.addColumn(
-                DepartmentDTO::getDepartmentCode
-        )
-        .setHeader("Department Code");
+                grid.addColumn(
+                                DepartmentDTO::getDepartmentCode)
+                                .setHeader("Department Code");
 
-        grid.addComponentColumn(department -> {
+                grid.addComponentColumn(department -> {
 
-                com.vaadin.flow.component.html.Span status =
-                        new com.vaadin.flow.component.html.Span(
+                        com.vaadin.flow.component.html.Span status = new com.vaadin.flow.component.html.Span(
 
-                                Boolean.TRUE.equals(
-                                        department.getIsActive()
-                                )
+                                        Boolean.TRUE.equals(
+                                                        department.getIsActive())
 
-                                ? "ACTIVE"
+                                                                        ? "ACTIVE"
 
-                                : "INACTIVE"
-                        );
+                                                                        : "INACTIVE");
 
-                status.getStyle()
+                        status.getStyle()
 
-                        .set("padding", "6px 14px")
+                                        .set("padding", "6px 14px")
 
-                        .set("border-radius", "20px")
+                                        .set("border-radius", "20px")
 
-                        .set("font-size", "12px")
+                                        .set("font-size", "12px")
 
-                        .set("font-weight", "700")
+                                        .set("font-weight", "700")
 
-                        .set("color", "white")
+                                        .set("color", "white")
 
-                        .set("background",
+                                        .set("background",
 
-                                Boolean.TRUE.equals(
-                                        department.getIsActive()
-                                )
+                                                        Boolean.TRUE.equals(
+                                                                        department.getIsActive())
 
-                                ? "#16a34a"
+                                                                                        ? "#16a34a"
 
-                                : "#dc2626"
-                        );
+                                                                                        : "#dc2626");
 
-                return status;
+                        return status;
 
-        }).setHeader("Status");
+                }).setHeader("Status");
 
-        grid.setWidthFull();
+                grid.setWidthFull();
 
-        grid.setHeight("600px");
+                grid.setHeight("600px");
 
-        grid.getStyle()
+                grid.getStyle()
 
-                .set("background", "white")
+                                .set("background", "white")
 
-                .set("border-radius", "18px")
+                                .set("border-radius", "18px")
 
-                .set("overflow", "hidden")
+                                .set("overflow", "hidden")
 
-                .set("box-shadow",
-                        "0 6px 18px rgba(0,0,0,0.08)");
+                                .set("box-shadow",
+                                                "0 6px 18px rgba(0,0,0,0.08)");
 
-        grid.asSingleSelect()
-                .addValueChangeListener(event -> {
+                grid.asSingleSelect()
+                                .addValueChangeListener(event -> {
 
-                        if(event.getValue() != null) {
+                                        if (event.getValue() != null) {
 
-                                selectedDepartment = event.getValue();
+                                                selectedDepartment = event.getValue();
 
-                                loadDepartmentToForm(
-                                        selectedDepartment
-                                );
+                                                loadDepartmentToForm(
+                                                                selectedDepartment);
 
-                                deleteButton.setVisible(true);
+                                                deleteButton.setVisible(true);
 
-                                departmentDialog.open();
-                        }
-                });
+                                                departmentDialog.open();
+                                        }
+                                });
         }
 
         private void loadDepartmentToForm(
-                DepartmentDTO department
-                ) {
+                        DepartmentDTO department) {
 
                 currentDepartment = department;
 
                 binder.setBean(currentDepartment);
 
                 departmentName.setValue(
-                        department.getDepartmentName()
-                );
+                                department.getDepartmentName());
 
                 departmentCode.setValue(
-                        department.getDepartmentCode()
-                );
+                                department.getDepartmentCode());
 
                 isActive.setValue(
-                        department.getIsActive()
-                );
+                                department.getIsActive());
 
                 saveButton.setText("Update Department");
 
@@ -469,92 +416,84 @@ public class DepartmentView extends VerticalLayout{
 
                 try {
 
-                binder.writeBean(currentDepartment);
+                        binder.writeBean(currentDepartment);
 
-                departmentService.saveDepartment(
-                        currentDepartment
-                );
+                        departmentService.saveDepartment(
+                                        currentDepartment);
 
-                if(isEdit) {
+                        if (isEdit) {
 
-                        NotificationUtil.success(
-                                "Department updated successfully"
-                        );
+                                NotificationUtil.success(
+                                                "Department updated successfully");
 
-                } else {
+                        } else {
 
-                        NotificationUtil.success(
-                                "Department saved successfully"
-                        );
-                }
+                                NotificationUtil.success(
+                                                "Department saved successfully");
+                        }
 
-                clearForm();
+                        clearForm();
 
-                refreshGrid();
+                        refreshGrid();
 
-                departmentDialog.close();
+                        departmentDialog.close();
 
                 } catch (ValidationException e) {
 
                         NotificationUtil.error(
-                                "Validation Failed"
-                        );
+                                        "Validation Failed");
 
                 } catch (Exception e) {
 
                         NotificationUtil.error(
-                                e.getMessage()
-                        );
+                                        e.getMessage());
                 }
         }
 
-    private void deleteDepartment(){
+        private void deleteDepartment() {
 
-        if(currentDepartment.getDepartmentId() == null ){
-            NotificationUtil.warning("Select a department first");
-            
-            return;
+                if (currentDepartment.getDepartmentId() == null) {
+                        NotificationUtil.warning("Select a department first");
+
+                        return;
+                }
+
+                departmentService.deleteDepartment(currentDepartment.getDepartmentId());
+
+                NotificationUtil.success("Department deleted successfully");
+
+                clearForm();
+
+                refreshGrid();
         }
 
-        departmentService.deleteDepartment(currentDepartment.getDepartmentId());
-        
-        NotificationUtil.success("Department deleted successfully");
+        private void clearForm() {
 
-        clearForm();
+                currentDepartment = new DepartmentDTO();
 
-        refreshGrid();
-    }
+                binder.setBean(currentDepartment);
 
-   private void clearForm() {
+                selectedDepartment = null;
 
-        currentDepartment =
-                new DepartmentDTO();
+                departmentName.clear();
 
-        binder.setBean(currentDepartment);
+                departmentCode.clear();
 
-        selectedDepartment = null;
+                isActive.setValue(true);
 
-        departmentName.clear();
+                saveButton.setText("Save");
 
-        departmentCode.clear();
+                deleteButton.setVisible(true);
 
-        isActive.setValue(true);
+                isEdit = false;
 
-        saveButton.setText("Save");
+                grid.deselectAll();
+        }
 
-        deleteButton.setVisible(true);
+        private void refreshGrid() {
 
-        isEdit = false;
-
-        grid.deselectAll();
-}
-
-    private void refreshGrid() {
-
-        grid.setItems(
-                departmentService.getAllDepartments()
-        );
-    }
-
+                grid.setItems(
+                                departmentService.getAllDepartments());
+        }
 
 }

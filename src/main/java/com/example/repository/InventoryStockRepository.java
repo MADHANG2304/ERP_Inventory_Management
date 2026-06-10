@@ -32,6 +32,7 @@ public interface InventoryStockRepository
                 WHERE a.item = i
             ) <= i.minimumStock
         )
-""")
+    """)
     Long countLowStockItems();
+    
 }

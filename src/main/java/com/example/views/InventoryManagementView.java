@@ -702,7 +702,7 @@ public class InventoryManagementView extends VerticalLayout {
         }
     }
 
-    private void configureAssetDialog() {
+        private void configureAssetDialog() {
 
                 assetItem.setItems(
                         assetItemService.getReusableItems()
@@ -715,16 +715,6 @@ public class InventoryManagementView extends VerticalLayout {
                 assetStatus.setItems(   
                         AssetStatus.values()
                 );
-
-                // assetStatus.setItems(
-                //         AssetStatus.AVAILABLE
-                // );
-
-                // assetStatus.setValue(
-                //         AssetStatus.AVAILABLE
-                // );
-
-                // assetStatus.setReadOnly(true);
 
                 FormLayout form =
                         new FormLayout();

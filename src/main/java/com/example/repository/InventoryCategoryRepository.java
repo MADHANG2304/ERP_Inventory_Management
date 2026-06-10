@@ -7,4 +7,5 @@ import com.example.entity.InventoryCategory;
 
 public interface InventoryCategoryRepository extends JpaRepository<InventoryCategory,Long>, JpaSpecificationExecutor<InventoryCategory>{
     
+    long count();
 }

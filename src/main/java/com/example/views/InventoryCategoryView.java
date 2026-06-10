@@ -60,6 +60,8 @@ public class InventoryCategoryView extends VerticalLayout{
 
     private Boolean isEdit = false;
 
+    private final Button deleteButton = new Button("Delete");
+
     
     public InventoryCategoryView(InventoryCategoryService service){
 
@@ -188,7 +190,7 @@ public class InventoryCategoryView extends VerticalLayout{
 
         Button clearButton = new Button("Clear");
 
-        Button deleteButton = new Button("Delete");
+        // Button deleteButton = new Button("Delete");
 
         Button cancelButton = new Button("Cancel");
 
@@ -398,6 +400,8 @@ public class InventoryCategoryView extends VerticalLayout{
 
                         isEdit = true;
 
+                        deleteButton.setVisible(true);
+
                         categoryDialog.open();
                     }
                 });
@@ -466,6 +470,8 @@ public class InventoryCategoryView extends VerticalLayout{
         isActive.setValue(true);
 
         isEdit = false;
+
+        deleteButton.setVisible(false);
 
         grid.deselectAll();
     }

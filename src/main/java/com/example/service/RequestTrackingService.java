@@ -48,21 +48,21 @@ public class RequestTrackingService {
                         );
                 }
 
-                if("ROLE_SUPER_ADMIN".equals(role) || "ROLE_INVENTORY_ADMIN".equals(role)) {
+                // if("ROLE_SUPER_ADMIN".equals(role) ) {
 
-                        return inventoryRequestRepository
-                                .findAll()
-                                .stream()
-                                .sorted(
-                                        Comparator.comparing(
-                                                InventoryRequest::getRequestDate
-                                        ).reversed()
-                                )
-                                .map(this::convertToDTO)
-                                .toList();
-                }
+                //         return inventoryRequestRepository
+                //                 .findAll()
+                //                 .stream()
+                //                 .sorted(
+                //                         Comparator.comparing(
+                //                                 InventoryRequest::getRequestDate
+                //                         ).reversed()
+                //                 )
+                //                 .map(this::convertToDTO)
+                //                 .toList();
+                // }
 
-                if("ROLE_MANAGER".equals(role)) {
+                if(!"ROLE_EMPLOYEE".equals(role)) {
 
                         List<Long> requestIds =
 
