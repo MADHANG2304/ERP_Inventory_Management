@@ -18,263 +18,187 @@ import com.example.specification.ApprovalConfigSpecification;
 @Service
 public class ApprovalConfigService {
 
-    private final ApprovalConfigRepository
-            approvalConfigRepository;
-
-    public ApprovalConfigService(
-            ApprovalConfigRepository approvalConfigRepository
-    ) {
-
-        this.approvalConfigRepository =
+        private final ApprovalConfigRepository
                 approvalConfigRepository;
-    }
 
-    public ApprovalConfigDTO saveConfig(
-            ApprovalConfigDTO dto
-    ) {
-
-        validateConfig(dto);
-
-        ApprovalConfig config;
-
-        if(dto.getConfigId() != null) {
-
-            config =
-                    approvalConfigRepository
-                            .findById(dto.getConfigId())
-                            .orElse(new ApprovalConfig());
-
-        } else {
-
-            config = new ApprovalConfig();
+        public ApprovalConfigService(ApprovalConfigRepository approvalConfigRepository){
+                this.approvalConfigRepository = approvalConfigRepository;
         }
 
-        config.setConfigName(
-                dto.getConfigName()
-        );
+        public ApprovalConfigDTO saveConfig(ApprovalConfigDTO dto){
 
-        config.setRequesterRole(
-                dto.getRequesterRole()
-        );
+                validateConfig(dto);
 
-        config.setRequestType(
-                dto.getRequestType()
-        );
+                ApprovalConfig config;
 
-        config.setIsActive(
-                dto.getIsActive()
-        );
+                if(dto.getConfigId() != null) {
+                        config = approvalConfigRepository
+                                        .findById(dto.getConfigId())
+                                        .orElse(new ApprovalConfig());
 
-        config.getLevels().clear();
+                } else {
+                        config = new ApprovalConfig();
+                }
 
-        for(ApprovalConfigLevelDTO levelDTO
-                : dto.getLevels()) {
+                config.setConfigName(dto.getConfigName());
 
-            ApprovalConfigLevel level =
-                    new ApprovalConfigLevel();
+                config.setRequesterRole(dto.getRequesterRole());
 
-            level.setApprovalConfig(config);
+                config.setRequestType(dto.getRequestType());
 
-            level.setApprovalOrder(
-                    levelDTO.getApprovalOrder()
-            );
+                config.setIsActive(dto.getIsActive());
 
-            level.setApprovalRole(
-                    levelDTO.getApprovalRole()
-            );
+                config.getLevels().clear();
 
-            config.getLevels().add(level);
-        }
+                for(ApprovalConfigLevelDTO levelDTO : dto.getLevels()) {
 
-        boolean exists = approvalConfigRepository
-                .findAll()
-                .stream()
+                        ApprovalConfigLevel level = new ApprovalConfigLevel();
 
-                .anyMatch(configs ->
+                        level.setApprovalConfig(config);
 
-                        configs.getRequesterRole() == dto.getRequesterRole()
+                        level.setApprovalOrder(levelDTO.getApprovalOrder());
 
-                        &&
+                        level.setApprovalRole(levelDTO.getApprovalRole());
 
-                        configs.getRequestType() == dto.getRequestType()
+                        config.getLevels().add(level);
+                }
 
-                        &&
+                boolean exists = approvalConfigRepository
+                        .findAll()
+                        .stream()
+                        .anyMatch(configs ->
 
-                        (dto.getConfigId() == null
-                                || !configs.getConfigId().equals(dto.getConfigId()))
-                );
+                                configs.getRequesterRole() == dto.getRequesterRole()
 
-        if(exists) {
+                                &&
 
-        throw new RuntimeException(
-                "Workflow already exists for "
-                        + dto.getRequesterRole()
-                        + " and "
-                        + dto.getRequestType()
-        );
-        }
+                                configs.getRequestType() == dto.getRequestType()
 
-        ApprovalConfig savedConfig =
-                approvalConfigRepository.save(config);
+                                &&
 
-        return convertToDTO(savedConfig);
-    }
+                                (dto.getConfigId() == null || !configs.getConfigId().equals(dto.getConfigId()))
+                        );
 
-    public List<ApprovalConfigDTO> getAllConfigs() {
-
-        return approvalConfigRepository
-                .findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public List<ApprovalConfigDTO> searchConfigs(
-            String keyword
-    ) {
-
-        Specification<ApprovalConfig> specification =
-                ApprovalConfigSpecification
-                        .searchConfig(keyword);
-
-        return approvalConfigRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteConfig(
-            Long configId
-    ) {
-
-        approvalConfigRepository.deleteById(
-                configId
-        );
-    }
-
-        private void validateConfig(
-                ApprovalConfigDTO dto
-        ) {
-
-                if(dto.getConfigName() == null
-                        || dto.getConfigName().isBlank()) {
-
+                if(exists) {
                         throw new RuntimeException(
-                                "Config name required"
+                                "Workflow already exists for " + dto.getRequesterRole() + " and " + dto.getRequestType()
                         );
                 }
 
-                if(dto.getRequestType() == null) {
+                ApprovalConfig savedConfig = approvalConfigRepository.save(config);
 
+                return convertToDTO(savedConfig);
+        }
+
+        public List<ApprovalConfigDTO> getAllConfigs() {
+
+                return approvalConfigRepository
+                        .findAll()
+                        .stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
+        }
+
+        public List<ApprovalConfigDTO> searchConfigs(String keyword){
+
+                Specification<ApprovalConfig> specification =
+                        ApprovalConfigSpecification
+                                .searchConfig(keyword);
+
+                return approvalConfigRepository
+                        .findAll(specification)
+                        .stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
+        }
+
+        public void deleteConfig(Long configId){
+                approvalConfigRepository.deleteById(configId);
+        }
+
+        private void validateConfig(ApprovalConfigDTO dto){
+
+                if(dto.getConfigName() == null || dto.getConfigName().isBlank()) {
+                        throw new RuntimeException(
+                                "Config name required");
+                }
+
+                if(dto.getRequestType() == null) {
                         throw new RuntimeException(
                                 "Request type required"
                         );
                 }
 
                 if(dto.getRequesterRole() == null) {
-
                         throw new RuntimeException(
                                 "Requester role required"
                         );
                 }
 
-                if(dto.getLevels() == null
-                        || dto.getLevels().isEmpty()) {
-
+                if(dto.getLevels() == null || dto.getLevels().isEmpty()) {
                         throw new RuntimeException(
                                 "At least one approval level required"
                         );
                 }
 
-                Set<String> roles =
-                        new HashSet<>();
+                Set<String> roles = new HashSet<>();
 
-                for(ApprovalConfigLevelDTO level
-                        : dto.getLevels()) {
+                for(ApprovalConfigLevelDTO level : dto.getLevels()) {
 
                         if(level.getApprovalRole() == null) {
-
-                        throw new RuntimeException(
-                                "Approval role required"
-                        );
+                                throw new RuntimeException(
+                                        "Approval role required"
+                                );
                         }
 
-                        if(level.getApprovalRole()
-                                .equals(
-                                        dto.getRequesterRole()
-                                )) {
+                        if(level.getApprovalRole().equals(dto.getRequesterRole())) {
 
-                        throw new RuntimeException(
-                                "Requester role cannot approve itself"
-                        );
+                                throw new RuntimeException(
+                                        "Requester role cannot approve itself"
+                                );
                         }
 
-                        if(!roles.add(
-                                level.getApprovalRole().name()
-                        )) {
+                        if(roles.contains(level.getApprovalRole().name())) {
 
-                        throw new RuntimeException(
-                                "Duplicate approval role"
-                        );
+                                throw new RuntimeException(
+                                        "Duplicate approval role"
+                                );
                         }
                 }
         }
 
-    private ApprovalConfigDTO convertToDTO(
-            ApprovalConfig config
-    ) {
+        private ApprovalConfigDTO convertToDTO(ApprovalConfig config){
 
-        ApprovalConfigDTO dto =
-                new ApprovalConfigDTO();
+                ApprovalConfigDTO dto = new ApprovalConfigDTO();
 
-        dto.setConfigId(
-                config.getConfigId()
-        );
+                dto.setConfigId(config.getConfigId());
 
-        dto.setConfigName(
-                config.getConfigName()
-        );
+                dto.setConfigName(config.getConfigName());
 
-        dto.setRequesterRole(
-                config.getRequesterRole()
-        );
+                dto.setRequesterRole(config.getRequesterRole());
 
-        dto.setRequestType(
-                config.getRequestType()
-        );
+                dto.setRequestType(config.getRequestType());
 
-        dto.setIsActive(
-                config.getIsActive()
-        );
+                dto.setIsActive(config.getIsActive());
 
-        dto.setLevels(
+                dto.setLevels(
 
-                config.getLevels()
-                        .stream()
-                        .map(level -> {
+                        config.getLevels()
+                                .stream()
+                                .map(level -> {
+                                        ApprovalConfigLevelDTO levelDTO = new ApprovalConfigLevelDTO();
 
-                            ApprovalConfigLevelDTO
-                                    levelDTO =
-                                    new ApprovalConfigLevelDTO();
+                                        levelDTO.setLevelId(level.getLevelId());
 
-                            levelDTO.setLevelId(
-                                    level.getLevelId()
-                            );
+                                        levelDTO.setApprovalOrder(level.getApprovalOrder());
 
-                            levelDTO.setApprovalOrder(
-                                    level.getApprovalOrder()
-                            );
+                                        levelDTO.setApprovalRole(level.getApprovalRole());
 
-                            levelDTO.setApprovalRole(
-                                    level.getApprovalRole()
-                            );
+                                        return levelDTO;
+                                })
+                                .collect(Collectors.toList())
+                );
 
-                            return levelDTO;
-                        })
-                        .collect(Collectors.toList())
-        );
-
-        return dto;
-    }
+                return dto;
+        }
 }

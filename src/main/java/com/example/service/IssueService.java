@@ -29,6 +29,8 @@ import com.example.repository.IssuedItemRepository;
 import com.example.repository.RequestItemRepository;
 import com.example.security.SecurityService;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class IssueService {
 
@@ -172,20 +174,18 @@ public class IssueService {
         return result;
         }
 
+        @Transactional
         public void issueItem(Long requestItemId,Long assetItemId, Integer issueQuantity, String username) {
 
                 RequestItems requestItem = requestItemsRepository
                         .findById(requestItemId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Request item not found"));
+                        .orElseThrow(() -> new RuntimeException("Request item not found"));
 
                 InventoryRequest request = requestItem.getRequest();
 
-                Employee issuedBy =
-                        employeeRepository.findAll()
+                Employee issuedBy = employeeRepository.findAll()
                                 .stream()
-                                .filter(user ->
-                                        user.getUsername().equals(username))
+                                .filter(user -> user.getUsername().equals(username))
                                 .findFirst()
                                 .orElseThrow(() ->
                                         new RuntimeException("User not found"));
@@ -309,10 +309,6 @@ public class IssueService {
                         );
 
                         inventoryStockRepository.save(stock);
-
-                        // issuedItem.setIssuedQuantity(
-                        //         remaining
-                        // );
                 }
 
                 issuedItem.setIssueStatus(

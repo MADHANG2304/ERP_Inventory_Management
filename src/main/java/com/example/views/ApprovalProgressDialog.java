@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+
 public class ApprovalProgressDialog extends Dialog {
 
     public ApprovalProgressDialog(

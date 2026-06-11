@@ -30,7 +30,7 @@ public interface InventoryStockRepository
                 SELECT COUNT(a)
                 FROM AssetItem a
                 WHERE a.item = i
-            ) <= i.minimumStock
+            )   <= i.minimumStock
         )
     """)
     Long countLowStockItems();

@@ -1,5 +1,6 @@
 package com.example.views;
 
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -8,21 +9,18 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import jakarta.annotation.security.PermitAll;
-
 @Route("login")
 @PageTitle("Login | ERP")
-// @PermitAll
 public class LoginView extends VerticalLayout
         implements BeforeEnterObserver {
 
-    private final LoginForm loginForm =
-            new LoginForm();
+    private final LoginForm loginForm = new LoginForm();
 
-    private final Span errorMessage =
-            new Span();
+    private final Span errorMessage = new Span();
 
     public LoginView() {
+
+        H2 heading = new H2("ERP Inventory Management");
 
         setSizeFull();
 
@@ -58,16 +56,11 @@ public class LoginView extends VerticalLayout
 
                 .set("text-align", "center");
 
-        add(
-                loginForm,
-                errorMessage
-        );
+        add(heading, loginForm, errorMessage);
     }
 
     @Override
-    public void beforeEnter(
-            BeforeEnterEvent event
-    ) {
+    public void beforeEnter(BeforeEnterEvent event) {
 
         if(event.getLocation()
                 .getQueryParameters()
@@ -88,9 +81,7 @@ public class LoginView extends VerticalLayout
                 .getParameters()
                 .containsKey("error")) {
 
-            errorMessage.setText(
-                    "Incorrect username or password."
-            );
+            errorMessage.setText("Incorrect username or password.");
 
             errorMessage.setVisible(true);
 

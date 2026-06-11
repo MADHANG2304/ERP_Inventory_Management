@@ -20,22 +20,12 @@ public class AuditLogService {
 
         private final SecurityService securityService;
 
-        public AuditLogService(
-                        AuditLogRepository auditLogRepository,
-                        SecurityService securityService) {
-
+        public AuditLogService(AuditLogRepository auditLogRepository, SecurityService securityService) {
                 this.auditLogRepository = auditLogRepository;
-
                 this.securityService = securityService;
         }
 
-        public void logAction(
-
-                        String moduleName,
-
-                        String actionType,
-
-                        String description) {
+        public void logAction(String moduleName, String actionType, String description) {
 
                 AuditLog log = new AuditLog();
 

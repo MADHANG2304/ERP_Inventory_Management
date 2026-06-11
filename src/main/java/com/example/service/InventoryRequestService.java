@@ -22,6 +22,7 @@ import com.example.entity.RequestItems;
 import com.example.enums.ApprovalRole;
 import com.example.enums.ApprovalStatus;
 import com.example.enums.ApprovalType;
+import com.example.enums.AssetStatus;
 import com.example.enums.ItemStatus;
 import com.example.enums.RequestStatus;
 import com.example.enums.RequestType;
@@ -119,8 +120,7 @@ public class InventoryRequestService {
 
                         "SUBMIT",
 
-                        "Submitted request : "
-                                + dto.getRequestNumber()
+                        "Submitted request : " + dto.getRequestNumber()
                 );
 
                 return convertToDTO(inventoryRequestRepository.findById(savedRequest.getRequestId()).orElseThrow());
@@ -132,114 +132,65 @@ public class InventoryRequestService {
                         inventoryRequestRepository
                                 .findById(requestId)
                                 .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Request not found"
-                                        )
+                                        new RuntimeException("Request not found")
                                 );
 
-                RequestType highestRequestType =
-                        determineHighestRequestType(request);
+                RequestType highestRequestType = determineHighestRequestType(request);
 
-                String employeeRole =
-                        request.getEmployee()
-                                .getRole()
-                                .getRoleName();
+                String employeeRole = request.getEmployee().getRole().getRoleName();
 
                 RequesterRole requesterRole;
 
                 if(employeeRole.equals("EMPLOYEE")) {
-
-                        requesterRole =
-                                RequesterRole.EMPLOYEE;
+                        requesterRole = RequesterRole.EMPLOYEE;
                 }
                 else if(employeeRole.equals("MANAGER")) {
 
                         if(request.getEmployee().getManager() == null) {
-
-                        requesterRole =
-                                RequesterRole.TOP_LEVEL_MANAGER;
+                                requesterRole = RequesterRole.TOP_LEVEL_MANAGER;
                         }
                         else {
-
-                        requesterRole =
-                                RequesterRole.MANAGER;
+                                requesterRole = RequesterRole.MANAGER;
                         }
                 }
                 else if(employeeRole.equals("INVENTORY_ADMIN")) {
-
-                        requesterRole =
-                                RequesterRole.INVENTORY_ADMIN;
+                        requesterRole = RequesterRole.INVENTORY_ADMIN;
                 }
                 else {
-
-                        throw new RuntimeException(
-                                "Requester role not supported : "
-                                        + employeeRole
-                        );
+                        throw new RuntimeException("Requester role not supported : " + employeeRole);
                 }
 
-                ApprovalConfig config =
-                        approvalConfigRepository
+                ApprovalConfig config = approvalConfigRepository
                                 .findAll()
                                 .stream()
-
                                 .filter(c ->
+                                        Boolean.TRUE.equals(c.getIsActive())
 
-                                        Boolean.TRUE.equals(
-                                                c.getIsActive()
-                                        )
-
-                                        &&
-
-                                        c.getRequestType()
-                                                == highestRequestType
-
-                                        &&
-
-                                        c.getRequesterRole()
-                                                == requesterRole
+                                        && c.getRequestType() == highestRequestType 
+                                        
+                                        && c.getRequesterRole() == requesterRole
                                 )
-
                                 .findFirst()
-
                                 .orElseThrow(() ->
-
                                         new RuntimeException(
-
-                                                "Approval configuration not found for "
-
-                                                        + requesterRole
-
-                                                        + " - "
-
-                                                        + highestRequestType
+                                                "Approval configuration not found for " + requesterRole + " - " + highestRequestType
                                         )
                                 );
 
                 request.getApprovals().clear();
 
-                List<ApprovalConfigLevel> levels =
-                        config.getLevels()
-                                .stream()
-
-                                .sorted(
-                                        (a, b) ->
-
-                                                a.getApprovalOrder()
-                                                        .compareTo(
-                                                                b.getApprovalOrder()
-                                                        )
-                                )
-
-                                .toList();
+                List<ApprovalConfigLevel> levels = config.getLevels()
+                                        .stream()
+                                        .sorted(
+                                                (a, b) -> a.getApprovalOrder().compareTo(b.getApprovalOrder())
+                                        )
+                                        .toList();
 
                 for (int i = 0; i < levels.size(); i++) {
 
-                        ApprovalConfigLevel level =
-                                levels.get(i);
+                        ApprovalConfigLevel level = levels.get(i);
 
-                        RequestApproval approval =
-                                new RequestApproval();
+                        RequestApproval approval = new RequestApproval();
 
                         approval.setRequest(request);
 
@@ -255,88 +206,54 @@ public class InventoryRequestService {
                                 ApprovalStatus.PENDING
                         );
 
-                        approval.setIsCurrentLevel(
-                                i == 0
-                        );
+                        approval.setIsCurrentLevel(i == 0);
 
                         Employee approver = null;
 
                         if(level.getApprovalRole() == ApprovalRole.MANAGER) {
 
-                                approver =
-                                        request.getEmployee()
-                                                .getManager();
+                                approver = request.getEmployee().getManager();
 
                                 if(approver == null) {
-
                                         throw new RuntimeException(
-                                                "No manager assigned for employee : "
-                                                        + request.getEmployee()
-                                                                .getEmployeeName()
+                                                "No manager assigned for employee : " + request.getEmployee().getEmployeeName()
                                         );
                                 }
                         }
 
                         else if(level.getApprovalRole() == ApprovalRole.INVENTORY_ADMIN) {
 
-                                approver =
-                                        employeeRepository
-                                                .findByUserRoleRoleName(
-                                                        "INVENTORY_ADMIN"
-                                                );
+                                approver = employeeRepository.findByRoleRoleName("INVENTORY_ADMIN");
 
                                 if(approver == null) {
-
-                                        throw new RuntimeException(
-                                                "Inventory Admin not found"
-                                        );
+                                        throw new RuntimeException("Inventory Admin not found");
                                 }
                         }
 
                         else if(level.getApprovalRole() == ApprovalRole.SUPER_ADMIN) {
 
-                                approver =
-                                        employeeRepository
-                                                .findByUserRoleRoleName(
-                                                        "SUPER_ADMIN"
-                                                );
+                                approver = employeeRepository.findByRoleRoleName("SUPER_ADMIN");
 
                                 if(approver == null) {
-
-                                        throw new RuntimeException(
-                                                "Super Admin not found"
-                                        );
+                                        throw new RuntimeException("Super Admin not found");
                                 }
                         }
 
-                        approval.setApprover(
-                                approver
-                        );
+                        approval.setApprover(approver);
 
-                        request.getApprovals()
-                                .add(approval);
+                        request.getApprovals().add(approval);
                 }
-
                 inventoryRequestRepository.save(request);
         }
 
         private RequestType determineHighestRequestType(InventoryRequest request) {
 
-                int totalHighValueQuantity =
-                        request.getRequestItems()
+                int totalHighValueQuantity = request.getRequestItems()
                                 .stream()
-
                                 .filter(item ->
-
-                                        item.getItem()
-                                                .getApprovalType()
-                                                == ApprovalType.HIGH_VALUE
+                                        item.getItem().getApprovalType() == ApprovalType.HIGH_VALUE
                                 )
-
-                                .mapToInt(
-                                        RequestItems::getRequestedQuantity
-                                )
-
+                                .mapToInt(RequestItems::getRequestedQuantity)
                                 .sum();
 
                 if(totalHighValueQuantity >= 5) {
@@ -344,19 +261,13 @@ public class InventoryRequestService {
                         return RequestType.BULK_REQUEST;
                 }
 
-                boolean hasHighValueRequest =
-                        request.getRequestItems()
+                boolean hasHighValueRequest = request.getRequestItems()
                                 .stream()
-
                                 .anyMatch(item ->
-
-                                        item.getItem()
-                                                .getApprovalType()
-                                                == ApprovalType.HIGH_VALUE
+                                        item.getItem().getApprovalType() == ApprovalType.HIGH_VALUE
                                 );
 
                 if(hasHighValueRequest) {
-
                         return RequestType.HIGH_VALUE;
                 }
 
@@ -370,13 +281,9 @@ public class InventoryRequestService {
                 InventoryRequest request;
 
                 if (dto.getRequestId() != null) {
-
-                        request = inventoryRequestRepository
-                                        .findById(dto.getRequestId())
+                        request = inventoryRequestRepository.findById(dto.getRequestId())
                                         .orElse(new InventoryRequest());
-
                 } else {
-
                         request = new InventoryRequest();
 
                         request.setRequestNumber(dto.getRequestNumber());
@@ -386,8 +293,7 @@ public class InventoryRequestService {
 
                 Employee employee = employeeRepository
                                 .findById(dto.getEmployeeId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Employee not found"));
+                                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
                 request.setEmployee(employee);
 
@@ -410,8 +316,7 @@ public class InventoryRequestService {
 
                         InventoryItem item = inventoryItemRepository
                                         .findById(itemDTO.getItemId())
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "Item not found"));
+                                        .orElseThrow(() -> new RuntimeException("Item not found"));
 
                         RequestItems requestItem = new RequestItems();
 
@@ -424,8 +329,6 @@ public class InventoryRequestService {
                         requestItem.setApprovedQuantity(0);
 
                         requestItemRepository.save(requestItem);
-
-                        // savedRequest = inventoryRequestRepository.save(savedRequest);
                 }
 
                 return convertToDTO(savedRequest);
@@ -433,11 +336,9 @@ public class InventoryRequestService {
 
         public List<InventoryRequestDTO> getAllRequests() {
 
-                String username =
-                        securityService.getAuthenticatedUser();
+                String username = securityService.getAuthenticatedUser();
 
-                String role =
-                        securityService.getAuthenticatedRole();
+                String role = securityService.getAuthenticatedRole();
 
                 Employee loggedInUser =
                         employeeRepository
@@ -458,19 +359,11 @@ public class InventoryRequestService {
 
                                 return request.getEmployee() != null
                                         && loggedInUser != null
-                                        && request.getEmployee().getEmployeeId()
-                                                .equals(
-                                                        loggedInUser.getEmployeeId()
-                                                );
+                                        && request.getEmployee().getEmployeeId().equals(loggedInUser.getEmployeeId());
                         })
 
                         .sorted(
-                                (r1, r2) ->
-
-                                        r2.getRequestDate()
-                                                .compareTo(
-                                                        r1.getRequestDate()
-                                                )
+                                (r1, r2) -> r2.getRequestDate().compareTo(r1.getRequestDate())
                         )
 
                         .map(this::convertToDTO)
@@ -478,13 +371,11 @@ public class InventoryRequestService {
                         .collect(Collectors.toList());
         }
 
-        public List<InventoryRequestDTO> searchRequests(
-                        String keyword) {
+        public List<InventoryRequestDTO> searchRequests(String keyword) {
 
-                Specification<InventoryRequest> specification = InventoryRequestSpecification
-                                .searchRequest(keyword);
+                Specification<InventoryRequest> specification = InventoryRequestSpecification.searchRequest(keyword);
 
-                return inventoryRequestRepository
+                return  inventoryRequestRepository
                                 .findAll(specification)
                                 .stream()
                                 .map(this::convertToDTO)
@@ -498,17 +389,13 @@ public class InventoryRequestService {
                                 .stream()
                                 .filter(item -> item.getStatus() == ItemStatus.AVAILABLE)
                                 .map(item -> {
-
                                         InventoryItemDTO dto = new InventoryItemDTO();
 
-                                        dto.setItemId(
-                                                        item.getItemId());
+                                        dto.setItemId(item.getItemId());
 
-                                        dto.setItemName(
-                                                        item.getItemName());
+                                        dto.setItemName(item.getItemName());
 
-                                        dto.setItemCode(
-                                                        item.getItemCode());
+                                        dto.setItemCode(item.getItemCode());
 
                                         dto.setUnitType(item.getUnitType());
 
@@ -519,8 +406,7 @@ public class InventoryRequestService {
 
         public InventoryRequestDTO getRequestById(Long requestId) {
 
-                InventoryRequest request =
-                        inventoryRequestRepository
+                InventoryRequest request = inventoryRequestRepository
                                 .findById(requestId)
                                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
@@ -529,8 +415,7 @@ public class InventoryRequestService {
 
         public List<InventoryRequestDTO> filterRequests(InventoryRequestFilterDTO filterDTO) {
 
-                Specification<InventoryRequest>
-                        specification = InventoryRequestSpecification
+                Specification<InventoryRequest> specification = InventoryRequestSpecification
                                 
                                 .hasRequestNumber(filterDTO.getRequestNumber())
 
@@ -552,12 +437,11 @@ public class InventoryRequestService {
 
                         Employee employee = employeeRepository.findByUsername(username);
 
-                        if(employee != null && employee != null) {
+                        if(employee != null) {
 
-                        specification =
-                                specification.and(
-                                        InventoryRequestSpecification.hasEmployeeId(employee.getEmployeeId())
-                                );
+                                specification = specification.and(
+                                                InventoryRequestSpecification.hasEmployeeId(employee.getEmployeeId())
+                                        );
                         }
                 }
 
@@ -571,65 +455,39 @@ public class InventoryRequestService {
         private void validateRequest(InventoryRequestDTO dto) {
 
                 if (dto.getEmployeeId() == null) {
-
-                        throw new RuntimeException(
-                                "Employee required"
-                        );
+                        throw new RuntimeException("Employee required");
                 }
 
-                if (dto.getRequestItems() == null
-                                || dto.getRequestItems().isEmpty()) {
-
-                        throw new RuntimeException(
-                                "At least one item required"
-                        );
+                if (dto.getRequestItems() == null || dto.getRequestItems().isEmpty()) {
+                        throw new RuntimeException("At least one item required");
                 }
 
                 for (RequestItemDTO itemDTO : dto.getRequestItems()) {
 
-                        if (itemDTO.getRequestedQuantity() == null
-                                        || itemDTO.getRequestedQuantity() <= 0) {
-
-                                throw new RuntimeException(
-                                        "Invalid quantity"
-                                );
+                        if (itemDTO.getRequestedQuantity() == null || itemDTO.getRequestedQuantity() <= 0) {
+                                throw new RuntimeException("Invalid quantity");
                         }
 
                         InventoryItem item =
                                 inventoryItemRepository
                                         .findById(itemDTO.getItemId())
                                         .orElseThrow(() ->
-                                                new RuntimeException(
-                                                        "Item not found"
-                                                )
+                                                new RuntimeException("Item not found")
                                         );
 
-                        // REUSABLE ITEM
 
-                        if(Boolean.TRUE.equals(
-                                item.getIsReusable()
-                        )) {
+                        if(Boolean.TRUE.equals(item.getIsReusable())) {
 
-                                Long availableAssets =
-                                        assetItemRepository
-                                                .countAvailableAssets(
-                                                        item.getItemId()
-                                                );
+                                Long availableAssets = assetItemRepository.countByItemItemIdAndAssetStatus(item.getItemId(), AssetStatus.AVAILABLE);
 
-                                if(itemDTO.getRequestedQuantity()
-                                        > availableAssets) {
+                                if(itemDTO.getRequestedQuantity() > availableAssets) {
 
                                         throw new RuntimeException(
-
-                                                "Only "
-                                                        + availableAssets
-                                                        + " asset(s) available for "
-                                                        + item.getItemName()
+                                                "Only " + availableAssets + " asset(s) available for " + item.getItemName()
                                         );
                                 }
                         }
 
-                        // NON REUSABLE ITEM
 
                         else {
 
@@ -637,34 +495,16 @@ public class InventoryRequestService {
                                         inventoryStockRepository
                                                 .findAll()
                                                 .stream()
-
                                                 .filter(s ->
-
-                                                        s.getItem()
-                                                                .getItemId()
-                                                                .equals(
-                                                                        itemDTO.getItemId()
-                                                                )
+                                                        s.getItem().getItemId().equals(itemDTO.getItemId())
                                                 )
-
                                                 .findFirst()
-
                                                 .orElseThrow(() ->
-
-                                                        new RuntimeException(
-                                                                "Stock not found"
-                                                        )
+                                                        new RuntimeException("Stock not found")
                                                 );
 
-                                if(itemDTO.getRequestedQuantity()
-                                        > stock.getAvailableQuantity()) {
-
-                                        throw new RuntimeException(
-
-                                                "Insufficient stock for "
-                                                        + stock.getItem()
-                                                                .getItemName()
-                                        );
+                                if(itemDTO.getRequestedQuantity() > stock.getAvailableQuantity()) {
+                                        throw new RuntimeException("Insufficient stock for " + stock.getItem().getItemName());
                                 }
                         }
                 }

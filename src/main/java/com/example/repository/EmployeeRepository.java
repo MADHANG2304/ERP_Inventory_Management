@@ -13,26 +13,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     Employee findByEmail(String authenticatedUser);
 
     Employee findByUsername(String username);
-    
-    @Query("""
-        SELECT e
-        FROM Employee e
-        WHERE e.department.departmentId = :departmentId
-        AND e.role.roleName = :roleName
 
-    """)
-    Employee findManagerByDepartmentAndRole(
-            Long departmentId,
-            String roleName
-    );
-
-    @Query("""
-        SELECT e
-        FROM Employee e
-        WHERE e.role.roleName = :roleName
-
-    """)
-    Employee findByUserRoleRoleName(
+    Employee findByRoleRoleName(
             String roleName
     );
 

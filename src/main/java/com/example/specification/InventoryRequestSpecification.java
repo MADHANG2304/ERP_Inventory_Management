@@ -9,8 +9,7 @@ import com.example.enums.RequestStatus;
 
 public class InventoryRequestSpecification {
 
-        public static Specification<InventoryRequest> searchRequest(
-        String keyword)
+        public static Specification<InventoryRequest> searchRequest(String keyword)
         {
 
                 return (root, query, criteriaBuilder) -> {
@@ -23,23 +22,9 @@ public class InventoryRequestSpecification {
                         String pattern = "%" + keyword.toLowerCase() + "%";
 
                         return criteriaBuilder.or(
-
                                         criteriaBuilder.like(
-                                                        criteriaBuilder.lower(
-                                                                        root.get("requestNumber")),
-                                                        pattern),
-
-                                        criteriaBuilder.like(
-                                                        criteriaBuilder.lower(
-                                                                        root.get("employee")
-                                                                                        .get("employeeName")),
-                                                        pattern),
-
-                                        criteriaBuilder.like(
-                                                        criteriaBuilder.lower(
-                                                                        root.get("requestStatus")
-                                                                                        .as(String.class)),
-                                                        pattern));
+                                                        criteriaBuilder.lower(root.get("requestNumber")),pattern)
+                        );
                 };
         }
 
@@ -47,39 +32,27 @@ public class InventoryRequestSpecification {
 
                 return (root, query, criteriaBuilder) ->
 
-                        criteriaBuilder.equal(
-
-                                root.get("requestId"),
-
-                                requestId
-                        );
+                        criteriaBuilder.equal(root.get("requestId"), requestId);
         }
 
         public static Specification<InventoryRequest> hasRequestNumber(String requestNumber) {
 
                 return (root, query, criteriaBuilder) -> {
 
-                        if(requestNumber == null
-                                || requestNumber.isBlank()) {
-
-                        return criteriaBuilder.conjunction();
+                        if(requestNumber == null || requestNumber.isBlank()) {
+                                return criteriaBuilder.conjunction();
                         }
 
                         return criteriaBuilder.like(
 
                                 criteriaBuilder.lower(
                                         root.get("requestNumber")
-                                ),
-
-                                "%" +
-                                        requestNumber.toLowerCase()
-                                        + "%"
+                                ), "%" + requestNumber.toLowerCase() + "%"
                         );
                 };
         }
 
-        public static Specification<InventoryRequest>
-        hasEmployeeName(String employeeName) {
+        public static Specification<InventoryRequest> hasEmployeeName(String employeeName) {
 
                 return (root, query, criteriaBuilder) -> {
 
@@ -93,33 +66,21 @@ public class InventoryRequestSpecification {
 
                                 criteriaBuilder.lower(
 
-                                        root.get("employee")
-                                                .get("employeeName")
-                                ),
-
-                                "%" +
-                                        employeeName.toLowerCase()
-                                        + "%"
+                                        root.get("employee").get("employeeName")
+                                ), "%" + employeeName.toLowerCase() + "%"
                         );
                 };
         }
 
-        public static Specification<InventoryRequest>
-                hasStatus(RequestStatus status
-        ) {
+        public static Specification<InventoryRequest> hasStatus(RequestStatus status) {
 
                 return (root, query, criteriaBuilder) -> {
 
                         if(status == null) {
-
-                        return criteriaBuilder.conjunction();
+                                return criteriaBuilder.conjunction();
                         }
 
-                        return criteriaBuilder.equal(
-
-                                root.get("requestStatus"),
-                                status
-                        );
+                        return criteriaBuilder.equal(root.get("requestStatus"),status);
                 };
         }
 
@@ -129,56 +90,39 @@ public class InventoryRequestSpecification {
                 return (root, query, criteriaBuilder) -> {
 
                         if(fromDate == null) {
-
-                        return criteriaBuilder.conjunction();
+                                return criteriaBuilder.conjunction();
                         }
 
                         return criteriaBuilder.greaterThanOrEqualTo(
-
-                                root.get("requestDate"),
-
-                                fromDate.atStartOfDay()
-                        );
+                                root.get("requestDate"), fromDate.atStartOfDay());
                 };
         }
 
-        public static Specification<InventoryRequest>
-                hasToDate(LocalDate toDate
-        ) {
+        public static Specification<InventoryRequest> hasToDate(LocalDate toDate) {
 
                 return (root, query, criteriaBuilder) -> {
 
                         if(toDate == null) {
-
-                        return criteriaBuilder.conjunction();
+                                return criteriaBuilder.conjunction();
                         }
 
                         return criteriaBuilder.lessThanOrEqualTo(
 
-                                root.get("requestDate"),
-
-                                toDate.atTime(23, 59, 59)
+                                root.get("requestDate"), toDate.atTime(23, 59, 59)
                         );
                 };
         }
 
-        public static Specification<InventoryRequest>
-                hasEmployeeId(Long employeeId
-        ) {
+        public static Specification<InventoryRequest> hasEmployeeId(Long employeeId) {
 
                 return (root, query, criteriaBuilder) -> {
 
                         if(employeeId == null) {
-
-                        return criteriaBuilder.conjunction();
+                                return criteriaBuilder.conjunction();
                         }
 
                         return criteriaBuilder.equal(
-
-                                root.get("employee")
-                                        .get("employeeId"),
-
-                                employeeId
+                                root.get("employee").get("employeeId"), employeeId
                         );
                 };
         }

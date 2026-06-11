@@ -13,15 +13,6 @@ import com.example.enums.AssetStatus;
 public interface AssetItemRepository
         extends JpaRepository<AssetItem, Long>,
         JpaSpecificationExecutor<AssetItem> {
-        
-
-    @Query("""
-        SELECT COUNT(a)
-        FROM AssetItem a
-        WHERE a.item.itemId = :itemId
-        AND a.assetStatus = 'AVAILABLE'
-    """)
-    Long countAvailableAssets(Long itemId);
 
     Long countByItemItemIdAndAssetStatus(
             Long itemId,

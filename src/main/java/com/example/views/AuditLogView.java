@@ -15,15 +15,9 @@ import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.security.RolesAllowed;
 
-@Route(value = "audit-logs",
-        layout = MainLayout.class)
-
+@Route(value = "audit-logs", layout = MainLayout.class)
 @PageTitle("Audit Logs")
-
-@RolesAllowed({
-        "SUPER_ADMIN",
-        "INVENTORY_ADMIN"
-})
+@RolesAllowed("SUPER_ADMIN")
 public class AuditLogView
         extends VerticalLayout {
 
