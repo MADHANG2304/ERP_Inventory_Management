@@ -25,144 +25,105 @@ import com.example.specification.EmployeeSpecification;
 @Service
 public class EmployeeService {
 
-    private final EmployeeRepository employeeRepository;
+        private final EmployeeRepository employeeRepository;
 
-    private final DepartmentRepository departmentRepository;
+        private final DepartmentRepository departmentRepository;
 
-    private final DesignationRepository designationRepository;
+        private final DesignationRepository designationRepository;
 
-    private final RoleRepository roleRepository;
+        private final RoleRepository roleRepository;
 
-    private final PasswordEncoder passwordEncoder;
+        private final PasswordEncoder passwordEncoder;
 
-    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
-                        DesignationRepository designationRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.employeeRepository = employeeRepository;
-        this.departmentRepository = departmentRepository;
-        this.designationRepository = designationRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public EmployeeDTO saveEmployee(EmployeeDTO dto) {
-
-        validateEmployee(dto);
-
-        Employee employee;
-
-        boolean isNewEmployee =
-                dto.getEmployeeId() == null;
-
-        if(isNewEmployee) {
-
-            employee = new Employee();
-
-        } else {
-
-            employee = employeeRepository
-                    .findById(dto.getEmployeeId())
-                    .orElse(new Employee());
+        public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
+                                DesignationRepository designationRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+                this.employeeRepository = employeeRepository;
+                this.departmentRepository = departmentRepository;
+                this.designationRepository = designationRepository;
+                this.roleRepository = roleRepository;
+                this.passwordEncoder = passwordEncoder;
         }
 
-        Department department =
-                departmentRepository
-                        .findById(dto.getDepartmentId())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Department not found"
-                                ));
+        public EmployeeDTO saveEmployee(EmployeeDTO dto) {
 
-        Designation designation =
-                designationRepository
-                        .findById(dto.getDesignationId())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Designation not found"
-                                ));
+                validateEmployee(dto);
 
-        Roles role =
-                roleRepository
-                        .findById(dto.getRoleId())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Role not found"
-                                ));
+                Employee employee;
 
-        employee.setDepartment(department);
+                boolean isNewEmployee = dto.getEmployeeId() == null;
 
-        employee.setDesignation(designation);
+                if(isNewEmployee) {
+                employee = new Employee();
 
-        employee.setRole(role);
+                } else {
+                employee = employeeRepository
+                        .findById(dto.getEmployeeId())
+                        .orElse(new Employee());
+                }
 
-        employee.setEmployeeName(
-                dto.getEmployeeName().trim()
-        );
+                Department department = departmentRepository
+                                .findById(dto.getDepartmentId())
+                                .orElseThrow(() ->
+                                        new RuntimeException("Department not found"));
 
-        employee.setMobileNumber(
-                dto.getMobileNumber()
-        );
+                Designation designation = designationRepository
+                                .findById(dto.getDesignationId())
+                                .orElseThrow(() ->
+                                        new RuntimeException("Designation not found"));
 
-        employee.setEmail(
-                dto.getEmail().trim().toLowerCase()
-        );
+                Roles role = roleRepository
+                                .findById(dto.getRoleId())
+                                .orElseThrow(() ->
+                                        new RuntimeException("Role not found"));
 
-        employee.setUsername(
-                dto.getEmail().trim().toLowerCase()
-        );
+                employee.setDepartment(department);
 
-        employee.setGender(
-                dto.getGender()
-        );
+                employee.setDesignation(designation);
 
-        employee.setState(
-                dto.getState()
-        );
+                employee.setRole(role);
 
-        employee.setCity(
-                dto.getCity()
-        );
+                employee.setEmployeeName(dto.getEmployeeName().trim());
 
-        employee.setIsActive(
-                dto.getIsActive()
-        );
+                employee.setMobileNumber(dto.getMobileNumber());
 
-        String generatedPassword = null;
+                employee.setEmail(dto.getEmail().trim().toLowerCase());
 
-        if(isNewEmployee) {
+                employee.setUsername(dto.getEmail().trim().toLowerCase());
 
-            generatedPassword =
-                    generatePassword(
-                            dto.getEmployeeName()
-                    );
+                employee.setGender(dto.getGender());
 
-            employee.setPassword(
-                    passwordEncoder.encode(
-                            generatedPassword
-                    )
-            );
+                employee.setState(dto.getState());
+
+                employee.setCity(dto.getCity());
+
+                employee.setIsActive(dto.getIsActive());
+
+                String generatedPassword = null;
+
+                if(isNewEmployee) {
+
+                generatedPassword = generatePassword(dto.getEmployeeName());
+
+                employee.setPassword(passwordEncoder.encode(generatedPassword));
+                }
+
+                Employee savedEmployee = employeeRepository.save(employee);
+
+                EmployeeDTO response = convertToDTO(savedEmployee);
+
+                response.setGeneratedPassword(generatedPassword);
+
+                return response;
         }
 
-        Employee savedEmployee =
-                employeeRepository.save(employee);
+        public List<EmployeeDTO> getAllEmployees() {
 
-        EmployeeDTO response =
-                convertToDTO(savedEmployee);
-
-        response.setGeneratedPassword(
-                generatedPassword
-        );
-
-        return response;
-    }
-
-    public List<EmployeeDTO> getAllEmployees() {
-
-        return employeeRepository
-                .findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+                return employeeRepository
+                        .findAll()
+                        .stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
+        }
 
         public List<RoleDTO> getAllRoles() {
 
@@ -180,206 +141,150 @@ public class EmployeeService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
-
-    public List<EmployeeDTO> searchEmployees(String keyword) {
-
-        Specification<Employee> specification = EmployeeSpecification.searchEmployee(keyword);
-
-        return employeeRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteEmployee(Long employeeId) {
-        employeeRepository.deleteById(employeeId);
-    }
-
-    public List<DepartmentDTO> getAllDepartments() {
-
-        return departmentRepository
-                .findAll()
-                .stream()
-                .map(department -> {
-
-                    DepartmentDTO dto = new DepartmentDTO();
-
-                    dto.setDepartmentId(department.getDepartmentId());
-
-                    dto.setDepartmentName(department.getDepartmentName());
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-    public List<DesignationDTO> getAllDesignations() {
-
-        return designationRepository
-                .findAll()
-                .stream()
-                .map(designation -> {
-
-                    DesignationDTO dto = new DesignationDTO();
-
-                    dto.setDesignationId(designation.getDesignationId());
-
-                    dto.setDesignationName(designation.getDesignationName());
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-    private void validateEmployee(EmployeeDTO dto) {
-
-        if(dto.getDepartmentId() == null) {
-            throw new RuntimeException("Department is required");
         }
 
-        if(dto.getDesignationId() == null) {
-            throw new RuntimeException("Designation is required");
+        public List<EmployeeDTO> searchEmployees(String keyword) {
+
+                Specification<Employee> specification = EmployeeSpecification.searchEmployee(keyword);
+
+                return employeeRepository
+                        .findAll(specification)
+                        .stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
         }
 
-        if(dto.getEmployeeName() == null || dto.getEmployeeName().isBlank()) {
+        public List<DepartmentDTO> getAllDepartments() {
 
-            throw new RuntimeException("Employee name is required");
-        }
-
-        if(dto.getEmail() == null || dto.getEmail().isBlank()) {
-            throw new RuntimeException("Email is required");
-        }
-
-        if(dto.getMobileNumber() == null || dto.getMobileNumber().isBlank()) {
-            throw new RuntimeException("Mobile number is required");
-        }
-
-        if(dto.getRoleId() == null) {
-            throw new RuntimeException(
-                    "Role is required"
-            );
-        }
-
-        boolean duplicateUsername =
-                employeeRepository
+                return departmentRepository
                         .findAll()
                         .stream()
-                        .anyMatch(employee ->
+                        .map(department -> {
 
-                                employee.getUsername() != null &&
+                                DepartmentDTO dto = new DepartmentDTO();
 
-                                employee.getUsername()
-                                        .equalsIgnoreCase(
-                                                dto.getEmail()
-                                        )
+                                dto.setDepartmentId(department.getDepartmentId());
 
-                                &&
+                                dto.setDepartmentName(department.getDepartmentName());
 
-                                !employee.getEmployeeId()
-                                        .equals(
-                                                dto.getEmployeeId()
-                                        )
-                        );
-
-        if(duplicateUsername) {
-
-            throw new RuntimeException(
-                    "Username already exists"
-            );
+                                return dto;
+                        })
+                        .collect(Collectors.toList());
         }
 
-        boolean duplicateEmail =
-                employeeRepository
+        public List<DesignationDTO> getAllDesignations() {
+
+                return designationRepository
                         .findAll()
                         .stream()
-                        .anyMatch(employee ->
-                                employee.getEmail().equalsIgnoreCase(dto.getEmail()) && 
-                                !employee.getEmployeeId().equals(dto.getEmployeeId())
-                        );
+                        .map(designation -> {
 
-        if(duplicateEmail) {
-            throw new RuntimeException("Email already exists");
+                        DesignationDTO dto = new DesignationDTO();
+
+                        dto.setDesignationId(designation.getDesignationId());
+
+                        dto.setDesignationName(designation.getDesignationName());
+
+                        return dto;
+                        })
+                        .collect(Collectors.toList());
         }
 
-        boolean duplicateMobile =
-                employeeRepository
-                        .findAll()
-                        .stream()
-                        .anyMatch(employee ->
-                                employee.getMobileNumber().equalsIgnoreCase(dto.getMobileNumber()) &&
-                                !employee.getEmployeeId().equals(dto.getEmployeeId())
-                        );
+        private void validateEmployee(EmployeeDTO dto) {
 
-        if(duplicateMobile) {
-            throw new RuntimeException("Mobile number already exists");
-        }
-    }
+                if(dto.getDepartmentId() == null) {
+                throw new RuntimeException("Department is required");
+                }
 
-    private String generatePassword(
-            String employeeName
-    ) {
+                if(dto.getDesignationId() == null) {
+                throw new RuntimeException("Designation is required");
+                }
 
-        String cleanName =
-                employeeName.replaceAll(
-                        "\\s+",
-                        ""
-                );
+                if(dto.getEmployeeName() == null || dto.getEmployeeName().isBlank()) {
 
-        return cleanName + "@123";
-    }
+                throw new RuntimeException("Employee name is required");
+                }
 
+                if(dto.getEmail() == null || dto.getEmail().isBlank()) {
+                throw new RuntimeException("Email is required");
+                }
 
-        public void assignManager(
-                Long employeeId,
-                Long managerId
-        ) {
+                if(dto.getMobileNumber() == null || dto.getMobileNumber().isBlank()) {
+                throw new RuntimeException("Mobile number is required");
+                }
 
-                Employee employee =
-                        employeeRepository
-                                .findById(employeeId)
-                                .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Employee not found"
-                                        )
+                if(dto.getRoleId() == null) {
+                throw new RuntimeException("Role is required");
+                }
+
+                boolean duplicateUsername = employeeRepository
+                                .findAll()
+                                .stream()
+                                .anyMatch(employee ->
+
+                                        employee.getUsername() != null 
+                                        
+                                        &&
+
+                                        employee.getUsername().equalsIgnoreCase(dto.getEmail())
+
+                                        &&
+
+                                        !employee.getEmployeeId().equals(dto.getEmployeeId())
                                 );
 
-                Employee manager =
+                if(duplicateUsername) {
+                throw new RuntimeException("Username already exists");
+                }
+
+
+                boolean duplicateMobile =
                         employeeRepository
+                                .findAll()
+                                .stream()
+                                .anyMatch(employee ->
+                                        employee.getMobileNumber().equalsIgnoreCase(dto.getMobileNumber()) &&
+                                        !employee.getEmployeeId().equals(dto.getEmployeeId())
+                                );
+
+                if(duplicateMobile) {
+                throw new RuntimeException("Mobile number already exists");
+                }
+        }
+
+        private String generatePassword(String employeeName){
+
+                String cleanName = employeeName.replaceAll("\\s+","");
+
+                return cleanName + "@123";
+        }
+
+
+        public void assignManager(Long employeeId, Long managerId){
+
+                Employee employee = employeeRepository
+                                .findById(employeeId)
+                                .orElseThrow(() ->
+                                        new RuntimeException("Employee not found")
+                                );
+
+                Employee manager = employeeRepository
                                 .findById(managerId)
                                 .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Manager not found"
-                                        )
+                                        new RuntimeException("Manager not found")
                                 );
 
                 if(employee.getEmployeeId().equals(manager.getEmployeeId())) {
-
-                        throw new RuntimeException(
-                                "Employee cannot be assigned as their own manager"
-                        );
+                        throw new RuntimeException("Employee cannot be assigned as their own manager");
                 }
 
-                if(!"MANAGER".equals(
-                        manager.getRole().getRoleName()
-                )) {
-
-                        throw new RuntimeException(
-                                "Selected employee is not a manager"
-                        );
+                if(!"MANAGER".equals(manager.getRole().getRoleName())) {
+                        throw new RuntimeException("Selected employee is not a manager");
                 }
 
-                if(!employee.getDepartment()
-                        .getDepartmentId()
-                        .equals(
-                                manager.getDepartment()
-                                        .getDepartmentId()
-                        )) {
-
-                        throw new RuntimeException(
-                                "Manager must belong to same department"
-                        );
+                if(!employee.getDepartment().getDepartmentId().equals(manager.getDepartment().getDepartmentId()))
+                {
+                        throw new RuntimeException("Manager must belong to same department");
                 }
 
                 employee.setManager(manager);
@@ -387,22 +292,15 @@ public class EmployeeService {
                 employeeRepository.save(employee);
         }
 
-        public List<EmployeeDTO> getManagersByDepartment(
-                Long departmentId,
-                Long employeeId
-        ) {
+        public List<EmployeeDTO> getManagersByDepartment(Long departmentId, Long employeeId){
 
-                Employee employee =
-                        employeeRepository
+                Employee employee = employeeRepository
                                 .findById(employeeId)
                                 .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Employee not found"
-                                        )
+                                        new RuntimeException("Employee not found")
                                 );
 
-                List<Long> subordinateIds =
-                        getSubordinateIds(employee);
+                List<Long> subEmployees = getSubEmployeeIds(employee);
 
                 return employeeRepository
                         .findByDepartment_DepartmentIdAndRole_RoleNameAndIsActive(
@@ -411,69 +309,39 @@ public class EmployeeService {
                                 true
                         )
                         .stream()
-
                         .filter(manager ->
-
-                                !manager.getEmployeeId()
-                                        .equals(employeeId)
-
+                                !manager.getEmployeeId().equals(employeeId)
                                 &&
-
-                                !subordinateIds.contains(
-                                        manager.getEmployeeId()
-                                )
+                                !subEmployees.contains(manager.getEmployeeId())
                         )
-
                         .map(this::convertToDTO)
-
                         .toList();
         }
 
-        private List<Long> getSubordinateIds(
-                Employee employee
-        ) {
+        private List<Long> getSubEmployeeIds(Employee employee){
 
-                List<Long> subordinateIds = new ArrayList<>();
+                List<Long> subEmployeeIds = new ArrayList<>();
 
-                collectSubordinates(
-                        employee,
-                        subordinateIds
-                );
+                collectSubEmployees(employee, subEmployeeIds);
 
-                return subordinateIds;
+                return subEmployeeIds;
         }
 
-        private void collectSubordinates(
-                Employee manager,
-                List<Long> subordinateIds
-        ) {
-
+        private void collectSubEmployees(Employee manager, List<Long> subEmployeeIds){
                 employeeRepository
                         .findAll()
                         .stream()
-
                         .filter(employee ->
-
                                 employee.getManager() != null
-
                                 &&
-
-                                employee.getManager()
-                                        .getEmployeeId()
-                                        .equals(manager.getEmployeeId())
+                                employee.getManager().getEmployeeId().equals(manager.getEmployeeId())
                         )
+                        .forEach(employee -> {
 
-                        .forEach(subordinate -> {
+                                subEmployeeIds.add(employee.getEmployeeId());
 
-                                subordinateIds.add(
-                                        subordinate.getEmployeeId()
-                                );
-
-                                collectSubordinates(
-                                        subordinate,
-                                        subordinateIds
-                                );
-                });
+                                collectSubEmployees(employee, subEmployeeIds);
+                        });
         }
 
         private EmployeeDTO convertToDTO(Employee employee) {

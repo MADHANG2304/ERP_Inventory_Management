@@ -22,178 +22,71 @@ public class RequestTrackingService {
 
     private final EmployeeRepository employeeRepository;
 
-    public RequestTrackingService(
-            InventoryRequestRepository inventoryRequestRepository,
-            RequestApprovalRepository requestApprovalRepository,
-            EmployeeRepository employeeRepository) {
+        public RequestTrackingService(
+                InventoryRequestRepository inventoryRequestRepository,
+                RequestApprovalRepository requestApprovalRepository,
+                EmployeeRepository employeeRepository) {
 
-        this.inventoryRequestRepository =
-                inventoryRequestRepository;
+                this.inventoryRequestRepository = inventoryRequestRepository;
 
-        this.requestApprovalRepository =
-                requestApprovalRepository;
+                this.requestApprovalRepository = requestApprovalRepository;
 
-        this.employeeRepository =
-                employeeRepository;
-    }
+                this.employeeRepository = employeeRepository;
+        }
 
         public List<RequestTrackingDTO> getTrackingRequests(String username, String role) {
 
                 Employee employee = employeeRepository.findByUsername(username);
 
                 if(employee == null) {
-
-                        throw new RuntimeException(
-                                "Employee not found"
-                        );
+                        throw new RuntimeException("Employee not found");
                 }
 
-                // if("ROLE_SUPER_ADMIN".equals(role) ) {
-
-                //         return inventoryRequestRepository
-                //                 .findAll()
-                //                 .stream()
-                //                 .sorted(
-                //                         Comparator.comparing(
-                //                                 InventoryRequest::getRequestDate
-                //                         ).reversed()
-                //                 )
-                //                 .map(this::convertToDTO)
-                //                 .toList();
-                // }
-
-                if(!"ROLE_EMPLOYEE".equals(role)) {
-
-                        List<Long> requestIds =
-
-                                requestApprovalRepository
-                                        .findAll()
-                                        .stream()
-
-                                        .filter(approval ->
-
-                                                approval.getApprover() != null
-
-                                                &&
-
-                                                approval.getApprover()
-                                                        .getEmployeeId()
-                                                        .equals(
-                                                                employee.getEmployeeId()
-                                                        )
-                                        )
-
-                                        .map(approval ->
-
-                                                approval.getRequest()
-                                                        .getRequestId()
-                                        )
-
-                                        .distinct()
-
-                                        .toList();
-
-                        return inventoryRequestRepository
-                                .findAllById(requestIds)
-                                .stream()
-
-                                .sorted(
-                                        Comparator.comparing(
-                                                InventoryRequest::getRequestDate
-                                        ).reversed()
-                                )
-
-                                .map(this::convertToDTO)
-
-                                .toList();
-                }
-
-                List<Long> requestIds =
-
-                        requestApprovalRepository
+                List<Long> requestIds = requestApprovalRepository
                                 .findAll()
                                 .stream()
-
                                 .filter(approval ->
 
                                         approval.getApprover() != null
 
                                         &&
 
-                                        approval.getApprover()
-                                                .getEmployeeId()
-                                                .equals(
-                                                        employee.getEmployeeId()
-                                                )
+                                        approval.getApprover().getEmployeeId().equals(employee.getEmployeeId())
                                 )
-
-                                .map(approval ->
-
-                                        approval.getRequest()
-                                                .getRequestId()
-                                )
-
+                                .map(approval -> approval.getRequest().getRequestId())
                                 .distinct()
-
                                 .toList();
 
                 return inventoryRequestRepository
                         .findAllById(requestIds)
                         .stream()
-
                         .sorted(
-                                Comparator.comparing(
-                                        InventoryRequest::getRequestDate
-                                ).reversed()
+                                Comparator.comparing(InventoryRequest::getRequestDate).reversed()
                         )
-
                         .map(this::convertToDTO)
-
                         .toList();
         }
 
-    private RequestTrackingDTO convertToDTO(
-            InventoryRequest request) {
+        private RequestTrackingDTO convertToDTO(InventoryRequest request) {
 
-        RequestTrackingDTO dto =
-                new RequestTrackingDTO();
+                RequestTrackingDTO dto = new RequestTrackingDTO();
 
-        dto.setRequestId(
-                request.getRequestId()
-        );
+                dto.setRequestId(request.getRequestId());
 
-        dto.setRequestNumber(
-                request.getRequestNumber()
-        );
+                dto.setRequestNumber(request.getRequestNumber());
 
-        dto.setEmployeeId(
-                request.getEmployee()
-                        .getEmployeeId()
-        );
+                dto.setEmployeeId(request.getEmployee().getEmployeeId());
 
-        dto.setEmployeeName(
-                request.getEmployee()
-                        .getEmployeeName()
-        );
+                dto.setEmployeeName(request.getEmployee().getEmployeeName());
 
-        dto.setDepartmentName(
-                request.getEmployee()
-                        .getDepartment()
-                        .getDepartmentName()
-        );
+                dto.setDepartmentName(request.getEmployee().getDepartment().getDepartmentName());
 
-        dto.setRequestStatus(
-                request.getRequestStatus()
-        );
+                dto.setRequestStatus(request.getRequestStatus());
 
-        dto.setRemarks(
-                request.getRemarks()
-        );
+                dto.setRemarks(request.getRemarks());
 
-        dto.setRequestDate(
-                request.getRequestDate()
-        );
+                dto.setRequestDate(request.getRequestDate());
 
-        return dto;
-    }
+                return dto;
+        }
 }

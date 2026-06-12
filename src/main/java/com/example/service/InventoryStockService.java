@@ -11,7 +11,6 @@ import com.example.specification.InventoryStockSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import com.example.entity.AssetItem;
 import com.example.enums.AssetStatus;
 import com.example.repository.AssetItemRepository;
 
@@ -36,64 +35,37 @@ public class InventoryStockService {
         this.auditLogService = auditLogService;
     }
 
-        public InventoryStockDTO saveStock(
-                InventoryStockDTO dto
-        ) {
+        public InventoryStockDTO saveStock(InventoryStockDTO dto){
 
                 validateStock(dto);
 
                 InventoryStock stock;
 
                 if(dto.getStockId() != null) {
-
-                        stock = inventoryStockRepository
-                                .findById(dto.getStockId())
+                        stock = inventoryStockRepository.findById(dto.getStockId())
                                 .orElse(new InventoryStock());
 
                 } else {
-
                         stock = new InventoryStock();
                 }
 
-                InventoryItem item =
-                        inventoryItemRepository
+                InventoryItem item = inventoryItemRepository
                                 .findById(dto.getItemId())
                                 .orElseThrow(() ->
-
-                                        new RuntimeException(
-                                                "Item not found"
-                                        )
+                                        new RuntimeException("Item not found")
                                 );
 
-                // NEW RULE
-
-                if(Boolean.TRUE.equals(
-                        item.getIsReusable()
-                )) {
-
-                        throw new RuntimeException(
-
-                                "Cannot manually update stock for reusable items"
-                        );
+                if(Boolean.TRUE.equals(item.getIsReusable())){
+                        throw new RuntimeException("Cannot manually update stock for reusable items");
                 }
 
                 stock.setItem(item);
 
-                stock.setAvailableQuantity(
-                        dto.getAvailableQuantity()
-                );
+                stock.setAvailableQuantity(dto.getAvailableQuantity());
 
-                stock.setIssuedQuantity(
-                        dto.getIssuedQuantity()
-                );
+                stock.setIssuedQuantity(dto.getIssuedQuantity());
 
-                // stock.setDamagedQuantity(
-                //         dto.getDamagedQuantity()
-                // );
-
-                InventoryStock savedStock =
-                        inventoryStockRepository
-                                .save(stock);
+                InventoryStock savedStock = inventoryStockRepository.save(stock);
 
                 auditLogService.logAction(
 
@@ -101,8 +73,7 @@ public class InventoryStockService {
 
                         "STOCK_UPDATE",
 
-                        "Stock updated for item : "
-                                + item.getItemName()
+                        "Stock updated for item : " + item.getItemName()
                 );
 
                 return convertToDTO(savedStock);
@@ -110,89 +81,42 @@ public class InventoryStockService {
 
         public List<InventoryStockDTO> getAllStocks() {
 
-                List<InventoryStockDTO> stocks =
-
-                        inventoryStockRepository
+                List<InventoryStockDTO> stocks = inventoryStockRepository
                                 .findAll()
                                 .stream()
-
                                 .map(this::convertToDTO)
-
                                 .collect(Collectors.toList());
 
-                List<InventoryItem> reusableItems =
-
-                        inventoryItemRepository
-                                .findByIsReusableTrue();
+                List<InventoryItem> reusableItems = inventoryItemRepository.findByIsReusableTrue();
 
                 for(InventoryItem item : reusableItems) {
 
-                        InventoryStockDTO dto =
-                                new InventoryStockDTO();
+                        InventoryStockDTO dto = new InventoryStockDTO();
 
-                        dto.setItemId(
-                                item.getItemId()
-                        );
+                        dto.setItemId(item.getItemId());
 
-                        dto.setItemName(
-                                item.getItemName()
-                        );
+                        dto.setItemName(item.getItemName());
 
-                        dto.setItemCode(
-                                item.getItemCode()
-                        );
+                        dto.setItemCode(item.getItemCode());
 
-                        long available =
+                        long available = assetItemRepository
+                                .countByItemItemIdAndAssetStatus(item.getItemId(), AssetStatus.AVAILABLE);
 
-                                assetItemRepository
-                                        .countByItemItemIdAndAssetStatus(
+                        long issued = assetItemRepository
+                                .countByItemItemIdAndAssetStatus(item.getItemId(), AssetStatus.ISSUED);
 
-                                                item.getItemId(),
+                        long damaged = assetItemRepository
+                                .countByItemItemIdAndAssetStatus(item.getItemId(), AssetStatus.DAMAGED);
 
-                                                AssetStatus.AVAILABLE
-                                        );
+                        dto.setAvailableQuantity((int) available);
 
-                        long issued =
+                        dto.setIssuedQuantity((int) issued);
 
-                                assetItemRepository
-                                        .countByItemItemIdAndAssetStatus(
+                        dto.setDamagedQuantity((int) damaged);
 
-                                                item.getItemId(),
+                        dto.setReusable(true);
 
-                                                AssetStatus.ISSUED
-                                        );
-
-                        long damaged =
-
-                                assetItemRepository
-                                        .countByItemItemIdAndAssetStatus(
-
-                                                item.getItemId(),
-
-                                                AssetStatus.DAMAGED
-                                        );
-
-                        dto.setAvailableQuantity(
-                                (int) available
-                        );
-
-                        dto.setIssuedQuantity(
-                                (int) issued
-                        );
-
-                        dto.setDamagedQuantity(
-                                (int) damaged
-                        );
-
-                        dto.setReusable(
-                                true
-                        );
-
-                        dto.setLowStock(
-
-                                available
-                                        <= item.getMinimumStock()
-                        );
+                        dto.setLowStock(available <= item.getMinimumStock());
 
                         stocks.add(dto);
                 }
@@ -200,136 +124,58 @@ public class InventoryStockService {
                 return stocks;
         }
 
-    public List<InventoryStockDTO> searchStocks(String keyword) {
+        public List<InventoryStockDTO> searchStocks(String keyword) {
 
-        Specification<InventoryStock> specification = InventoryStockSpecification.searchStock(keyword);
+                Specification<InventoryStock> specification = InventoryStockSpecification.searchStock(keyword);
 
-        return inventoryStockRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public List<InventoryStockDTO>
-    filterStocks(
-            InventoryStockFilterDTO filterDTO
-    ) {
-
-        Specification<InventoryStock> specification =
-                InventoryStockSpecification
-                        .hasItemName(filterDTO.getItemName())
-
-                        .and(InventoryStockSpecification.hasItemCode(filterDTO.getItemCode()))
-
-                        .and(InventoryStockSpecification.hasStockStatus(filterDTO.getLowStock()));
-
-        return inventoryStockRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .toList();
-    }
-
-        public List<InventoryItemDTO> getAllItems() {
-
-                return inventoryItemRepository
-                        .findAll()
+                return inventoryStockRepository
+                        .findAll(specification)
                         .stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
+        }
 
-                        .filter(item ->
+        public List<InventoryStockDTO> filterStocks(InventoryStockFilterDTO filterDTO){
 
-                                Boolean.FALSE.equals(
-                                        item.getIsReusable()
-                                )
-                        )
+                Specification<InventoryStock> specification = InventoryStockSpecification
+                                
+                                .hasItemName(filterDTO.getItemName())
 
-                        .map(item -> {
+                                .and(InventoryStockSpecification.hasItemCode(filterDTO.getItemCode()))
 
-                                InventoryItemDTO dto =
-                                        new InventoryItemDTO();
+                                .and(InventoryStockSpecification.hasStockStatus(filterDTO.getLowStock()));
 
-                                dto.setItemId(
-                                        item.getItemId()
-                                );
-
-                                dto.setItemName(
-                                        item.getItemName()
-                                );
-
-                                dto.setItemCode(
-                                        item.getItemCode()
-                                );
-
-                                dto.setMinimumStock(
-                                        item.getMinimumStock()
-                                );
-
-                                return dto;
-                        })
-
+                return inventoryStockRepository
+                        .findAll(specification)
+                        .stream()
+                        .map(this::convertToDTO)
                         .toList();
         }
 
-        private void validateStock(
-                InventoryStockDTO dto
-        ) {
+        private void validateStock(InventoryStockDTO dto){
 
                 if(dto.getItemId() == null) {
-
-                        throw new RuntimeException(
-                                "Item is required"
-                        );
+                        throw new RuntimeException("Item is required");
                 }
 
-                InventoryItem item =
-                        inventoryItemRepository
+                InventoryItem item = inventoryItemRepository
                                 .findById(dto.getItemId())
                                 .orElseThrow(() ->
-
-                                        new RuntimeException(
-                                                "Item not found"
-                                        )
+                                        new RuntimeException("Item not found")
                                 );
 
-                // NEW RULE
 
-                if(Boolean.TRUE.equals(
-                        item.getIsReusable()
-                )) {
-
-                        throw new RuntimeException(
-
-                                "Reusable item stock is managed through Asset Items"
-                        );
+                if(Boolean.TRUE.equals(item.getIsReusable())){
+                        throw new RuntimeException("Reusable item stock is managed through Asset Items");
                 }
 
-                if(dto.getAvailableQuantity() == null
-                        ||
-                        dto.getAvailableQuantity() < 0) {
-
-                        throw new RuntimeException(
-                                "Available quantity invalid"
-                        );
+                if(dto.getAvailableQuantity() == null || dto.getAvailableQuantity() < 0) {
+                        throw new RuntimeException("Available quantity invalid");
                 }
 
-                if(dto.getIssuedQuantity() == null
-                        ||
-                        dto.getIssuedQuantity() < 0) {
-
-                        throw new RuntimeException(
-                                "Issued quantity invalid"
-                        );
+                if(dto.getIssuedQuantity() == null || dto.getIssuedQuantity() < 0) {
+                        throw new RuntimeException("Issued quantity invalid");
                 }
-
-                // if(dto.getDamagedQuantity() == null
-                //         ||
-                //         dto.getDamagedQuantity() < 0) {
-
-                //         throw new RuntimeException(
-                //                 "Damaged quantity invalid"
-                //         );
-                // }
         }
 
     private InventoryStockDTO convertToDTO(InventoryStock stock) {

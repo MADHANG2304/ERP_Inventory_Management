@@ -15,10 +15,4 @@ public interface ReturnedItemRepository
             Long assetItemId
         );
 
-        List<ReturnedItem> findByIssuedItemIssuedItemId(
-                Long issuedItemId
-        );
-
-        List<ReturnedItem> findByIssuedItemIssuedToEmployeeEmployeeId(Long employeeId);
-
 }

@@ -25,21 +25,24 @@ public class InventoryCategoryService {
     }
 
     public InventoryCategoryDTO saveCategory(InventoryCategoryDTO dto){
+        
         validateCategory(dto);
         
         InventoryCategory category;
         
         if(dto.getCategoryId() != null){
             category = repository
-            .findById(dto.getCategoryId())
-            .orElse(new InventoryCategory());
+                .findById(dto.getCategoryId())
+                .orElse(new InventoryCategory());
         }
         else{
             category = new InventoryCategory();
         }
         
         category.setCategoryName(dto.getCategoryName().trim());
+       
         category.setDescription(dto.getDescription());
+       
         category.setIsActive(dto.getIsActive());
         
         InventoryCategory saved = repository.save(category);
@@ -48,12 +51,9 @@ public class InventoryCategoryService {
 
                 "CATEGORY_MODULE",
 
-                dto.getCategoryId() == null
-                        ? "CREATE"
-                        : "UPDATE",
-
-                "Category saved : "
-                        + dto.getCategoryName()
+                dto.getCategoryId() == null ? "CREATE" : "UPDATE",
+                
+                "Category saved : " + dto.getCategoryName()
         );
 
         return convertToDTO(saved);
@@ -80,15 +80,13 @@ public class InventoryCategoryService {
 
     public void deleteCategory(Long id){
 
-        InventoryCategory category =
-        repository
-                .findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Category not found"
-                        )
-                );
-
+        InventoryCategory category = repository
+                    .findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Category not found"
+                            )
+                    );
 
         repository.deleteById(id);
 
@@ -98,8 +96,7 @@ public class InventoryCategoryService {
 
                 "DELETE",
 
-                "Deleted category : "
-                        + category.getCategoryName()
+                "Deleted category : " + category.getCategoryName()
         );
     }
 
@@ -122,11 +119,15 @@ public class InventoryCategoryService {
     }
 
     private InventoryCategoryDTO convertToDTO(InventoryCategory category){
+
         InventoryCategoryDTO dto = new InventoryCategoryDTO();
 
         dto.setCategoryId(category.getCategoryId());
+        
         dto.setCategoryName(category.getCategoryName());
+        
         dto.setDescription(category.getDescription());
+        
         dto.setIsActive(category.getIsActive());
 
         return dto;

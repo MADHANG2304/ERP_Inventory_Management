@@ -759,7 +759,7 @@ public class EmployeeView extends VerticalLayout {
             return;
         }
 
-        employeeService.deleteEmployee(currentEmployee.getEmployeeId());
+        // employeeService.deleteEmployee(currentEmployee.getEmployeeId());
 
         NotificationUtil.success("Employee deleted Successfully");
 
@@ -854,8 +854,7 @@ public class EmployeeView extends VerticalLayout {
 
                                 employee.getEmployeeId(),
 
-                                managerBox.getValue()
-                                        .getEmployeeId()
+                                managerBox.getValue().getEmployeeId()
                         );
 
                         refreshGrid();

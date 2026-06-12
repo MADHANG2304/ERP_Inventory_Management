@@ -1,152 +1,152 @@
-package com.example.service;
+// package com.example.service;
 
-import com.example.dto.InventoryTransactionDTO;
-import com.example.dto.InventoryTransactionFilterDTO;
-import com.example.entity.InventoryTransaction;
-import com.example.repository.InventoryTransactionRepository;
-import com.example.specification.InventoryTransactionSpecification;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
+// import com.example.dto.InventoryTransactionDTO;
+// import com.example.dto.InventoryTransactionFilterDTO;
+// import com.example.entity.InventoryTransaction;
+// import com.example.repository.InventoryTransactionRepository;
+// import com.example.specification.InventoryTransactionSpecification;
+// import org.springframework.data.jpa.domain.Specification;
+// import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.List;
+// import java.util.stream.Collectors;
 
-@Service
-public class InventoryTransactionService {
+// @Service
+// public class InventoryTransactionService {
 
-    private final InventoryTransactionRepository
-            inventoryTransactionRepository;
+//     private final InventoryTransactionRepository
+//             inventoryTransactionRepository;
 
-    public InventoryTransactionService(
-            InventoryTransactionRepository inventoryTransactionRepository
-    ) {
+//     public InventoryTransactionService(
+//             InventoryTransactionRepository inventoryTransactionRepository
+//     ) {
 
-        this.inventoryTransactionRepository =
-                inventoryTransactionRepository;
-    }
+//         this.inventoryTransactionRepository =
+//                 inventoryTransactionRepository;
+//     }
 
-    public List<InventoryTransactionDTO>
-    getAllTransactions() {
+//     public List<InventoryTransactionDTO>
+//     getAllTransactions() {
 
-        return inventoryTransactionRepository
-                .findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+//         return inventoryTransactionRepository
+//                 .findAll()
+//                 .stream()
+//                 .map(this::convertToDTO)
+//                 .collect(Collectors.toList());
+//     }
 
-    public List<InventoryTransactionDTO>
-    searchTransactions(
-            String keyword
-    ) {
+//     public List<InventoryTransactionDTO>
+//     searchTransactions(
+//             String keyword
+//     ) {
 
-        Specification<InventoryTransaction>
-                specification =
+//         Specification<InventoryTransaction>
+//                 specification =
 
-                InventoryTransactionSpecification
-                        .searchTransaction(keyword);
+//                 InventoryTransactionSpecification
+//                         .searchTransaction(keyword);
 
-        return inventoryTransactionRepository
-                .findAll(specification)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+//         return inventoryTransactionRepository
+//                 .findAll(specification)
+//                 .stream()
+//                 .map(this::convertToDTO)
+//                 .collect(Collectors.toList());
+//     }
 
-    public List<InventoryTransactionDTO>
-                filterTransactions(
-                        InventoryTransactionFilterDTO filterDTO
-                ) {
+//     public List<InventoryTransactionDTO>
+//                 filterTransactions(
+//                         InventoryTransactionFilterDTO filterDTO
+//                 ) {
 
-                Specification<InventoryTransaction>
-                        specification =
+//                 Specification<InventoryTransaction>
+//                         specification =
 
-                        InventoryTransactionSpecification
-                                .hasItemName(
-                                        filterDTO.getItemName()
-                                )
+//                         InventoryTransactionSpecification
+//                                 .hasItemName(
+//                                         filterDTO.getItemName()
+//                                 )
 
-                                .and(
+//                                 .and(
 
-                                        InventoryTransactionSpecification
-                                                .hasTransactionType(
-                                                        filterDTO.getTransactionType()
-                                                )
-                                )
+//                                         InventoryTransactionSpecification
+//                                                 .hasTransactionType(
+//                                                         filterDTO.getTransactionType()
+//                                                 )
+//                                 )
 
-                                .and(
+//                                 .and(
 
-                                        InventoryTransactionSpecification
-                                                .hasReferenceType(
-                                                        filterDTO.getReferenceType()
-                                                )
-                                )
+//                                         InventoryTransactionSpecification
+//                                                 .hasReferenceType(
+//                                                         filterDTO.getReferenceType()
+//                                                 )
+//                                 )
 
-                                .and(
+//                                 .and(
 
-                                        InventoryTransactionSpecification
-                                                .hasReferenceNumber(
-                                                        filterDTO.getReferenceNumber()
-                                                )
-                                );
+//                                         InventoryTransactionSpecification
+//                                                 .hasReferenceNumber(
+//                                                         filterDTO.getReferenceNumber()
+//                                                 )
+//                                 );
 
-                return inventoryTransactionRepository
-                        .findAll(specification)
-                        .stream()
-                        .map(this::convertToDTO)
-                        .toList();
-        }
+//                 return inventoryTransactionRepository
+//                         .findAll(specification)
+//                         .stream()
+//                         .map(this::convertToDTO)
+//                         .toList();
+//         }
 
-    private InventoryTransactionDTO convertToDTO(
-        InventoryTransaction transaction
-                ) {
+//     private InventoryTransactionDTO convertToDTO(
+//         InventoryTransaction transaction
+//                 ) {
 
-                InventoryTransactionDTO dto =
-                        new InventoryTransactionDTO();
+//                 InventoryTransactionDTO dto =
+//                         new InventoryTransactionDTO();
 
-                dto.setTransactionId(
-                        transaction.getTransactionId()
-                );
+//                 dto.setTransactionId(
+//                         transaction.getTransactionId()
+//                 );
 
-                dto.setItemId(
-                        transaction.getItem()
-                                .getItemId()
-                );
+//                 dto.setItemId(
+//                         transaction.getItem()
+//                                 .getItemId()
+//                 );
 
-                dto.setItemName(
-                        transaction.getItem()
-                                .getItemName()
-                );
+//                 dto.setItemName(
+//                         transaction.getItem()
+//                                 .getItemName()
+//                 );
 
-                dto.setTransactionType(
-                        transaction.getTransactionType()
-                );
+//                 dto.setTransactionType(
+//                         transaction.getTransactionType()
+//                 );
 
-                dto.setReferenceType(
-                        transaction.getReferenceType()
-                );
+//                 dto.setReferenceType(
+//                         transaction.getReferenceType()
+//                 );
 
-                dto.setQuantity(
-                        transaction.getQuantity()
-                );
+//                 dto.setQuantity(
+//                         transaction.getQuantity()
+//                 );
 
-                dto.setRemarks(
-                        transaction.getRemarks()
-                );
+//                 dto.setRemarks(
+//                         transaction.getRemarks()
+//                 );
 
-                dto.setReferenceNumber(
+//                 dto.setReferenceNumber(
 
-                        transaction.getReferenceNumber() != null
+//                         transaction.getReferenceNumber() != null
 
-                                ? transaction.getReferenceNumber()
+//                                 ? transaction.getReferenceNumber()
 
-                                : "-"
-                );
+//                                 : "-"
+//                 );
 
-                dto.setTransactionDate(
-                        transaction.getTransactionDate()
-                );
+//                 dto.setTransactionDate(
+//                         transaction.getTransactionDate()
+//                 );
 
-                return dto;
-        }
-}
+//                 return dto;
+//         }
+// }

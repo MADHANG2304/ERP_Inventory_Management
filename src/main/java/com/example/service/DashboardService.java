@@ -132,10 +132,6 @@ public class DashboardService {
         else{
 
             dto.setPendingApprovals(
-                //     approvalRepository.countByApproverEmployeeIdAndApprovalStatus(
-                //             employee.getEmployeeId(),
-                //             ApprovalStatus.PENDING
-                //     )
                 (long) approvalProcessService.getPendingApprovals(username).size()
 
             );

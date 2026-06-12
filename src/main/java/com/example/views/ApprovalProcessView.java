@@ -476,30 +476,20 @@ public class ApprovalProcessView extends VerticalLayout {
                 approveButton.addClickListener(event -> {
 
                         try {
-
-                                approvalProcessService
-                                        .approveRequest(
-
+                                approvalProcessService.approveRequest(
                                                 approvalDTO.getApprovalId(),
-
                                                 comments.getValue(),
-
                                                 approvalItems
-                                        );
-
-                                NotificationUtil.success(
-                                        "Request approved successfully"
                                 );
+
+                                NotificationUtil.success("Request approved successfully");
 
                                 dialog.close();
 
                                 refreshGrid();
 
                         } catch (Exception e) {
-
-                                NotificationUtil.error(
-                                        e.getMessage()
-                                );
+                                NotificationUtil.error(e.getMessage());
                         }
                 });
 

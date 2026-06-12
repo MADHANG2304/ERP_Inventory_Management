@@ -11,7 +11,6 @@ import com.example.enums.ItemStatus;
 
 public interface InventoryItemRepository extends JpaRepository<InventoryItem,Long>, JpaSpecificationExecutor<InventoryItem>{
 
-
     Long countByStatus(ItemStatus status);
 
     List<InventoryItem> findByIsReusableTrue();

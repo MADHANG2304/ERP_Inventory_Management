@@ -22,6 +22,7 @@ public class DesignationService {
 
 
     public DesignationDTO saveDesignation(DesignationDTO dto){
+        
         validateDesignation(dto);
 
         Designation designation;
@@ -36,7 +37,9 @@ public class DesignationService {
         }
 
         designation.setDesignationName(dto.getDesignationName().trim());
+        
         designation.setDesignationCode(dto.getDesignationCode());
+        
         designation.setIsActive(dto.getIsActive());
 
         Designation saved = designationRepository.save(designation);
@@ -106,8 +109,11 @@ public class DesignationService {
         DesignationDTO dto = new DesignationDTO();
 
         dto.setDesignationId(designation.getDesignationId());
+        
         dto.setDesignationName(designation.getDesignationName());
+        
         dto.setDesignationCode(designation.getDesignationCode());
+        
         dto.setIsActive(designation.getIsActive());
 
         return dto;

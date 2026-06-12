@@ -39,25 +39,17 @@ public class InventoryItemService {
 
         if(dto.getItemId() != null) {
 
-            item =
-                    itemRepository
+            item = itemRepository
                             .findById(dto.getItemId())
                             .orElseThrow(() ->
-                                    new RuntimeException(
-                                            "Item not found"
-                                    )
+                                    new RuntimeException("Item not found")
                             );
 
-            if(Boolean.TRUE.equals(item.getIsReusable())
-                    && Boolean.FALSE.equals(dto.getIsReusable())) {
+            if(Boolean.TRUE.equals(item.getIsReusable()) && Boolean.FALSE.equals(dto.getIsReusable())) {
 
-                long assetCount =
-                        assetItemRepository.countByItemItemId(
-                                item.getItemId()
-                        );
+                long assetCount = assetItemRepository.countByItemItemId(item.getItemId());
 
                 if(assetCount > 0) {
-
                     throw new RuntimeException(
                             "Reusable item cannot be converted to consumable because assets already exist."
                     );
@@ -73,14 +65,21 @@ public class InventoryItemService {
             .orElseThrow(() -> new RuntimeException("Category not found"));
 
         item.setCategory(category);
+        
         item.setItemName(dto.getItemName().trim());
+        
         item.setItemCode(dto.getItemCode().trim().toUpperCase());
+        
         item.setDescription(dto.getDescription());
+        
         item.setIsReusable(dto.getIsReusable());
 
         item.setApprovalType(dto.getApprovalType());
+        
         item.setMinimumStock(dto.getMinimumStock());
+        
         item.setUnitType(dto.getUnitType());
+        
         item.setStatus(dto.getStatus());
 
         InventoryItem saved = itemRepository.save(item);
@@ -89,12 +88,9 @@ public class InventoryItemService {
 
                 "INVENTORY_ITEM",
 
-                dto.getItemId() == null
-                        ? "CREATE"
-                        : "UPDATE",
+                dto.getItemId() == null ? "CREATE" : "UPDATE",
 
-                "Inventory item saved : "
-                        + dto.getItemName()
+                "Inventory item saved : " + dto.getItemName()
         );
 
         return convertToDTO(saved);
@@ -105,17 +101,10 @@ public class InventoryItemService {
         return itemRepository
                 .findAll()
                 .stream()
-
                 .sorted((a,b) ->
-
-                        a.getItemName()
-                                .compareToIgnoreCase(
-                                        b.getItemName()
-                                )
+                        a.getItemName().compareToIgnoreCase(b.getItemName())
                 )
-
                 .map(this::convertToDTO)
-
                 .collect(Collectors.toList());
     }
 
@@ -124,14 +113,13 @@ public class InventoryItemService {
         return categoryRepository
                 .findAll()
                 .stream()
-                .filter(category ->
-                    Boolean.TRUE.equals(category.getIsActive())
-                )
+                .filter(category -> Boolean.TRUE.equals(category.getIsActive()))
                 .map(category -> {
 
                     InventoryCategoryDTO dto = new InventoryCategoryDTO();
 
                     dto.setCategoryId(category.getCategoryId());
+                    
                     dto.setCategoryName(category.getCategoryName());
 
                     return dto;
@@ -140,8 +128,7 @@ public class InventoryItemService {
     }
 
     public List<InventoryItemDTO> searchItems(String keyword){
-        Specification<InventoryItem> spec = InventoryItemSpecification
-            .searchItems(keyword);
+        Specification<InventoryItem> spec = InventoryItemSpecification.searchItems(keyword);
 
         return itemRepository
             .findAll(spec)
@@ -157,10 +144,7 @@ public class InventoryItemService {
 
     public List<InventoryItemDTO> filterItems(InventoryItemFilterDTO filterDTO) {
 
-        Specification<InventoryItem> specification =
-
-                InventoryItemSpecification
-                        .hasCategory(filterDTO.getCategoryId())
+        Specification<InventoryItem> specification = InventoryItemSpecification.hasCategory(filterDTO.getCategoryId())
 
                         .and(InventoryItemSpecification.hasItemCode(filterDTO.getItemCode()))
 
@@ -210,38 +194,40 @@ public class InventoryItemService {
                 .findAll()
                 .stream()
                 .anyMatch(i ->
-
-                        i.getItemCode()
-                                .equalsIgnoreCase(
-                                        dto.getItemCode()
-                                )
-
+                        i.getItemCode().equalsIgnoreCase(dto.getItemCode())
                         &&
-
-                        !i.getItemId()
-                                .equals(dto.getItemId())
+                        !i.getItemId().equals(dto.getItemId())
                 );
 
         if(duplicateItem){
-            throw new RuntimeException(
-                    "Item Code already exists"
-            );
+            throw new RuntimeException("Item Code already exists");
         }
     }
 
     private InventoryItemDTO convertToDTO(InventoryItem item){
+        
         InventoryItemDTO dto = new InventoryItemDTO();
 
         dto.setItemId(item.getItemId());
+        
         dto.setCategoryId(item.getCategory().getCategoryId());
+        
         dto.setCategoryName(item.getCategory().getCategoryName());
+        
         dto.setItemName(item.getItemName());
+        
         dto.setItemCode(item.getItemCode());
+        
         dto.setDescription(item.getDescription());
+        
         dto.setIsReusable(item.getIsReusable());
+        
         dto.setApprovalType(item.getApprovalType());
+        
         dto.setMinimumStock(item.getMinimumStock());
+        
         dto.setUnitType(item.getUnitType());
+        
         dto.setStatus(item.getStatus());
 
         return dto;

@@ -4,7 +4,6 @@ import com.example.views.DashboardView;
 import com.example.views.DepartmentView;
 import com.example.views.DesignationView;
 import com.example.views.InventoryCategoryView;
-import com.example.views.InventoryItemView;
 import com.example.views.layout.AppHeader;
 import com.example.views.layout.SideMenu;
 import com.vaadin.flow.component.applayout.AppLayout;

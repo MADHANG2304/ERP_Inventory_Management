@@ -400,8 +400,7 @@ public class ReturnView extends VerticalLayout {
     private void refreshGrid() {
 
         grid.setItems(
-                returnService
-                        .getIssuedItemsForReturn()
+                returnService.getIssuedItemsForReturn()
         );
     }
 }

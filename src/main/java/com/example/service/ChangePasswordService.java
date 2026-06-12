@@ -19,98 +19,54 @@ public class ChangePasswordService {
 
     private final AuditLogService auditLogService;
 
-    public ChangePasswordService(
-            EmployeeRepository employeeRepository,
-            PasswordEncoder passwordEncoder,
-            AuditLogService auditLogService
-    ) {
-
-        this.employeeRepository =
-                employeeRepository;
-
-        this.passwordEncoder =
-                passwordEncoder;
-
-        this.auditLogService = 
-                auditLogService;
+    public ChangePasswordService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, AuditLogService auditLogService){
+        this.employeeRepository = employeeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
-    public void changePassword(
+    public void changePassword(String username, ChangePasswordDTO dto){
 
-            String username,
+        Specification<Employee> specification = EmployeeSpecification.hasUsername(username);
 
-            ChangePasswordDTO dto
-    ) {
-
-        Specification<Employee> specification =
-
-                EmployeeSpecification
-                        .hasUsername(username);
-
-        Employee employee =
-                employeeRepository
+        Employee employee = employeeRepository
                         .findOne(specification)
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "User not found"
-                                )
+                                new RuntimeException("User not found")
                         );
 
-        if(!passwordEncoder.matches(
-
-                dto.getOldPassword(),
-
-                employee.getPassword()
-        )) {
-
-            throw new RuntimeException(
-                    "Old password is incorrect"
-            );
+        if(!passwordEncoder.matches(dto.getOldPassword(), employee.getPassword())){
+            throw new RuntimeException("Old password is incorrect");
         }
 
-        if(!dto.getNewPassword()
-                .equals(
-                        dto.getConfirmPassword()
-                )) {
-
-            throw new RuntimeException(
-                    "Password mismatch"
-            );
+        if(!dto.getNewPassword().equals(dto.getConfirmPassword())){
+            throw new RuntimeException("Password mismatch");
         }
 
         String password = dto.getNewPassword();
 
-        String passwordPattern =
-                "^(?=.*[0-9])" +          // at least one number
-                "(?=.*[a-z])" +          // at least one small letter
-                "(?=.*[A-Z])" +          // at least one capital letter
-                "(?=.*[@#$%^&+=!])" +   // at least one special character
-                "(?=\\S+$)" +           // no spaces
-                ".{6,}$";               // minimum 6 characters
+        String passwordPattern = "^[a-zA-Z0-9._]+@[a-zA-Z]+\\.[a-zA-Z]{2,}$";
 
         if(!password.matches(passwordPattern)) {
 
-        throw new RuntimeException(
+                throw new RuntimeException(
 
-                "Password must contain:\n" +
+                        "Password must contain:\n" +
 
-                "• One uppercase letter\n" +
+                        "• One uppercase letter\n" +
 
-                "• One lowercase letter\n" +
+                        "• One lowercase letter\n" +
 
-                "• One number\n" +
+                        "• One number\n" +
 
-                "• One special character\n" +
+                        "• One special character\n" +
 
-                "• Minimum 6 characters"
-        );
+                        "• Minimum 6 characters"
+                );
         }
 
         employee.setPassword(
-
-                passwordEncoder.encode(
-                        dto.getNewPassword()
-                )
+                passwordEncoder.encode(dto.getNewPassword())
         );
 
         employeeRepository.save(employee);
@@ -121,8 +77,7 @@ public class ChangePasswordService {
 
                 "PASSWORD_CHANGE",
 
-                "Password changed for : "
-                        + employee.getUsername()
+                "Password changed for : " + employee.getUsername()
         );
     }
 }

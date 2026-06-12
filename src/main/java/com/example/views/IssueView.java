@@ -217,17 +217,13 @@ public class IssueView extends VerticalLayout {
 
                 grid.addColumn(
                         dto -> dto.getAssetReferenceNumber() == null
-                                ? "-"
-                                : dto.getAssetReferenceNumber()
+                                ? "-" : dto.getAssetReferenceNumber()
                 ).setHeader("Asset Ref");
 
                 grid.addComponentColumn(item -> {
 
                         Span quantityBadge =
-                                new Span(
-                                        String.valueOf(
-                                                item.getRequestedQuantity()
-                                        )
+                                new Span(String.valueOf(item.getRequestedQuantity())
                                 );
 
                         quantityBadge.getStyle()
@@ -458,65 +454,44 @@ public class IssueView extends VerticalLayout {
 
                         issueButton.addClickListener(event -> {
 
-                        try {
+                                try {
+                                        if(dialogAssetSelector.getSelectedItems().isEmpty()) {
 
-                                if(dialogAssetSelector
-                                        .getSelectedItems()
-                                        .isEmpty()) {
+                                                NotificationUtil.warning("Select asset");
 
-                                NotificationUtil.warning(
-                                        "Select asset(s)"
-                                );
+                                                return;
+                                        }
 
-                                return;
+                                        if(dialogAssetSelector.getSelectedItems().size() > remaining) {
+
+                                                NotificationUtil.warning("Only " + remaining + " asset(s) can be issued");
+
+                                                return;
+                                        }
+
+                                        for(AssetItemDTO asset : dialogAssetSelector.getSelectedItems()) {
+
+                                                issueService.issueItem(
+
+                                                        item.getRequestItemId(),
+
+                                                        asset.getAssetItemId(),
+
+                                                        1,
+
+                                                        username
+                                                );
+                                        }
+
+                                        NotificationUtil.success("Assets issued successfully");
+
+                                        dialog.close();
+
+                                        refreshGrid();
+
+                                } catch(Exception ex) {
+                                        NotificationUtil.error(ex.getMessage());
                                 }
-
-                                if(dialogAssetSelector
-                                        .getSelectedItems()
-                                        .size() > remaining) {
-
-                                NotificationUtil.warning(
-
-                                        "Only "
-
-                                        + remaining
-
-                                        + " asset(s) can be issued"
-                                );
-
-                                return;
-                                }
-
-                                for(AssetItemDTO asset :
-
-                                        dialogAssetSelector.getSelectedItems()) {
-
-                                issueService.issueItem(
-
-                                        item.getRequestItemId(),
-
-                                        asset.getAssetItemId(),
-
-                                        1,
-
-                                        username
-                                );
-                                }
-
-                                NotificationUtil.success(
-                                        "Assets issued successfully"
-                                );
-
-                                dialog.close();
-
-                                refreshGrid();
-
-                        } catch(Exception ex) {
-
-                                NotificationUtil.error(
-                                        ex.getMessage()
-                                );
-                        }
                         });
 
                         footer.add(issueButton);
@@ -635,35 +610,6 @@ public class IssueView extends VerticalLayout {
                 dialog.add(content);
 
                 dialog.open();
-        }
-
-        private void configureAssetSelector() {
-
-                assetSelector.setWidthFull();
-
-                assetSelector.setHeight("140px");
-
-                assetSelector.setItemLabelGenerator(
-                        AssetItemDTO::getAssetReferenceNumber
-                );
-
-                assetSelector.getStyle()
-
-                        .set("border", "1px solid #dbe2ea")
-
-                        .set("border-radius", "10px")
-
-                        .set("padding", "10px")
-
-                        .set("background", "#ffffff");
-
-                assetSelector.setVisible(false);
-
-                quantityField.setWidth("180px");
-
-                quantityField.setMin(1);
-
-                quantityField.setVisible(false);
         }
 
         private void refreshGrid() {

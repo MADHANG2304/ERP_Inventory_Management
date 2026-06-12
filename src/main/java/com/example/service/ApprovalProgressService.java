@@ -9,7 +9,6 @@ import com.example.dto.ApprovalProgressDTO;
 import com.example.dto.ApprovalProgressItemDTO;
 import com.example.entity.InventoryRequest;
 import com.example.entity.RequestApproval;
-import com.example.entity.RequestItems;
 import com.example.repository.InventoryRequestRepository;
 import com.example.repository.IssuedItemRepository;
 import com.example.repository.RequestApprovalRepository;
@@ -17,148 +16,83 @@ import com.example.repository.RequestApprovalRepository;
 @Service
 public class ApprovalProgressService {
 
-    private final RequestApprovalRepository requestApprovalRepository;
+        private final RequestApprovalRepository requestApprovalRepository;
 
-    private final InventoryRequestRepository inventoryRequestRepository;
+        private final InventoryRequestRepository inventoryRequestRepository;
 
-    private final IssuedItemRepository issuedItemRepository;
+        private final IssuedItemRepository issuedItemRepository;
 
-    public ApprovalProgressService(
-            RequestApprovalRepository requestApprovalRepository,
-            InventoryRequestRepository inventoryRequestRepository,
-            IssuedItemRepository issuedItemRepository
-    ) {
+        public ApprovalProgressService(RequestApprovalRepository requestApprovalRepository,InventoryRequestRepository inventoryRequestRepository, IssuedItemRepository issuedItemRepository){
+                this.requestApprovalRepository = requestApprovalRepository;
+                this.inventoryRequestRepository = inventoryRequestRepository;
+                this.issuedItemRepository = issuedItemRepository;
+        }
 
-        this.requestApprovalRepository =
-                requestApprovalRepository;
+        public List<ApprovalProgressDTO> getApprovalProgress(Long requestId) {
 
-        this.inventoryRequestRepository =
-                inventoryRequestRepository;
+                List<RequestApproval> approvals = requestApprovalRepository
+                                .findAll()
+                                .stream()
+                                .filter(approval ->
+                                        approval.getRequest().getRequestId().equals(requestId)
+                                )
+                                .sorted((a, b) ->
+                                        a.getApprovalOrder().compareTo(b.getApprovalOrder())
+                                )
+                                .collect(Collectors.toList());
 
-        this.issuedItemRepository =
-                issuedItemRepository;
-    }
+                return approvals.stream()
+                        .map(approval -> {
+                                ApprovalProgressDTO dto = new ApprovalProgressDTO();
 
-    public List<ApprovalProgressDTO>
-    getApprovalProgress(Long requestId) {
+                                dto.setRequestNumber(approval.getRequest().getRequestNumber());
 
-        List<RequestApproval> approvals =
-                requestApprovalRepository
-                        .findAll()
-                        .stream()
+                                dto.setApprovalLevel(approval.getApprovalOrder());
 
-                        .filter(approval ->
+                                dto.setApprovalRole(approval.getApprovalRole());
 
-                                approval.getRequest()
-                                        .getRequestId()
-                                        .equals(requestId)
+                                dto.setApprovalStatus(approval.getApprovalStatus());
 
-                        )
+                                dto.setCurrentLevel(approval.getIsCurrentLevel());
+                                
+                                dto.setActionDate(approval.getModifiedAt());
 
-                        .sorted((a, b) ->
-
-                                a.getApprovalOrder()
-                                        .compareTo(
-                                                b.getApprovalOrder()
-                                        )
-                        )
-
+                                return dto;
+                        })
                         .collect(Collectors.toList());
+        }
 
-        return approvals.stream()
-                .map(approval -> {
+        public List<ApprovalProgressItemDTO> getRequestItemSummary(Long requestId) {
 
-                    ApprovalProgressDTO dto =
-                            new ApprovalProgressDTO();
+                InventoryRequest request = inventoryRequestRepository
+                                .findById(requestId)
+                                .orElseThrow(() -> new RuntimeException("Request not found"));
 
-                    dto.setRequestNumber(
-                            approval.getRequest()
-                                    .getRequestNumber()
-                    );
+                return request.getRequestItems()
+                        .stream()
+                        .map(item -> {
+                                ApprovalProgressItemDTO dto = new ApprovalProgressItemDTO();
 
-                    dto.setApprovalLevel(
-                            approval.getApprovalOrder()
-                    );
+                                Integer issuedQty = issuedItemRepository.getIssuedQuantityForRequestItem(item.getRequestItemId());
 
-                    dto.setApprovalRole(
-                            approval.getApprovalRole()
-                    );
+                                if (issuedQty == null) {
+                                        issuedQty = 0;
+                                }
 
-                    dto.setApprovalStatus(
-                            approval.getApprovalStatus()
-                    );
+                                dto.setItemName(item.getItem().getItemName());
 
-                    dto.setCurrentLevel(
-                            approval.getIsCurrentLevel()
-                    );
+                                dto.setItemCode(item.getItem().getItemCode());
 
-                    dto.setActionDate(
-                            approval.getModifiedAt()
-                    );
+                                dto.setRequestedQuantity(item.getRequestedQuantity());
 
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+                                dto.setApprovedQuantity(item.getApprovedQuantity());
 
-    public List<ApprovalProgressItemDTO>
-    getRequestItemSummary(Long requestId) {
+                                dto.setIssuedQuantity(issuedQty);
 
-        InventoryRequest request =
-                inventoryRequestRepository
-                        .findById(requestId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Request not found"
-                                ));
+                                dto.setRemainingQuantity(Math.max(item.getApprovedQuantity() - issuedQty,0));
 
-        return request.getRequestItems()
-                .stream()
-                .map(item -> {
-
-                    ApprovalProgressItemDTO dto =
-                            new ApprovalProgressItemDTO();
-
-                    Integer issuedQty =
-                            issuedItemRepository
-                                    .getIssuedQuantityForRequestItem(
-                                            item.getRequestItemId()
-                                    );
-
-                    if (issuedQty == null) {
-                        issuedQty = 0;
-                    }
-
-                    dto.setItemName(
-                            item.getItem().getItemName()
-                    );
-
-                    dto.setItemCode(
-                            item.getItem().getItemCode()
-                    );
-
-                    dto.setRequestedQuantity(
-                            item.getRequestedQuantity()
-                    );
-
-                    dto.setApprovedQuantity(
-                            item.getApprovedQuantity()
-                    );
-
-                    dto.setIssuedQuantity(
-                            issuedQty
-                    );
-
-                    dto.setRemainingQuantity(
-                            Math.max(
-                                    item.getApprovedQuantity()
-                                            - issuedQty,
-                                    0
-                            )
-                    );
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+                                return dto;
+                        })
+                        .collect(Collectors.toList());
+        }
 }

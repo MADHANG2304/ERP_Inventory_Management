@@ -1,549 +1,549 @@
-package com.example.views;
+// package com.example.views;
 
-import com.example.dto.InventoryItemDTO;
-import com.example.dto.InventoryStockDTO;
-import com.example.dto.InventoryStockFilterDTO;
-import com.example.service.InventoryStockService;
-import com.example.utils.NotificationUtil;
-import com.example.base.ui.MainLayout;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+// import com.example.dto.InventoryItemDTO;
+// import com.example.dto.InventoryStockDTO;
+// import com.example.dto.InventoryStockFilterDTO;
+// import com.example.service.InventoryStockService;
+// import com.example.utils.NotificationUtil;
+// import com.example.base.ui.MainLayout;
+// import com.vaadin.flow.component.button.Button;
+// import com.vaadin.flow.component.button.ButtonVariant;
+// import com.vaadin.flow.component.combobox.ComboBox;
+// import com.vaadin.flow.component.dialog.Dialog;
+// import com.vaadin.flow.component.formlayout.FormLayout;
+// import com.vaadin.flow.component.grid.Grid;
+// import com.vaadin.flow.component.grid.GridVariant;
+// import com.vaadin.flow.component.html.H2;
+// import com.vaadin.flow.component.html.Span;
+// import com.vaadin.flow.component.icon.VaadinIcon;
+// import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+// import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+// import com.vaadin.flow.component.textfield.IntegerField;
+// import com.vaadin.flow.component.textfield.TextField;
+// import com.vaadin.flow.data.binder.BeanValidationBinder;
+// import com.vaadin.flow.data.binder.ValidationException;
+// import com.vaadin.flow.router.PageTitle;
+// import com.vaadin.flow.router.Route;
 
-import jakarta.annotation.security.RolesAllowed;
+// import jakarta.annotation.security.RolesAllowed;
 
-@Route(value = "inventory-stock", layout = MainLayout.class)
-@PageTitle("Inventory Stock")
-@RolesAllowed({
-                "SUPER_ADMIN",
-                "INVENTORY_ADMIN"
-})
-public class InventoryStockView extends VerticalLayout {
+// @Route(value = "inventory-stock", layout = MainLayout.class)
+// @PageTitle("Inventory Stock")
+// @RolesAllowed({
+//                 "SUPER_ADMIN",
+//                 "INVENTORY_ADMIN"
+// })
+// public class InventoryStockView extends VerticalLayout {
 
-        private final InventoryStockService inventoryStockService;
+//         private final InventoryStockService inventoryStockService;
 
-        private final Grid<InventoryStockDTO> grid = new Grid<>(InventoryStockDTO.class, false);
+//         private final Grid<InventoryStockDTO> grid = new Grid<>(InventoryStockDTO.class, false);
 
-        private final BeanValidationBinder<InventoryStockDTO> binder = new BeanValidationBinder<>(InventoryStockDTO.class);
+//         private final BeanValidationBinder<InventoryStockDTO> binder = new BeanValidationBinder<>(InventoryStockDTO.class);
 
-        private InventoryStockDTO currentStock = new InventoryStockDTO();
+//         private InventoryStockDTO currentStock = new InventoryStockDTO();
 
-        private final ComboBox<InventoryItemDTO> itemId = new ComboBox<>("Inventory Item");
+//         private final ComboBox<InventoryItemDTO> itemId = new ComboBox<>("Inventory Item");
 
-        private final IntegerField availableQuantity = new IntegerField("Available Quantity");
+//         private final IntegerField availableQuantity = new IntegerField("Available Quantity");
 
-        private final IntegerField issuedQuantity = new IntegerField("Issued Quantity");
+//         private final IntegerField issuedQuantity = new IntegerField("Issued Quantity");
 
-        private final IntegerField damagedQuantity = new IntegerField("Damaged Quantity");
+//         private final IntegerField damagedQuantity = new IntegerField("Damaged Quantity");
 
 
-        private final Dialog stockDialog = new Dialog();
+//         private final Dialog stockDialog = new Dialog();
 
-        private final Button openDialogButton = new Button(VaadinIcon.PLUS.create());
+//         private final Button openDialogButton = new Button(VaadinIcon.PLUS.create());
 
-        private InventoryStockDTO selectedStock;
+//         private InventoryStockDTO selectedStock;
 
-        Button saveButton = new Button("Save");
+//         Button saveButton = new Button("Save");
 
-        private Boolean isEdit = false;
+//         private Boolean isEdit = false;
 
-        private final TextField itemNameFilter = new TextField();
+//         private final TextField itemNameFilter = new TextField();
 
-        private final TextField itemCodeFilter = new TextField();
+//         private final TextField itemCodeFilter = new TextField();
 
-        private final ComboBox<String> stockStatusFilter = new ComboBox<>();
+//         private final ComboBox<String> stockStatusFilter = new ComboBox<>();
 
-        private final Button clearFilterButton = new Button("Clear");
+//         private final Button clearFilterButton = new Button("Clear");
 
-        public InventoryStockView(InventoryStockService inventoryStockService) {
+//         public InventoryStockView(InventoryStockService inventoryStockService) {
 
-                this.inventoryStockService = inventoryStockService;
+//                 this.inventoryStockService = inventoryStockService;
 
-                setSizeFull();
+//                 setSizeFull();
 
-                setPadding(true);
+//                 setPadding(true);
 
-                setSpacing(true);
+//                 setSpacing(true);
 
-                getStyle()
-                        .set("background", "#f4f7fb")
+//                 getStyle()
+//                         .set("background", "#f4f7fb")
                         
-                        .set("padding", "24px");
+//                         .set("padding", "24px");
 
-                H2 heading = new H2("Inventory Stock Management");
+//                 H2 heading = new H2("Inventory Stock Management");
 
-                heading.getStyle()
+//                 heading.getStyle()
 
-                                .set("margin", "0")
+//                                 .set("margin", "0")
 
-                                .set("font-size", "34px")
+//                                 .set("font-size", "34px")
 
-                                .set("font-weight", "700")
+//                                 .set("font-weight", "700")
 
-                                .set("color", "#0f172a");
+//                                 .set("color", "#0f172a");
 
-                Span subHeading = new Span( "Manage stock availability, issued quantity and damaged inventory");
+//                 Span subHeading = new Span( "Manage stock availability, issued quantity and damaged inventory");
 
-                subHeading.getStyle()
+//                 subHeading.getStyle()
 
-                                .set("font-size", "15px")
+//                                 .set("font-size", "15px")
 
-                                .set("color", "#64748b");
+//                                 .set("color", "#64748b");
 
-                VerticalLayout headingSection = new VerticalLayout(heading , subHeading);
+//                 VerticalLayout headingSection = new VerticalLayout(heading , subHeading);
 
-                headingSection.setPadding(true);
+//                 headingSection.setPadding(true);
 
-                headingSection.setSpacing(true);
+//                 headingSection.setSpacing(true);
 
-                openDialogButton.setText("Add Stock");
+//                 openDialogButton.setText("Add Stock");
 
-                openDialogButton.setIcon(VaadinIcon.PLUS.create());
+//                 openDialogButton.setIcon(VaadinIcon.PLUS.create());
 
-                openDialogButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//                 openDialogButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-                openDialogButton.getStyle()
+//                 openDialogButton.getStyle()
 
-                                .set("margin-left", "auto")
+//                                 .set("margin-left", "auto")
 
-                                .set("background",
-                                                "linear-gradient(135deg,#2563eb,#1d4ed8)")
+//                                 .set("background",
+//                                                 "linear-gradient(135deg,#2563eb,#1d4ed8)")
 
-                                .set("border-radius", "12px")
+//                                 .set("border-radius", "12px")
 
-                                .set("font-weight", "600")
+//                                 .set("font-weight", "600")
 
-                                .set("height", "42px")
+//                                 .set("height", "42px")
 
-                                .set("padding", "0 18px")
+//                                 .set("padding", "0 18px")
 
-                                .set("box-shadow",
-                                                "0 4px 14px rgba(37,99,235,0.35)");
+//                                 .set("box-shadow",
+//                                                 "0 4px 14px rgba(37,99,235,0.35)");
 
-                openDialogButton.addClickListener(event -> {
+//                 openDialogButton.addClickListener(event -> {
 
-                        clearForm();
+//                         clearForm();
 
-                        stockDialog.open();
-                });
+//                         stockDialog.open();
+//                 });
 
-                HorizontalLayout headerLayout = new HorizontalLayout(
-                                headingSection,
-                                openDialogButton);
+//                 HorizontalLayout headerLayout = new HorizontalLayout(
+//                                 headingSection,
+//                                 openDialogButton);
 
-                headerLayout.setWidthFull();
+//                 headerLayout.setWidthFull();
 
-                headerLayout.expand(headingSection);
+//                 headerLayout.expand(headingSection);
 
-                headerLayout.setAlignItems(Alignment.CENTER);
+//                 headerLayout.setAlignItems(Alignment.CENTER);
 
-                configureForm();
+//                 configureForm();
 
-                configureGrid();
+//                 configureGrid();
 
-                configureFilters();
+//                 configureFilters();
 
-                FormLayout formLayout = new FormLayout();
+//                 FormLayout formLayout = new FormLayout();
 
-                formLayout.add(
-                                itemId,
-                                availableQuantity,
-                                issuedQuantity,
-                                damagedQuantity
-                        );
+//                 formLayout.add(
+//                                 itemId,
+//                                 availableQuantity,
+//                                 issuedQuantity,
+//                                 damagedQuantity
+//                         );
 
-                formLayout.setResponsiveSteps(
+//                 formLayout.setResponsiveSteps(
 
-                                new FormLayout.ResponsiveStep("0", 1),
+//                                 new FormLayout.ResponsiveStep("0", 1),
 
-                                new FormLayout.ResponsiveStep("800px", 2));
+//                                 new FormLayout.ResponsiveStep("800px", 2));
 
-                formLayout.getStyle()
+//                 formLayout.getStyle()
 
-                                .set("background", "white")
+//                                 .set("background", "white")
 
-                                .set("padding", "24px")
+//                                 .set("padding", "24px")
 
-                                .set("border-radius", "18px");
+//                                 .set("border-radius", "18px");
 
-                saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//                 saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-                saveButton.getStyle()
+//                 saveButton.getStyle()
 
-                                .set("background",
-                                                "linear-gradient(135deg,#2563eb,#1d4ed8)")
+//                                 .set("background",
+//                                                 "linear-gradient(135deg,#2563eb,#1d4ed8)")
 
-                                .set("border-radius", "12px")
+//                                 .set("border-radius", "12px")
 
-                                .set("font-weight", "600");
+//                                 .set("font-weight", "600");
 
-                Button clearButton = new Button("Clear");
+//                 Button clearButton = new Button("Clear");
 
-                Button cancelButton = new Button("Cancel");
+//                 Button cancelButton = new Button("Cancel");
 
-                cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+//                 cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-                clearButton.getStyle().set("border-radius", "12px");
+//                 clearButton.getStyle().set("border-radius", "12px");
 
-                cancelButton.getStyle().set("border-radius", "12px");
+//                 cancelButton.getStyle().set("border-radius", "12px");
 
-                saveButton.addClickListener(event -> saveStock());
+//                 saveButton.addClickListener(event -> saveStock());
 
-                clearButton.addClickListener(event -> clearForm());
+//                 clearButton.addClickListener(event -> clearForm());
 
-                cancelButton.addClickListener(event -> {
+//                 cancelButton.addClickListener(event -> {
 
-                        clearForm();
+//                         clearForm();
 
-                        stockDialog.close();
-                });
+//                         stockDialog.close();
+//                 });
 
-                HorizontalLayout buttonLayout = new HorizontalLayout(
-                                saveButton,
-                                // clearButton,
-                                cancelButton);
+//                 HorizontalLayout buttonLayout = new HorizontalLayout(
+//                                 saveButton,
+//                                 // clearButton,
+//                                 cancelButton);
 
-                VerticalLayout dialogLayout = new VerticalLayout(
-                                formLayout,
-                                buttonLayout);
+//                 VerticalLayout dialogLayout = new VerticalLayout(
+//                                 formLayout,
+//                                 buttonLayout);
 
-                dialogLayout.setWidth("850px");
+//                 dialogLayout.setWidth("850px");
 
-                dialogLayout.getStyle()
+//                 dialogLayout.getStyle()
 
-                                .set("background", "white")
+//                                 .set("background", "white")
 
-                                .set("border-radius", "20px");
+//                                 .set("border-radius", "20px");
 
-                stockDialog.add(dialogLayout);
+//                 stockDialog.add(dialogLayout);
 
-                stockDialog.setHeaderTitle("Inventory Stock");
+//                 stockDialog.setHeaderTitle("Inventory Stock");
 
-                stockDialog.setModal(true);
+//                 stockDialog.setModal(true);
 
-                stockDialog.setDraggable(true);
+//                 stockDialog.setDraggable(true);
 
-                stockDialog.setResizable(true);
+//                 stockDialog.setResizable(true);
 
-                stockDialog.setWidth("950px");
+//                 stockDialog.setWidth("950px");
 
 
-                HorizontalLayout filterLayout =
-                        new HorizontalLayout(
+//                 HorizontalLayout filterLayout =
+//                         new HorizontalLayout(
 
-                                itemNameFilter,
+//                                 itemNameFilter,
 
-                                itemCodeFilter,
+//                                 itemCodeFilter,
 
-                                stockStatusFilter,
+//                                 stockStatusFilter,
 
-                                clearFilterButton
-                        );
+//                                 clearFilterButton
+//                         );
 
-                filterLayout.setWidthFull();
+//                 filterLayout.setWidthFull();
 
-                filterLayout.getStyle()
+//                 filterLayout.getStyle()
 
-                        .set("background", "white")
+//                         .set("background", "white")
 
-                        .set("padding", "18px")
+//                         .set("padding", "18px")
 
-                        .set("border-radius", "18px")
+//                         .set("border-radius", "18px")
 
-                        .set("box-shadow",
-                                "0 4px 18px rgba(0,0,0,0.06)");
+//                         .set("box-shadow",
+//                                 "0 4px 18px rgba(0,0,0,0.06)");
 
-                add(
-                        headerLayout,
-                        filterLayout,
-                        grid
-                );
+//                 add(
+//                         headerLayout,
+//                         filterLayout,
+//                         grid
+//                 );
 
-                refreshGrid();
-        }
+//                 refreshGrid();
+//         }
 
-        private void configureForm() {
+//         private void configureForm() {
 
-                itemId.setItems(inventoryStockService.getAllItems());
+//                 itemId.setItems(inventoryStockService.getAllItems());
 
-                itemId.setItemLabelGenerator(item -> item.getItemName() + " - " + item.getItemCode());
+//                 itemId.setItemLabelGenerator(item -> item.getItemName() + " - " + item.getItemCode());
 
-                binder.forField(itemId)
-                                .bind(stock -> {
-                                        if (stock.getItemId() == null) {
-                                                return null;
-                                        }
+//                 binder.forField(itemId)
+//                                 .bind(stock -> {
+//                                         if (stock.getItemId() == null) {
+//                                                 return null;
+//                                         }
 
-                                        InventoryItemDTO dto = new InventoryItemDTO();
+//                                         InventoryItemDTO dto = new InventoryItemDTO();
 
-                                        dto.setItemId(stock.getItemId());
+//                                         dto.setItemId(stock.getItemId());
 
-                                        dto.setItemName(stock.getItemName());
+//                                         dto.setItemName(stock.getItemName());
 
-                                        dto.setItemCode(stock.getItemCode());
+//                                         dto.setItemCode(stock.getItemCode());
 
-                                        return dto;
-                                },
+//                                         return dto;
+//                                 },
 
-                                (stock, item) -> {
+//                                 (stock, item) -> {
 
-                                        if (item != null) {
-                                                stock.setItemId(item.getItemId());
+//                                         if (item != null) {
+//                                                 stock.setItemId(item.getItemId());
                                                         
-                                                stock.setItemName(item.getItemName());
+//                                                 stock.setItemName(item.getItemName());
 
-                                                stock.setItemCode(item.getItemCode());
-                                        }
-                                });
+//                                                 stock.setItemCode(item.getItemCode());
+//                                         }
+//                                 });
 
-                binder.forField(availableQuantity)
-                .bind(
-                        InventoryStockDTO::getAvailableQuantity,
-                        InventoryStockDTO::setAvailableQuantity);
+//                 binder.forField(availableQuantity)
+//                 .bind(
+//                         InventoryStockDTO::getAvailableQuantity,
+//                         InventoryStockDTO::setAvailableQuantity);
 
-                binder.forField(issuedQuantity)
-                .bind(
-                        InventoryStockDTO::getIssuedQuantity,
-                        InventoryStockDTO::setIssuedQuantity);
+//                 binder.forField(issuedQuantity)
+//                 .bind(
+//                         InventoryStockDTO::getIssuedQuantity,
+//                         InventoryStockDTO::setIssuedQuantity);
 
-                binder.forField(damagedQuantity)
-                .bind(
-                        InventoryStockDTO::getDamagedQuantity,
-                        InventoryStockDTO::setDamagedQuantity);
+//                 binder.forField(damagedQuantity)
+//                 .bind(
+//                         InventoryStockDTO::getDamagedQuantity,
+//                         InventoryStockDTO::setDamagedQuantity);
 
-                binder.setBean(currentStock);
-        }
+//                 binder.setBean(currentStock);
+//         }
 
-        private void configureFilters() {
+//         private void configureFilters() {
 
-                itemNameFilter.setPlaceholder(
-                        "Item Name"
-                );
+//                 itemNameFilter.setPlaceholder(
+//                         "Item Name"
+//                 );
 
-                itemCodeFilter.setPlaceholder(
-                        "Item Code"
-                );
+//                 itemCodeFilter.setPlaceholder(
+//                         "Item Code"
+//                 );
 
-                stockStatusFilter.setPlaceholder(
-                        "Stock Status"
-                );
+//                 stockStatusFilter.setPlaceholder(
+//                         "Stock Status"
+//                 );
 
-                stockStatusFilter.setItems(
-                        "LOW STOCK",
-                        "NORMAL"
-                );
+//                 stockStatusFilter.setItems(
+//                         "LOW STOCK",
+//                         "NORMAL"
+//                 );
 
-                itemNameFilter.addValueChangeListener(
-                        event -> applyFilters()
-                );
+//                 itemNameFilter.addValueChangeListener(
+//                         event -> applyFilters()
+//                 );
 
-                itemCodeFilter.addValueChangeListener(
-                        event -> applyFilters()
-                );
+//                 itemCodeFilter.addValueChangeListener(
+//                         event -> applyFilters()
+//                 );
 
-                stockStatusFilter.addValueChangeListener(
-                        event -> applyFilters()
-                );
+//                 stockStatusFilter.addValueChangeListener(
+//                         event -> applyFilters()
+//                 );
 
-                clearFilterButton.addClickListener(
-                        event -> clearFilters()
-                );
-        }
+//                 clearFilterButton.addClickListener(
+//                         event -> clearFilters()
+//                 );
+//         }
 
-        private void configureGrid() {
+//         private void configureGrid() {
 
-                grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
+//                 grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
 
-                grid.addColumn(InventoryStockDTO::getItemName).setHeader("Item");
+//                 grid.addColumn(InventoryStockDTO::getItemName).setHeader("Item");
 
-                grid.addColumn(InventoryStockDTO::getItemCode).setHeader("Item Code");
+//                 grid.addColumn(InventoryStockDTO::getItemCode).setHeader("Item Code");
 
-                grid.addColumn(InventoryStockDTO::getAvailableQuantity).setHeader("Available");
+//                 grid.addColumn(InventoryStockDTO::getAvailableQuantity).setHeader("Available");
 
-                grid.addColumn(InventoryStockDTO::getIssuedQuantity).setHeader("Issued");
+//                 grid.addColumn(InventoryStockDTO::getIssuedQuantity).setHeader("Issued");
 
-                grid.addColumn(InventoryStockDTO::getDamagedQuantity).setHeader("Damaged");
+//                 grid.addColumn(InventoryStockDTO::getDamagedQuantity).setHeader("Damaged");
 
-                grid.addComponentColumn(stock -> {
+//                 grid.addComponentColumn(stock -> {
 
-                        Span badge = new Span(Boolean.TRUE.equals(stock.getLowStock()) ? "LOW STOCK" : "NORMAL");
+//                         Span badge = new Span(Boolean.TRUE.equals(stock.getLowStock()) ? "LOW STOCK" : "NORMAL");
 
-                        badge.getStyle()
+//                         badge.getStyle()
 
-                                        .set("padding", "6px 14px")
+//                                         .set("padding", "6px 14px")
 
-                                        .set("border-radius", "20px")
+//                                         .set("border-radius", "20px")
 
-                                        .set("font-size", "12px")
+//                                         .set("font-size", "12px")
 
-                                        .set("font-weight", "700");
+//                                         .set("font-weight", "700");
 
-                        if (Boolean.TRUE.equals(stock.getLowStock())) {
+//                         if (Boolean.TRUE.equals(stock.getLowStock())) {
 
-                                badge.getStyle()
+//                                 badge.getStyle()
 
-                                        .set("background", "#fee2e2")
+//                                         .set("background", "#fee2e2")
 
-                                        .set("color", "#dc2626");
+//                                         .set("color", "#dc2626");
 
-                        } else {
+//                         } else {
 
-                                badge.getStyle()
+//                                 badge.getStyle()
 
-                                        .set("background", "#dcfce7")
+//                                         .set("background", "#dcfce7")
 
-                                        .set("color", "#15803d");
-                        }
+//                                         .set("color", "#15803d");
+//                         }
 
-                        return badge;
+//                         return badge;
 
-                }).setHeader("Stock Status");
+//                 }).setHeader("Stock Status");
 
-                grid.setHeight("620px");
+//                 grid.setHeight("620px");
 
-                grid.setWidthFull();
+//                 grid.setWidthFull();
 
-                grid.getStyle()
+//                 grid.getStyle()
 
-                                .set("background", "white")
+//                                 .set("background", "white")
 
-                                .set("border-radius", "20px")
+//                                 .set("border-radius", "20px")
 
-                                .set("overflow", "hidden")
+//                                 .set("overflow", "hidden")
 
-                                .set("box-shadow", "0 6px 18px rgba(0,0,0,0.08)");
+//                                 .set("box-shadow", "0 6px 18px rgba(0,0,0,0.08)");
 
-                grid.asSingleSelect()
-                                .addValueChangeListener(event -> {
+//                 grid.asSingleSelect()
+//                                 .addValueChangeListener(event -> {
 
-                                        if (event.getValue() != null) {
+//                                         if (event.getValue() != null) {
 
-                                                selectedStock = event.getValue();
+//                                                 selectedStock = event.getValue();
 
-                                                currentStock = selectedStock;
+//                                                 currentStock = selectedStock;
 
-                                                binder.setBean(currentStock);
+//                                                 binder.setBean(currentStock);
 
-                                                InventoryItemDTO selectedItem = inventoryStockService
-                                                                .getAllItems()
-                                                                .stream()
-                                                                .filter(item -> item.getItemId().equals(currentStock.getItemId()))
-                                                                .findFirst()
-                                                                .orElse(null);
+//                                                 InventoryItemDTO selectedItem = inventoryStockService
+//                                                                 .getAllItems()
+//                                                                 .stream()
+//                                                                 .filter(item -> item.getItemId().equals(currentStock.getItemId()))
+//                                                                 .findFirst()
+//                                                                 .orElse(null);
 
-                                                itemId.setValue(selectedItem);
+//                                                 itemId.setValue(selectedItem);
 
-                                                isEdit = true;
+//                                                 isEdit = true;
 
-                                                saveButton.setText("Update Stock");
+//                                                 saveButton.setText("Update Stock");
 
-                                                stockDialog.open();
-                                        }
-                                });
-        }
+//                                                 stockDialog.open();
+//                                         }
+//                                 });
+//         }
 
-        private void saveStock() {
+//         private void saveStock() {
 
-                try {
+//                 try {
 
-                        binder.writeBean(currentStock);
+//                         binder.writeBean(currentStock);
 
-                        inventoryStockService.saveStock(currentStock);
+//                         inventoryStockService.saveStock(currentStock);
 
-                        if (isEdit) {
-                                NotificationUtil.success("Stock updated successfully");
-                        } else {
-                                NotificationUtil.success("Stock saved successfully");
-                        }
+//                         if (isEdit) {
+//                                 NotificationUtil.success("Stock updated successfully");
+//                         } else {
+//                                 NotificationUtil.success("Stock saved successfully");
+//                         }
 
-                        isEdit = !isEdit;
+//                         isEdit = !isEdit;
 
-                        clearForm();
+//                         clearForm();
 
-                        refreshGrid();
+//                         refreshGrid();
 
-                        stockDialog.close();
+//                         stockDialog.close();
 
-                } catch (ValidationException e) {
-                        NotificationUtil.error("Validation failed");
+//                 } catch (ValidationException e) {
+//                         NotificationUtil.error("Validation failed");
 
-                } catch (Exception e) {
-                        NotificationUtil.error(e.getMessage());
-                }
-        }
+//                 } catch (Exception e) {
+//                         NotificationUtil.error(e.getMessage());
+//                 }
+//         }
 
-        private void applyFilters() {
+//         private void applyFilters() {
 
-                InventoryStockFilterDTO filterDTO =
-                        new InventoryStockFilterDTO();
+//                 InventoryStockFilterDTO filterDTO =
+//                         new InventoryStockFilterDTO();
 
-                filterDTO.setItemName(
-                        itemNameFilter.getValue()
-                );
+//                 filterDTO.setItemName(
+//                         itemNameFilter.getValue()
+//                 );
 
-                filterDTO.setItemCode(
-                        itemCodeFilter.getValue()
-                );
+//                 filterDTO.setItemCode(
+//                         itemCodeFilter.getValue()
+//                 );
 
-                if(stockStatusFilter.getValue() != null) {
-                        filterDTO.setLowStock(stockStatusFilter.getValue().equals("LOW STOCK"));
-                }
+//                 if(stockStatusFilter.getValue() != null) {
+//                         filterDTO.setLowStock(stockStatusFilter.getValue().equals("LOW STOCK"));
+//                 }
 
-                grid.setItems(
-                        inventoryStockService.filterStocks(filterDTO)
-                );
-        }
+//                 grid.setItems(
+//                         inventoryStockService.filterStocks(filterDTO)
+//                 );
+//         }
 
-        private void clearFilters() {
+//         private void clearFilters() {
 
-                itemNameFilter.clear();
+//                 itemNameFilter.clear();
 
-                itemCodeFilter.clear();
+//                 itemCodeFilter.clear();
 
-                stockStatusFilter.clear();
+//                 stockStatusFilter.clear();
 
-                refreshGrid();
-        }
+//                 refreshGrid();
+//         }
 
-        private void clearForm() {
+//         private void clearForm() {
 
-                currentStock = new InventoryStockDTO();
+//                 currentStock = new InventoryStockDTO();
 
-                selectedStock = null;
+//                 selectedStock = null;
 
-                saveButton.setText("Save");
+//                 saveButton.setText("Save");
 
-                binder.setBean(currentStock);
+//                 binder.setBean(currentStock);
 
-                itemId.clear();
+//                 itemId.clear();
 
-                availableQuantity.clear();
+//                 availableQuantity.clear();
 
-                issuedQuantity.clear();
+//                 issuedQuantity.clear();
 
-                damagedQuantity.clear();
+//                 damagedQuantity.clear();
 
-                isEdit = false;
+//                 isEdit = false;
 
-                grid.deselectAll();
-        }
+//                 grid.deselectAll();
+//         }
 
-        private void refreshGrid() {
-                grid.setItems(inventoryStockService.getAllStocks());
-        }
-}
+//         private void refreshGrid() {
+//                 grid.setItems(inventoryStockService.getAllStocks());
+//         }
+// }

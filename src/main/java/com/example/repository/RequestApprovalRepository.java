@@ -13,18 +13,10 @@ import com.example.enums.ApprovalStatus;
 public interface RequestApprovalRepository extends
         JpaRepository<RequestApproval, Long>,
         JpaSpecificationExecutor<RequestApproval> {
-        
-        List<RequestApproval> findByRequest_RequestIdOrderByApprovalOrderAsc(Long requestId);
 
-        void deleteByRequest_RequestId(Long requestId);
-
-        Long countByApprovalStatus(ApprovalStatus status);
-
-        List<RequestApproval> findByApproverEmployeeIdOrderByModifiedAtDesc(Long employeeId);
-
-        Long countByApproverEmployeeIdAndApprovalStatus(
-                Long employeeId,
-                ApprovalStatus status
-        );
+        // Long countByApproverEmployeeIdAndApprovalStatus(
+        //         Long employeeId,
+        //         ApprovalStatus status
+        // );
                 
 }

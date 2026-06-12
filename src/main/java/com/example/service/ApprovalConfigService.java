@@ -18,8 +18,7 @@ import com.example.specification.ApprovalConfigSpecification;
 @Service
 public class ApprovalConfigService {
 
-        private final ApprovalConfigRepository
-                approvalConfigRepository;
+        private final ApprovalConfigRepository approvalConfigRepository;
 
         public ApprovalConfigService(ApprovalConfigRepository approvalConfigRepository){
                 this.approvalConfigRepository = approvalConfigRepository;

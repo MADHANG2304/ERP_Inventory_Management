@@ -85,97 +85,74 @@ public class IssueService {
 
         public List<IssuedItemDTO> getApprovedRequests() {
 
-    List<IssuedItemDTO> result = new ArrayList<>();
+                List<IssuedItemDTO> result = new ArrayList<>();
 
-    List<InventoryRequest> requests =
-            inventoryRequestRepository.findAll()
-                    .stream()
-                    .filter(request ->
+                List<InventoryRequest> requests = inventoryRequestRepository
+                                .findAll()
+                                .stream()
+                                .filter(request ->
 
-                            request.getRequestStatus() == RequestStatus.APPROVED
+                                        request.getRequestStatus() == RequestStatus.APPROVED
 
-                            ||
+                                        ||
 
-                            request.getRequestStatus() == RequestStatus.PARTIALLY_ISSUED
-                    )
-                    .toList();
+                                        request.getRequestStatus() == RequestStatus.PARTIALLY_ISSUED
+                                )
+                                .toList();
 
-        for (InventoryRequest request : requests) {
+                for (InventoryRequest request : requests) {
 
-                for (RequestItems requestItem : request.getRequestItems()) {
+                        if(request.getRequestStatus() == RequestStatus.ISSUED || request.getRequestStatus() == RequestStatus.REJECTED)
+                        {
+                                continue;
+                        }
 
-                if (requestItem.getApprovedQuantity() == null
-                        || requestItem.getApprovedQuantity() <= 0) {
+                        for (RequestItems requestItem : request.getRequestItems()) {
 
-                        continue;
+                                if (requestItem.getApprovedQuantity() == null || requestItem.getApprovedQuantity() <= 0) {
+                                        continue;
+                                }
+
+                                Integer alreadyIssued = issuedItemRepository
+                                                .getIssuedQuantityForRequestItem(requestItem.getRequestItemId());
+
+                                alreadyIssued = alreadyIssued == null ? 0 : alreadyIssued;
+
+                                if (alreadyIssued >= requestItem.getApprovedQuantity()) {
+                                        continue;
+                                }
+
+                                IssuedItemDTO dto = new IssuedItemDTO();
+
+                                dto.setRequestId(request.getRequestId());
+
+                                dto.setRequestNumber(request.getRequestNumber());
+
+                                dto.setRequestItemId(requestItem.getRequestItemId());
+
+                                dto.setEmployeeName(request.getEmployee().getEmployeeName());
+
+                                dto.setItemId(requestItem.getItem().getItemId());
+
+                                dto.setItemName(requestItem.getItem().getItemName());
+
+                                dto.setItemCode(requestItem.getItem().getItemCode());
+
+                                dto.setReusable(requestItem.getItem().getIsReusable());
+
+                                dto.setRequestedQuantity(requestItem.getApprovedQuantity());
+
+                                dto.setIssuedQuantity(alreadyIssued);
+
+                                result.add(dto);
+                        }
                 }
 
-                Integer alreadyIssued =
-                        issuedItemRepository.getIssuedQuantityForRequestItem(
-                                requestItem.getRequestItemId()
-                        );
-
-                alreadyIssued =
-                        alreadyIssued == null
-                                ? 0
-                                : alreadyIssued;
-
-                if (alreadyIssued >= requestItem.getApprovedQuantity()) {
-
-                        continue;
-                }
-
-                IssuedItemDTO dto = new IssuedItemDTO();
-
-                dto.setRequestId(
-                        request.getRequestId()
-                );
-
-                dto.setRequestNumber(
-                        request.getRequestNumber()
-                );
-
-                dto.setRequestItemId(
-                        requestItem.getRequestItemId()
-                );
-
-                dto.setEmployeeName(
-                        request.getEmployee().getEmployeeName()
-                );
-
-                dto.setItemId(
-                        requestItem.getItem().getItemId()
-                );
-
-                dto.setItemName(
-                        requestItem.getItem().getItemName()
-                );
-
-                dto.setItemCode(
-                        requestItem.getItem().getItemCode()
-                );
-
-                dto.setReusable(
-                        requestItem.getItem().getIsReusable()
-                );
-
-                dto.setRequestedQuantity(
-                        requestItem.getApprovedQuantity()
-                );
-
-                dto.setIssuedQuantity(
-                        alreadyIssued
-                );
-
-                result.add(dto);
-                }
-        }
-
-        return result;
+                return result;
         }
 
         @Transactional
-        public void issueItem(Long requestItemId,Long assetItemId, Integer issueQuantity, String username) {
+        public void issueItem(Long requestItemId, Long assetItemId, Integer issueQuantity, String username) {
 
                 RequestItems requestItem = requestItemsRepository
                         .findById(requestItemId)
@@ -187,8 +164,7 @@ public class IssueService {
                                 .stream()
                                 .filter(user -> user.getUsername().equals(username))
                                 .findFirst()
-                                .orElseThrow(() ->
-                                        new RuntimeException("User not found"));
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
                 boolean reusable = Boolean.TRUE.equals(requestItem.getItem().getIsReusable());
 
@@ -198,43 +174,29 @@ public class IssueService {
 
                 issuedItem.setRequestItem(requestItem);
 
-                issuedItem.setIssuedToEmployee(
-                        request.getEmployee()
-                );
+                issuedItem.setIssuedToEmployee(request.getEmployee());
 
-                issuedItem.setIssuedBy(
-                        issuedBy
-                );
+                issuedItem.setIssuedBy(issuedBy);
 
-                issuedItem.setIssuedDate(
-                        LocalDateTime.now()
-                );
+                issuedItem.setIssuedDate(LocalDateTime.now());
 
-                issuedItem.setIssueReferenceNumber(
-                        generateReferenceNumber()
-                );
+                issuedItem.setIssueReferenceNumber(generateReferenceNumber());
 
                 if (reusable) {
 
-                        AssetItem asset =
-                                assetItemRepository
+                        AssetItem asset = assetItemRepository
                                         .findById(assetItemId)
                                         .orElseThrow(() ->
-                                                new RuntimeException(
-                                                        "Asset not found"
-                                                )
+                                                new RuntimeException("Asset not found")
                                         );
 
                         if(asset.getAssetStatus() != AssetStatus.AVAILABLE) {
-
                                 throw new RuntimeException(
                                         "Selected asset is not available"
                                 );
                         }
 
-                        asset.setAssetStatus(
-                                AssetStatus.ISSUED
-                        );
+                        asset.setAssetStatus(AssetStatus.ISSUED);
 
                         assetItemRepository.save(asset);
 
@@ -244,150 +206,72 @@ public class IssueService {
 
                 } else {
 
-                        InventoryStock stock =
-                                inventoryStockRepository.findAll()
+                        InventoryStock stock = inventoryStockRepository
+                                        .findAll()
                                         .stream()
                                         .filter(s ->
-
-                                                s.getItem()
-                                                        .getItemId()
-                                                        .equals(
-                                                                requestItem.getItem()
-                                                                        .getItemId()
-                                                        )
+                                                s.getItem().getItemId().equals(requestItem.getItem().getItemId())
                                         )
                                         .findFirst()
                                         .orElseThrow(() ->
-                                                new RuntimeException(
-                                                        "Stock not found"
-                                                )
+                                                new RuntimeException("Stock not found")
                                         );
 
-                        Integer alreadyIssued =
-                                issuedItemRepository
+                        Integer alreadyIssued = issuedItemRepository
                                         .getIssuedQuantityForRequestItem(
                                                 requestItem.getRequestItemId()
                                         );
 
-                        int remaining =
-                                requestItem.getRequestedQuantity()
-                                        - alreadyIssued;
+                        int remaining = requestItem.getRequestedQuantity() - alreadyIssued;
 
                         if (remaining <= 0) {
-
-                                throw new RuntimeException(
-                                        "Item already fully issued"
-                                );
+                                throw new RuntimeException("Item already fully issued");
                         }
 
                         if (issueQuantity > remaining) {
-
                                 throw new RuntimeException(
                                         "Cannot issue more than remaining quantity"
                                 );
                         }
 
                         if (stock.getAvailableQuantity() < issueQuantity) {
-
-                                throw new RuntimeException(
-                                        "Insufficient stock"
-                                );
+                                throw new RuntimeException("Insufficient stock");
                         }
 
-                        stock.setAvailableQuantity(
-                                stock.getAvailableQuantity()
-                                - issueQuantity
-                        );
+                        stock.setAvailableQuantity(stock.getAvailableQuantity() - issueQuantity);
 
-                        stock.setIssuedQuantity(
-                                stock.getIssuedQuantity()
-                                + issueQuantity
-                        );
+                        stock.setIssuedQuantity(stock.getIssuedQuantity() + issueQuantity);
 
-                        issuedItem.setIssuedQuantity(
-                                issueQuantity
-                        );
+                        issuedItem.setIssuedQuantity(issueQuantity);
 
                         inventoryStockRepository.save(stock);
                 }
 
-                issuedItem.setIssueStatus(
-                        IssueStatus.ISSUED
-                );
+                issuedItem.setIssueStatus(IssueStatus.ISSUED);
 
-                issuedItemRepository.save(
-                        issuedItem
-                );
+                issuedItemRepository.save(issuedItem);
 
-                InventoryTransaction transaction =
-                        new InventoryTransaction();
-
-                transaction.setItem(
-                        requestItem.getItem()
-                );
-
-                transaction.setTransactionType(
-                        TransactionType.ISSUE
-                );
-
-                transaction.setReferenceType(
-                        ReferenceType.REQUEST
-                );
-
-                transaction.setReferenceNumber(
-                        issuedItem.getIssueReferenceNumber()
-                );
-
-                transaction.setQuantity(
-                        issuedItem.getIssuedQuantity()
-                );
-
-                transaction.setTransactionDate(
-                        LocalDateTime.now()
-                );
-
-                transaction.setRemarks(
-                        "Item issued"
-                );
-
-                inventoryTransactionRepository.save(
-                        transaction
-                );
-
-                boolean fullyIssued =
-                        request.getRequestItems()
+                boolean fullyIssued = request.getRequestItems()
                                 .stream()
                                 .allMatch(item -> {
-
-                                        Integer issuedQty = issuedItemRepository
-                                                        .getIssuedQuantityForRequestItem(item.getRequestItemId());
-
-                                        return issuedQty
-                                                >= item.getRequestedQuantity();
+                                        Integer issuedQty = issuedItemRepository.getIssuedQuantityForRequestItem(item.getRequestItemId());
+                                        return item.getRequestedQuantity() == issuedQty;
                                 });
 
-                if (fullyIssued) {
+                if(fullyIssued){
+                        request.setRequestStatus(RequestStatus.ISSUED);
 
-                        request.setRequestStatus(
-                                RequestStatus.ISSUED
-                        );
-
-                } else {
-
-                        request.setRequestStatus(
-                                RequestStatus.PARTIALLY_ISSUED
-                        );
+                } 
+                else{
+                        request.setRequestStatus(RequestStatus.PARTIALLY_ISSUED);
                 }
 
-                inventoryRequestRepository.save(
-                        request
-                );
+                inventoryRequestRepository.save(request);
 
                 auditLogService.logAction(
                         "ISSUE_MODULE",
                         "ISSUE",
-                        "Issued item : "
-                                + requestItem.getItem().getItemName()
+                        "Issued item : " + requestItem.getItem().getItemName()
                 );
         }
 
@@ -407,9 +291,7 @@ public class IssueService {
                 return issuedItemRepository
                                 .findAll()
                                 .stream()
-
                                 .filter(item -> item.getIssueStatus() == IssueStatus.ISSUED)
-
                                 .filter(item -> {
 
                                         if (role.equals("ROLE_SUPER_ADMIN") || role.equals("ROLE_INVENTORY_ADMIN")) {
@@ -418,15 +300,11 @@ public class IssueService {
 
                                         return item.getIssuedToEmployee() != null
                                                         && loggedInUser != null
-                                                        && item.getIssuedToEmployee().getEmployeeId()
-                                                                        .equals(loggedInUser.getEmployeeId());
+                                                        && item.getIssuedToEmployee().getEmployeeId().equals(loggedInUser.getEmployeeId());
                                 })
-
                                 .map(item -> {
 
                                         IssuedItemDTO dto = new IssuedItemDTO();
-
-                                        // dto.setAssetReferenceNumber(item.getIssueReferenceNumber());
 
                                         dto.setEmployeeName(item.getIssuedToEmployee().getEmployeeName());
 
@@ -436,20 +314,13 @@ public class IssueService {
 
                                         dto.setIssuedQuantity(item.getIssuedQuantity());
 
-                                        if(item.getAssetItem() != null) {
-
-                                                dto.setAssetReferenceNumber(
-                                                        item.getAssetItem()
-                                                                .getAssetReferenceNumber()
-                                                );
-                                        }
+                                        dto.setAssetReferenceNumber(item.getAssetItem().getAssetReferenceNumber());
 
                                         return dto;
                                 })
                                 .toList();
         }
 
-        
 
         private String generateReferenceNumber() {
                 return "ISSUE-" + UUID.randomUUID().toString().substring(0, 8);

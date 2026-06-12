@@ -11,7 +11,4 @@ import org.springframework.transaction.annotation.Transactional;
 public interface RequestItemRepository
 extends JpaRepository<RequestItems, Long>,  JpaSpecificationExecutor<RequestItems> {
         
-        @Transactional
-        @Modifying
-        void deleteByRequest_RequestId(Long requestId);
 }

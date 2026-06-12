@@ -19,11 +19,5 @@ public interface AssetItemRepository
             AssetStatus assetStatus
     );
 
-    List<AssetItem> findByItem(InventoryItem item);
-
-    boolean existsByAssetReferenceNumber(
-            String assetReferenceNumber
-    );
-
     long countByItemItemId(Long itemId);
 }

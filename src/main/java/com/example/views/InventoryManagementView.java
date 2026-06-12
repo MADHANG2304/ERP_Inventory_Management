@@ -277,7 +277,6 @@ public class InventoryManagementView extends VerticalLayout {
                 }
 
                 else {
-
                         content.add(stockGrid);
                         refreshData();
                 }

@@ -10,17 +10,16 @@ import org.springframework.stereotype.Service;
 import com.example.dto.ApprovalFilterDTO;
 import com.example.dto.RequestApprovalDTO;
 import com.example.dto.RequestItemDTO;
+import com.example.entity.Employee;
 import com.example.entity.InventoryRequest;
 import com.example.entity.RequestApproval;
 import com.example.entity.RequestItems;
-import com.example.entity.Employee;
 import com.example.enums.ApprovalStatus;
 import com.example.enums.RequestStatus;
 import com.example.repository.EmployeeRepository;
 import com.example.repository.InventoryRequestRepository;
 import com.example.repository.RequestApprovalRepository;
 import com.example.repository.RequestItemRepository;
-import com.example.repository.EmployeeRepository;
 import com.example.specification.ApprovalSpecification;
 
 @Service
@@ -60,19 +59,13 @@ public class ApprovalProcessService {
                                 .stream()
                                 .filter(u -> u.getUsername().equals(username))
                                 .findFirst()
-                                .orElseThrow(() -> new RuntimeException(
-                                                "User not found"));
-
-                String roleName = employee.getRole().getRoleName();
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
                 return requestApprovalRepository
                                 .findAll()
                                 .stream()
-
                                 .filter(approval ->
-
-                                Boolean.TRUE.equals(
-                                                approval.getIsCurrentLevel())
+                                                Boolean.TRUE.equals(approval.getIsCurrentLevel())
 
                                                 &&
 
@@ -80,15 +73,7 @@ public class ApprovalProcessService {
 
                                                 &&
 
-                                                // approval.getApprovalRole()
-                                                // .name()
-                                                // .equals(roleName)
-
                                                 approval.getApprover() != null
-
-                                                &&
-
-                                                employee != null
 
                                                 &&
 
@@ -96,45 +81,27 @@ public class ApprovalProcessService {
 
                                                 &&
 
-                                                approval.getApprover()
-                                                                .getEmployeeId()
-                                                                .equals(employee.getEmployeeId()))
+                                                approval.getApprover().getEmployeeId().equals(employee.getEmployeeId()))
 
                                 .sorted(
-                                                Comparator.comparing(
-                                                                approval -> approval
-                                                                                .getRequest()
-                                                                                .getRequestDate()))
-
+                                        Comparator.comparing(approval -> approval.getRequest().getRequestDate())
+                                )
                                 .map(this::convertToDTO)
                                 .collect(Collectors.toList());
         }
 
-        public void approveRequest(
-                Long approvalId,
-                String comments,
-        List<RequestItemDTO> approvedItems
-        ) {
+        public void approveRequest(Long approvalId, String comments, List<RequestItemDTO> approvedItems)
+        {
 
-                RequestApproval currentApproval =
-                        requestApprovalRepository
+                RequestApproval currentApproval = requestApprovalRepository
                                 .findById(approvalId)
-                                .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Approval not found"
-                                        ));
+                                .orElseThrow(() -> new RuntimeException("Approval not found"));
 
-                if (!Boolean.TRUE.equals(
-                        currentApproval.getIsCurrentLevel()
-                )) {
-
-                        throw new RuntimeException(
-                                "Invalid approval level"
-                        );
+                if (!Boolean.TRUE.equals(currentApproval.getIsCurrentLevel())) {
+                        throw new RuntimeException("Invalid approval level");
                 }
 
-                InventoryRequest request =
-                        currentApproval.getRequest();
+                InventoryRequest request = currentApproval.getRequest();
 
                 boolean atleastOneApproved = false;
 
@@ -144,90 +111,54 @@ public class ApprovalProcessService {
                                 request.getRequestItems()
                                         .stream()
                                         .filter(item ->
-
-                                                item.getRequestItemId()
-                                                        .equals(
-                                                                dto.getRequestItemId()
-                                                        )
+                                                item.getRequestItemId().equals(dto.getRequestItemId())
                                         )
                                         .findFirst()
                                         .orElseThrow(() ->
-                                                new RuntimeException(
-                                                        "Request item not found"
-                                                )
+                                                new RuntimeException("Request item not found")
                                         );
 
-                        if(Boolean.TRUE.equals(
-                                dto.getSelected()
-                        )) {
+                        if(Boolean.TRUE.equals(dto.getSelected())) {
 
-                                Integer approvedQty =
-                                        dto.getApprovedQuantity() == null
-                                                ? 0
-                                                : dto.getApprovedQuantity();
+                                Integer approvedQty = dto.getApprovedQuantity() == null ? 0 : dto.getApprovedQuantity();
 
-                                if(approvedQty >
-                                        requestItem.getRequestedQuantity()) {
-
+                                if(approvedQty > requestItem.getRequestedQuantity()) {
                                         throw new RuntimeException(
-
-                                                requestItem.getItem()
-                                                        .getItemName()
-
-                                                        + " approved quantity cannot exceed requested quantity"
+                                                requestItem.getItem().getItemName() + " approved quantity cannot exceed requested quantity"
                                         );
                                 }
 
-                                requestItem.setApprovedQuantity(
-                                        approvedQty
-                                );
+                                requestItem.setApprovedQuantity(approvedQty);
 
-                                requestItemRepository.save(
-                                        requestItem
-                                );
+                                requestItemRepository.save(requestItem);
 
                                 if(approvedQty > 0) {
-
                                         atleastOneApproved = true;
                                 }
 
-                        } else {
-
+                        } 
+                        else {
                                 requestItem.setApprovedQuantity(0);
 
-                                requestItemRepository.save(
-                                        requestItem
-                                );
+                                requestItemRepository.save(requestItem);
                         }
                 }
 
-                inventoryRequestRepository.save(
-                        request
-                );
+                inventoryRequestRepository.save(request);
 
                 if(!atleastOneApproved) {
 
-                        currentApproval.setApprovalStatus(
-                                ApprovalStatus.REJECTED
-                        );
+                        currentApproval.setApprovalStatus(ApprovalStatus.REJECTED);
 
-                        currentApproval.setComments(
-                                comments
-                        );
+                        currentApproval.setComments(comments);
 
                         currentApproval.setIsCurrentLevel(false);
 
-                        requestApprovalRepository.save(
-                                currentApproval
-                        );
+                        requestApprovalRepository.save(currentApproval);
 
-                        request.setRequestStatus(
-                                RequestStatus.REJECTED
-                        );
+                        request.setRequestStatus(RequestStatus.REJECTED);
 
-                        inventoryRequestRepository.save(
-                                request
-                        );
+                        inventoryRequestRepository.save(request);
 
                         auditLogService.logAction(
 
@@ -235,78 +166,49 @@ public class ApprovalProcessService {
 
                                 "REJECT",
 
-                                "Rejected request : "
-                                        + request.getRequestNumber()
+                                "Rejected request : " + request.getRequestNumber()
                         );
 
                         return;
                 }
 
-                currentApproval.setApprovalStatus(
-                        ApprovalStatus.APPROVED
-                );
+                currentApproval.setApprovalStatus(ApprovalStatus.APPROVED);
 
-                currentApproval.setComments(
-                        comments
-                );
+                currentApproval.setComments(comments);
 
                 currentApproval.setIsCurrentLevel(false);
 
-                requestApprovalRepository.save(
-                        currentApproval
-                );
+                requestApprovalRepository.save(currentApproval);
 
                 List<RequestApproval> approvals =
                         request.getApprovals()
                                 .stream()
                                 .sorted(
-                                        Comparator.comparing(
-                                                RequestApproval::getApprovalOrder
-                                        )
+                                        Comparator.comparing(RequestApproval::getApprovalOrder)
                                 )
                                 .toList();
 
                 RequestApproval nextApproval =
                         approvals.stream()
-
                                 .filter(approval ->
-
-                                        approval.getApprovalOrder()
-
-                                                ==
-
-                                                currentApproval.getApprovalOrder() + 1
-
+                                        approval.getApprovalOrder() == currentApproval.getApprovalOrder() + 1
                                         &&
-
-                                        approval.getApprovalStatus()
-
-                                                ==
-
-                                                ApprovalStatus.PENDING
+                                        approval.getApprovalStatus() == ApprovalStatus.PENDING
                                 )
-
                                 .findFirst()
-
                                 .orElse(null);
 
                 if(nextApproval != null) {
 
                         nextApproval.setIsCurrentLevel(true);
 
-                        requestApprovalRepository.save(
-                                nextApproval
-                        );
+                        requestApprovalRepository.save(nextApproval);
 
                 } else {
 
-                        request.setRequestStatus(
-                                RequestStatus.APPROVED
-                        );
+                        request.setRequestStatus(RequestStatus.APPROVED);
 
-                        inventoryRequestRepository.save(
-                                request
-                        );
+                        inventoryRequestRepository.save(request);
 
                         auditLogService.logAction(
 
@@ -314,13 +216,12 @@ public class ApprovalProcessService {
 
                                 "APPROVE",
 
-                                "Approved request : "
-                                        + request.getRequestNumber()
+                                "Approved request : " + request.getRequestNumber()
                         );
                 }
         }
 
-                public void rejectRequest(Long approvalId, String comments) {
+        public void rejectRequest(Long approvalId, String comments) {
 
                 RequestApproval currentApproval = requestApprovalRepository
                                 .findById(approvalId)
@@ -342,19 +243,17 @@ public class ApprovalProcessService {
 
                 auditLogService.logAction(
 
-                                "APPROVAL_MODULE",
+                        "APPROVAL_MODULE",
 
-                                "REJECT",
+                        "REJECT",
 
-                                "Rejected request : " + request.getRequestNumber());
+                        "Rejected request : " + request.getRequestNumber()
+                );
         }
 
-        public List<RequestApprovalDTO> filterApprovals(
-                        ApprovalFilterDTO filterDTO) {
+        public List<RequestApprovalDTO> filterApprovals(ApprovalFilterDTO filterDTO) {
 
-                Specification<RequestApproval> specification =
-
-                                ApprovalSpecification
+                Specification<RequestApproval> specification = ApprovalSpecification
                                                 .hasRequestNumber(filterDTO.getRequestNumber())
 
                                                 .and(ApprovalSpecification.hasApprovalStatus(filterDTO.getApprovalStatus()))
@@ -374,14 +273,9 @@ public class ApprovalProcessService {
 
                 RequestApprovalDTO dto = new RequestApprovalDTO();
 
-                dto.setApprovalId(
-                        approval.getApprovalId()
-                );
+                dto.setApprovalId(approval.getApprovalId());
 
-                dto.setRequestId(
-                        approval.getRequest()
-                                .getRequestId()
-                );
+                dto.setRequestId(approval.getRequest().getRequestId());
 
                 dto.setEmployeeId(
                         approval.getRequest()
@@ -395,34 +289,19 @@ public class ApprovalProcessService {
                                 .getEmployeeName()
                 );
 
-                dto.setRequestNumber(
-                        approval.getRequest()
-                                .getRequestNumber()
-                );
+                dto.setRequestNumber(approval.getRequest().getRequestNumber());
 
-                dto.setApprovalOrder(
-                        approval.getApprovalOrder()
-                );
+                dto.setApprovalOrder(approval.getApprovalOrder());
 
-                dto.setApprovalRole(
-                        approval.getApprovalRole()
-                );
+                dto.setApprovalRole(approval.getApprovalRole());
 
-                dto.setApprovalStatus(
-                        approval.getApprovalStatus()
-                );
+                dto.setApprovalStatus(approval.getApprovalStatus());
 
-                dto.setIsCurrentLevel(
-                        approval.getIsCurrentLevel()
-                );
+                dto.setIsCurrentLevel(approval.getIsCurrentLevel());
 
-                dto.setComments(
-                        approval.getComments()
-                );
+                dto.setComments(approval.getComments());
 
-                dto.setRemarks(
-                        approval.getRequest().getRemarks()
-                );
+                dto.setRemarks(approval.getRequest().getRemarks());
 
                 dto.setRequestItems(
 

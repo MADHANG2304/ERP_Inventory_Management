@@ -21,6 +21,7 @@ public class DepartmentService {
     }
 
     public DepartmentDTO saveDepartment(DepartmentDTO dto){
+        
         Department department;
 
         if(dto.getDepartmentId() != null){
@@ -32,19 +33,14 @@ public class DepartmentService {
         }
 
         department.setDepartmentName(dto.getDepartmentName());
+
         department.setDepartmentCode(dto.getDepartmentCode());
+
         department.setIsActive(dto.getIsActive());
 
         Department saved = departmentRepository.save(department);
-        
-        DepartmentDTO response = new DepartmentDTO();
-        
-        response.setDepartmentId(saved.getDepartmentId());
-        response.setDepartmentName(saved.getDepartmentName());
-        response.setDepartmentCode(saved.getDepartmentCode());
-        response.setIsActive(saved.getIsActive());
 
-        return response;
+        return convertToDTO(saved);
     }
 
     public List<DepartmentDTO> getAllDepartments(){
@@ -55,12 +51,9 @@ public class DepartmentService {
             .collect(Collectors.toList());
     }
 
-    public List<DepartmentDTO> searchDepartments(
-            String keyword
-    ) {
+    public List<DepartmentDTO> searchDepartments(String keyword){
 
-        Specification<Department> spec =
-                DepartmentSpecification.searchDepartment(keyword);
+        Specification<Department> spec = DepartmentSpecification.searchDepartment(keyword);
 
         return departmentRepository
                 .findAll(spec)
@@ -74,11 +67,15 @@ public class DepartmentService {
     }
 
     private DepartmentDTO convertToDTO(Department department){
+       
         DepartmentDTO dto = new DepartmentDTO();
 
         dto.setDepartmentId(department.getDepartmentId());
+        
         dto.setDepartmentName(department.getDepartmentName());
+        
         dto.setDepartmentCode(department.getDepartmentCode());
+        
         dto.setIsActive(department.getIsActive());
 
         return dto;

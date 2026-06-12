@@ -16,13 +16,11 @@ public class DepartmentSpecification {
 
             return cb.or(
                 cb.like(
-                    cb.lower(
-                        root.get("departmentName")),pattern
+                    cb.lower(root.get("departmentName")),pattern
                 ),
 
                 cb.like(
-                    cb.lower(
-                        root.get("departmentCode")), pattern
+                    cb.lower(root.get("departmentCode")), pattern
                 )
             );
         };
