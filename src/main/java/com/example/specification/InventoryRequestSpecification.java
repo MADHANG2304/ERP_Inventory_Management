@@ -12,102 +12,84 @@ public class InventoryRequestSpecification {
         public static Specification<InventoryRequest> searchRequest(String keyword)
         {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if (keyword == null || keyword.isBlank()) {
-
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
                         String pattern = "%" + keyword.toLowerCase() + "%";
 
-                        return criteriaBuilder.or(
-                                        criteriaBuilder.like(
-                                                        criteriaBuilder.lower(root.get("requestNumber")),pattern)
-                        );
+                        return cb.or(cb.like(cb.lower(root.get("requestNumber")),pattern));
                 };
         }
 
         public static Specification<InventoryRequest> hasRequestId(Long requestId) {
 
-                return (root, query, criteriaBuilder) ->
-
-                        criteriaBuilder.equal(root.get("requestId"), requestId);
+                return (root, query, cb) -> cb.equal(root.get("requestId"), requestId);
         }
 
         public static Specification<InventoryRequest> hasRequestNumber(String requestNumber) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if(requestNumber == null || requestNumber.isBlank()) {
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.like(
-
-                                criteriaBuilder.lower(
-                                        root.get("requestNumber")
-                                ), "%" + requestNumber.toLowerCase() + "%"
+                        return cb.like(
+                                cb.lower(root.get("requestNumber")), "%" + requestNumber.toLowerCase() + "%"
                         );
                 };
         }
 
         public static Specification<InventoryRequest> hasEmployeeName(String employeeName) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
-                        if(employeeName == null
-                                || employeeName.isBlank()) {
-
-                        return criteriaBuilder.conjunction();
+                        if(employeeName == null || employeeName.isBlank()) {
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.like(
-
-                                criteriaBuilder.lower(
-
-                                        root.get("employee").get("employeeName")
-                                ), "%" + employeeName.toLowerCase() + "%"
+                        return cb.like(
+                                cb.lower(root.get("employee").get("employeeName")), "%" + employeeName.toLowerCase() + "%"
                         );
                 };
         }
 
         public static Specification<InventoryRequest> hasStatus(RequestStatus status) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if(status == null) {
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.equal(root.get("requestStatus"),status);
+                        return cb.equal(root.get("requestStatus"),status);
                 };
         }
 
-        public static Specification<InventoryRequest>
-        hasFromDate(LocalDate fromDate) {
+        public static Specification<InventoryRequest> hasFromDate(LocalDate fromDate) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if(fromDate == null) {
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("requestDate"), fromDate.atStartOfDay());
+                        return cb.greaterThanOrEqualTo(root.get("requestDate"), fromDate.atStartOfDay());
                 };
         }
 
         public static Specification<InventoryRequest> hasToDate(LocalDate toDate) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if(toDate == null) {
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.lessThanOrEqualTo(
-
+                        return cb.lessThanOrEqualTo(
                                 root.get("requestDate"), toDate.atTime(23, 59, 59)
                         );
                 };
@@ -115,15 +97,13 @@ public class InventoryRequestSpecification {
 
         public static Specification<InventoryRequest> hasEmployeeId(Long employeeId) {
 
-                return (root, query, criteriaBuilder) -> {
+                return (root, query, cb) -> {
 
                         if(employeeId == null) {
-                                return criteriaBuilder.conjunction();
+                                return cb.conjunction();
                         }
 
-                        return criteriaBuilder.equal(
-                                root.get("employee").get("employeeId"), employeeId
-                        );
+                        return cb.equal(root.get("employee").get("employeeId"), employeeId);
                 };
         }
 

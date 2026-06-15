@@ -15,13 +15,9 @@ public class DepartmentSpecification {
             String pattern = "%" + keyword.toLowerCase() + "%";
 
             return cb.or(
-                cb.like(
-                    cb.lower(root.get("departmentName")),pattern
-                ),
+                cb.like(cb.lower(root.get("departmentName")), pattern),
 
-                cb.like(
-                    cb.lower(root.get("departmentCode")), pattern
-                )
+                cb.like(cb.lower(root.get("departmentCode")), pattern)
             );
         };
     }

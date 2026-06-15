@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.web.method.annotation.RequestHeaderMethodArgumentResolver;
 
 import com.example.base.ui.MainLayout;
 import com.example.dto.ApprovalConfigDTO;
@@ -26,11 +25,8 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -42,75 +38,43 @@ import jakarta.annotation.security.RolesAllowed;
 @RolesAllowed("SUPER_ADMIN")
 public class ApprovalConfigView extends VerticalLayout {
 
-    private final ApprovalConfigService
-            approvalConfigService;
+        private final ApprovalConfigService approvalConfigService;
 
-    private final Grid<ApprovalConfigDTO>
-            configGrid =
-            new Grid<>(ApprovalConfigDTO.class, false);
+        private final Grid<ApprovalConfigDTO> configGrid = new Grid<>(ApprovalConfigDTO.class, false);
 
-    private final Grid<ApprovalConfigLevelDTO>
-            levelGrid =
-            new Grid<>(ApprovalConfigLevelDTO.class, false);
+        private final Grid<ApprovalConfigLevelDTO> levelGrid = new Grid<>(ApprovalConfigLevelDTO.class, false);
 
-    private final TextField configName =
-            new TextField("Config Name");
+        private final TextField configName = new TextField("Config Name");
 
-    private final ComboBox<RequestType>
-            requestType =
-            new ComboBox<>("Request Type");
+        private final ComboBox<RequestType> requestType = new ComboBox<>("Request Type");
 
-    private final ComboBox<RequesterRole>
-        requesterRole =
-        new ComboBox<>("Requester Role");
+        private final ComboBox<RequesterRole> requesterRole = new ComboBox<>("Requester Role");
 
-    private final Checkbox isActive =
-            new Checkbox("Active");
+        private final Checkbox isActive = new Checkbox("Active");
 
-//     private final IntegerField approvalOrder =
-//             new IntegerField("Approval Order");
+        private final ComboBox<ApprovalRole> approvalRole = new ComboBox<>("Approval Role");
 
-    private final ComboBox<ApprovalRole>
-            approvalRole =
-            new ComboBox<>("Approval Role");
+        private final TextField searchField = new TextField();
 
-    private final TextField searchField =
-            new TextField();
+        private final List<ApprovalConfigLevelDTO> levelList = new ArrayList<>();
 
-    private final List<ApprovalConfigLevelDTO>
-            levelList =
-            new ArrayList<>();
+        private ApprovalConfigDTO currentConfig = new ApprovalConfigDTO();
 
-    private ApprovalConfigDTO currentConfig =
-            new ApprovalConfigDTO();
+        Button saveButton = new Button("Save Config");
 
-    Button saveButton =
-                new Button("Save Config");
+        private final Button deleteButton = new Button("Delete", VaadinIcon.TRASH.create());
 
-    private final Button deleteButton =
-                new Button(
-                        "Delete",
-                        VaadinIcon.TRASH.create()
-                );
+        private Boolean isEdit = false;
 
-    private Boolean isEdit = false;
+        private final Dialog configDialog = new Dialog();
 
-    private final Dialog configDialog =
-        new Dialog();
-
-    private final Button openDialogButton =
-        new Button(
-                VaadinIcon.PLUS.create()
-        );
+        private final Button openDialogButton = new Button(VaadinIcon.PLUS.create());
 
         
 
-        public ApprovalConfigView(
-        ApprovalConfigService approvalConfigService
-                ) {
+        public ApprovalConfigView(ApprovalConfigService approvalConfigService) {
 
-                this.approvalConfigService =
-                        approvalConfigService;
+                this.approvalConfigService = approvalConfigService;
 
                 setWidthFull();
 
@@ -126,8 +90,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("overflow", "auto");
 
-                H2 heading =
-                        new H2("Approval Workflow Engine");
+                H2 heading = new H2("Approval Workflow Engine");
 
                 heading.getStyle()
 
@@ -139,10 +102,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("color", "#0f172a");
 
-                Span subHeading =
-                        new Span(
-                                "Manage approval routing and workflow hierarchy"
-                        );
+                Span subHeading = new Span("Manage approval routing and workflow hierarchy");
 
                 subHeading.getStyle()
 
@@ -150,11 +110,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("color", "#64748b");
 
-                VerticalLayout headingSection =
-                        new VerticalLayout(
-                                heading,
-                                subHeading
-                        );
+                VerticalLayout headingSection = new VerticalLayout(heading, subHeading);
 
                 headingSection.setPadding(true);
 
@@ -166,9 +122,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 configureConfigGrid();
 
-                openDialogButton.addThemeVariants(
-                        ButtonVariant.LUMO_PRIMARY
-                );
+                openDialogButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
                 openDialogButton.getStyle()
 
@@ -180,35 +134,23 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("width", "42px")
 
-                        .set("box-shadow",
-                                "0 4px 12px rgba(37,99,235,0.25)");
+                        .set("box-shadow", "0 4px 12px rgba(37,99,235,0.25)");
 
                 openDialogButton.addClickListener(event -> {
-
                         clearForm();
 
                         configDialog.open();
                 });
 
-                HorizontalLayout headerLayout =
-                        new HorizontalLayout(
-                                headingSection,
-                                openDialogButton
-                        );
+                HorizontalLayout headerLayout = new HorizontalLayout(headingSection, openDialogButton);
 
                 headerLayout.setWidthFull();
 
-                headerLayout.setAlignItems(
-                        Alignment.CENTER
-                );
+                headerLayout.setAlignItems(Alignment.CENTER);
 
-                searchField.setPlaceholder(
-                        "Search Workflow Config..."
-                );
+                searchField.setPlaceholder("Search Workflow Config...");
 
-                searchField.setPrefixComponent(
-                        VaadinIcon.SEARCH.create()
-                );
+                searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 
                 searchField.setWidth("350px");
 
@@ -219,17 +161,10 @@ public class ApprovalConfigView extends VerticalLayout {
                         .set("border-radius", "12px");
 
                 searchField.addValueChangeListener(event -> {
-
-                        configGrid.setItems(
-                                approvalConfigService
-                                        .searchConfigs(
-                                                event.getValue()
-                                        )
-                        );
+                        configGrid.setItems(approvalConfigService.searchConfigs(event.getValue()));
                 });
 
-                FormLayout formLayout =
-                        new FormLayout();
+                FormLayout formLayout = new FormLayout();
 
                 formLayout.add(
                         configName,
@@ -239,41 +174,20 @@ public class ApprovalConfigView extends VerticalLayout {
                 );
 
                 formLayout.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
 
-                        new FormLayout.ResponsiveStep(
-                                "0",
-                                1
-                        ),
-
-                        new FormLayout.ResponsiveStep(
-                                "700px",
-                                2
-                        )
+                        new FormLayout.ResponsiveStep("700px", 2)
                 );
 
-                HorizontalLayout levelForm =
-                        new HorizontalLayout(
-                                // approvalOrder,
-                                approvalRole
-                        );
+                HorizontalLayout levelForm = new HorizontalLayout(approvalRole);
 
                 levelForm.setWidthFull();
 
-                levelForm.setFlexGrow(
-                        1,
-                        // approvalOrder,
-                        approvalRole
-                );
+                levelForm.setFlexGrow(1, approvalRole);
 
-                Button addLevelButton =
-                        new Button(
-                                "Add Level",
-                                VaadinIcon.PLUS.create()
-                        );
+                Button addLevelButton = new Button("Add Level", VaadinIcon.PLUS.create());
 
-                addLevelButton.addThemeVariants(
-                        ButtonVariant.LUMO_PRIMARY
-                );
+                addLevelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
                 addLevelButton.getStyle()
 
@@ -281,13 +195,9 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("font-weight", "600");
 
-                addLevelButton.addClickListener(
-                        event -> addLevel()
-                );
+                addLevelButton.addClickListener(event -> addLevel());
 
-                saveButton.addThemeVariants(
-                        ButtonVariant.LUMO_SUCCESS
-                );
+                saveButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
                 saveButton.getStyle()
 
@@ -295,41 +205,19 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("font-weight", "600");
 
-                saveButton.addClickListener(
-                        event -> saveConfig()
-                );
+                saveButton.addClickListener(event -> saveConfig());
 
-                Button clearButton =
-                        new Button(
-                                "Clear",
-                                VaadinIcon.ERASER.create()
-                        );
+                Button clearButton = new Button("Clear", VaadinIcon.ERASER.create());
 
-                clearButton.addThemeVariants(
-                        ButtonVariant.LUMO_CONTRAST
-                );
+                clearButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
-                clearButton.getStyle()
+                clearButton.getStyle().set("border-radius", "12px");
 
-                        .set("border-radius", "12px");
+                clearButton.addClickListener(event -> clearForm());
 
-                clearButton.addClickListener(
-                        event -> clearForm()
-                );
+                deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-                // Button deleteButton =
-                //         new Button(
-                //                 "Delete",
-                //                 VaadinIcon.TRASH.create()
-                //         );
-
-                deleteButton.addThemeVariants(
-                        ButtonVariant.LUMO_ERROR
-                );
-
-                deleteButton.getStyle()
-
-                        .set("border-radius", "12px");
+                deleteButton.getStyle().set("border-radius", "12px");
 
                 deleteButton.addClickListener(event -> {
 
@@ -343,21 +231,13 @@ public class ApprovalConfigView extends VerticalLayout {
                         );
                 });
 
-                Button cancelButton =
-                        new Button(
-                                "Cancel"
-                        );
+                Button cancelButton = new Button("Cancel");
 
-                cancelButton.addThemeVariants(
-                        ButtonVariant.LUMO_ERROR
-                );
+                cancelButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-                cancelButton.getStyle()
-
-                        .set("border-radius", "12px");
+                cancelButton.getStyle().set("border-radius", "12px");
 
                 cancelButton.addClickListener(event -> {
-
                         clearForm();
 
                         configDialog.close();
@@ -366,18 +246,14 @@ public class ApprovalConfigView extends VerticalLayout {
                 HorizontalLayout actionButtons =
                         new HorizontalLayout(
                                 saveButton,
-                                // clearButton,
                                 deleteButton, 
                                 cancelButton
                         );
 
                 VerticalLayout levelSection =
                         new VerticalLayout(
-
                                 levelForm,
-
                                 addLevelButton,
-
                                 levelGrid
                         );
 
@@ -387,11 +263,8 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 VerticalLayout dialogLayout =
                         new VerticalLayout(
-
                                 formLayout,
-
                                 levelSection,
-
                                 actionButtons
                         );
 
@@ -403,9 +276,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 configDialog.add(dialogLayout);
 
-                configDialog.setHeaderTitle(
-                        "Approval Workflow Configuration"
-                );
+                configDialog.setHeaderTitle("Approval Workflow Configuration");
 
                 configDialog.setModal(true);
 
@@ -439,26 +310,18 @@ public class ApprovalConfigView extends VerticalLayout {
 
         private void configureForm() {
 
-                requestType.setItems(
+                requestType.setItems(RequestType.values());
 
-                        RequestType.values()
-                );
+                requesterRole.setItems(RequesterRole.values());
 
-                requesterRole.setItems(
-                        RequesterRole.values()
-                );
-
-                approvalRole.setItems(
-                        ApprovalRole.values()
-                );
+                approvalRole.setItems(ApprovalRole.values());
 
                 isActive.setValue(true);
         }
 
-    private void configureLevelGrid() {
+        private void configureLevelGrid() {
 
                 levelGrid.addThemeVariants(
-
                         GridVariant.LUMO_ROW_STRIPES,
 
                         GridVariant.LUMO_COLUMN_BORDERS
@@ -466,11 +329,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 levelGrid.addComponentColumn(level -> {
 
-                        Span orderBadge =
-                                new Span(
-                                        "LEVEL " +
-                                        level.getApprovalOrder()
-                                );
+                        Span orderBadge = new Span("LEVEL " + level.getApprovalOrder());
 
                         orderBadge.getStyle()
 
@@ -492,11 +351,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 levelGrid.addComponentColumn(level -> {
 
-                        Span roleBadge =
-                                new Span(
-                                        level.getApprovalRole()
-                                                .name()
-                                );
+                        Span roleBadge = new Span(level.getApprovalRole().name());
 
                         roleBadge.getStyle()
 
@@ -518,27 +373,18 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 levelGrid.addComponentColumn(level -> {
 
-                        Button removeButton =
-                                new Button(
-                                        VaadinIcon.TRASH.create()
-                                );
+                        Button removeButton = new Button(VaadinIcon.TRASH.create());
 
-                        removeButton.addThemeVariants(
-                                ButtonVariant.LUMO_ERROR
-                        );
+                        removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-                        removeButton.getStyle()
-
-                                .set("border-radius", "10px");
+                        removeButton.getStyle().set("border-radius", "10px");
 
                         removeButton.addClickListener(event -> {
 
                                 levelList.remove(level);
 
                                 for(int i = 0; i < levelList.size(); i++) {
-
-                                        levelList.get(i)
-                                                .setApprovalOrder(i + 1);
+                                        levelList.get(i).setApprovalOrder(i + 1);
                                 }
 
                                 refreshLevelGrid();
@@ -557,15 +403,12 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("overflow", "hidden")
 
-                        .set("box-shadow",
-                                "0 4px 12px rgba(0,0,0,0.06)");
+                        .set("box-shadow", "0 4px 12px rgba(0,0,0,0.06)");
         }
 
     private void configureConfigGrid() {
 
-                configGrid.addThemeVariants(
-                        GridVariant.LUMO_ROW_STRIPES
-                );
+                configGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
                 configGrid.addColumn(
                         ApprovalConfigDTO::getConfigName
@@ -573,10 +416,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 configGrid.addComponentColumn(config -> {
 
-                        Span typeBadge =
-                                new Span(
-                                        config.getRequestType().name()
-                                );
+                        Span typeBadge = new Span(config.getRequestType().name());
 
                         typeBadge.getStyle()
 
@@ -594,63 +434,28 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         switch (config.getRequestType()) {
 
-                        case LOW_VALUE ->
+                                case LOW_VALUE -> typeBadge.getStyle().set("background", "#02ed58");
 
-                                typeBadge.getStyle()
-                                        .set("background", "#02ed58");
+                                case HIGH_VALUE -> typeBadge.getStyle().set("background", "#ec7d42");
 
-                        case HIGH_VALUE ->
-
-                                typeBadge.getStyle()
-                                        .set("background", "#ec7d42");
-
-                        case BULK_REQUEST ->
-
-                                typeBadge.getStyle()
-                                        .set("background", "#ea3939");
+                                case BULK_REQUEST -> typeBadge.getStyle().set("background", "#ea3939");
                         }
 
                         return typeBadge;
 
                 }).setHeader("Request Type");
 
-                // configGrid.addColumn(config ->
-
-                //         Boolean.TRUE.equals(
-                //                 config.getIsActive()
-                //         )
-
-                //                 ? "ACTIVE"
-
-                //                 : "INACTIVE"
-
-                // ).setHeader("Status");
-
                 configGrid.addComponentColumn(config -> {
 
-                        boolean active =
-                                Boolean.TRUE.equals(
-                                        config.getIsActive()
-                                );
+                        boolean active = Boolean.TRUE.equals(config.getIsActive());
 
-                        Span statusBadge =
-                                new Span(
-                                        active
-                                                ? "ACTIVE"
-                                                : "INACTIVE"
-                                );
+                        Span statusBadge = new Span(active ? "ACTIVE" : "INACTIVE");
 
                         statusBadge.getStyle()
 
-                                .set("background",
-                                        active
-                                                ? "#dcfce7"
-                                                : "#fee2e2")
+                                .set("background", active ? "#dcfce7" : "#fee2e2")
 
-                                .set("color",
-                                        active
-                                                ? "#166534"
-                                                : "#991b1b")
+                                .set("color", active ? "#166534" : "#991b1b")
 
                                 .set("padding", "6px 14px")
 
@@ -664,14 +469,7 @@ public class ApprovalConfigView extends VerticalLayout {
 
                 }).setHeader("Status");
 
-                configGrid.addColumn(config ->
-
-                        config.getLevels() != null
-
-                                ? config.getLevels().size()
-
-                                : 0
-
+                configGrid.addColumn(config -> config.getLevels() != null ? config.getLevels().size() : 0
                 ).setHeader("Levels");
 
                 configGrid.setWidthFull();
@@ -686,19 +484,15 @@ public class ApprovalConfigView extends VerticalLayout {
 
                         .set("overflow", "hidden")
 
-                        .set("box-shadow",
-                                "0 6px 18px rgba(0,0,0,0.08)");
+                        .set("box-shadow", "0 6px 18px rgba(0,0,0,0.08)");
 
                 configGrid.asSingleSelect()
                         .addValueChangeListener(event -> {
 
                                 if(event.getValue() != null) {
                                         isEdit = true;
-                                        loadConfigToForm(
-                                                event.getValue()
-                                        );
+                                        loadConfigToForm(event.getValue());
                                 }
-
                                 deleteButton.setVisible(true);
                         });
         }
@@ -706,61 +500,32 @@ public class ApprovalConfigView extends VerticalLayout {
         private void addLevel() {
 
                 if(approvalRole.getValue() == null) {
+                        NotificationUtil.error("Select approval role");
+                        
+                        return;
+                }
 
-                        NotificationUtil.error(
-                                "Select approval role"
-                        );
+                if(requesterRole.getValue() != null && requesterRole.getValue().equals(approvalRole.getValue())) {
+                        NotificationUtil.error("Requester role cannot approve itself");
 
                         return;
                 }
 
-                if(requesterRole.getValue() != null
-
-                        &&
-
-                        requesterRole.getValue()
-                                .equals(
-                                        approvalRole.getValue()
-                                )) {
-
-                        NotificationUtil.error(
-                                "Requester role cannot approve itself"
-                        );
-
-                        return;
-                }
-
-                boolean duplicateRole =
-
-                        levelList.stream()
-
-                                .anyMatch(level ->
-
-                                        level.getApprovalRole()
-                                                .equals(
-                                                        approvalRole.getValue()
-                                                )
-                                );
+                boolean duplicateRole = levelList
+                                .stream()
+                                .anyMatch(level -> level.getApprovalRole().equals(approvalRole.getValue()));
 
                 if(duplicateRole) {
-
-                        NotificationUtil.warning(
-                                "Approval role already added"
-                        );
+                        NotificationUtil.warning("Approval role already added");
 
                         return;
                 }
 
-                ApprovalConfigLevelDTO dto =
-                        new ApprovalConfigLevelDTO();
+                ApprovalConfigLevelDTO dto = new ApprovalConfigLevelDTO();
 
-                dto.setApprovalOrder(
-                        levelList.size() + 1
-                );
+                dto.setApprovalOrder(levelList.size() + 1);
 
-                dto.setApprovalRole(
-                        approvalRole.getValue()
-                );
+                dto.setApprovalRole(approvalRole.getValue());
 
                 levelList.add(dto);
 
@@ -769,150 +534,109 @@ public class ApprovalConfigView extends VerticalLayout {
                 approvalRole.clear();
         }
 
-    private void saveConfig() {
+        private void saveConfig() {
 
-        try {
+                try {
 
-            currentConfig.setConfigName(
-                    configName.getValue()
-            );
+                currentConfig.setConfigName(configName.getValue());
 
-            currentConfig.setRequestType(
-                    requestType.getValue()
-            );
+                currentConfig.setRequestType(requestType.getValue());
 
-            currentConfig.setRequesterRole(
-                    requesterRole.getValue()
-            );
+                currentConfig.setRequesterRole(requesterRole.getValue());
 
-            currentConfig.setIsActive(
-                    isActive.getValue()
-            );
+                currentConfig.setIsActive(isActive.getValue());
 
-            currentConfig.setLevels(
-                    levelList
-            );
+                currentConfig.setLevels(levelList);
 
-            approvalConfigService
-                    .saveConfig(currentConfig);
+                approvalConfigService.saveConfig(currentConfig);
 
-        if(isEdit){
-                NotificationUtil.success("Approval config updated successfully");       
-        }
-        else{
-                NotificationUtil.success("Approval config saved successfully");       
-        }
+                if(isEdit){
+                        NotificationUtil.success("Approval config updated successfully");       
+                }
+                else{
+                        NotificationUtil.success("Approval config saved successfully");       
+                }
 
-            isEdit = !isEdit;
+                isEdit = !isEdit;
 
-            clearForm();
+                clearForm();
 
-            refreshGrid();
+                refreshGrid();
 
-            deleteButton.setVisible(false);
+                deleteButton.setVisible(false);
 
-            configDialog.close();
+                configDialog.close();
 
-        } catch (Exception e) {
-
-                NotificationUtil.error(e.getMessage());
-        }
-    }
-
-    private void deleteConfig() {
-
-        if(currentConfig.getConfigId() == null) {
-
-
-        NotificationUtil.warning("Select a config first");
-
-            return;
+                } catch (Exception e) {
+                        NotificationUtil.error(e.getMessage());
+                }
         }
 
-        approvalConfigService.deleteConfig(
-                currentConfig.getConfigId()
-        );
+        private void deleteConfig() {
 
-        NotificationUtil.success("Config deleted successfully");
+                if(currentConfig.getConfigId() == null) {
+                        NotificationUtil.warning("Select a config first");
 
-        clearForm();
+                        return;
+                }
 
-        refreshGrid();
+                approvalConfigService.deleteConfig(currentConfig.getConfigId());
 
-        deleteButton.setVisible(false);
+                NotificationUtil.success("Config deleted successfully");
 
-        configDialog.close();
-    }
+                clearForm();
 
-    private void loadConfigToForm(
-        ApprovalConfigDTO dto
-                ) {
+                refreshGrid();
+
+                deleteButton.setVisible(false);
+
+                configDialog.close();
+        }
+
+        private void loadConfigToForm(ApprovalConfigDTO dto){
 
                 currentConfig = dto;
 
-                configName.setValue(
-                        dto.getConfigName()
-                );
+                configName.setValue(dto.getConfigName());
 
-                requestType.setValue(
-                        dto.getRequestType()
-                );
+                requestType.setValue(dto.getRequestType());
 
-                requesterRole.setValue(
-                        dto.getRequesterRole()
-                );
+                requesterRole.setValue(dto.getRequesterRole());
 
-                isActive.setValue(
-                        dto.getIsActive()
-                );
+                isActive.setValue(dto.getIsActive());
 
                 levelList.clear();
 
-                levelList.addAll(
-                        dto.getLevels()
-                );
+                levelList.addAll(dto.getLevels());
 
                 refreshLevelGrid();
 
-                saveButton.setText(
-                        "Update Config"
-                );
+                saveButton.setText("Update Config");
 
                 isEdit = true;
 
                 configDialog.open();
         }
 
-    private void refreshLevelGrid() {
+        private void refreshLevelGrid() {
 
-        levelGrid.setItems(
-                levelList.stream()
-                        .sorted(
-                                Comparator.comparing(
-                                        ApprovalConfigLevelDTO
-                                                ::getApprovalOrder
-                                )
-                        )
-                        .toList()
-        );
-    }
+                levelGrid.setItems(
+                        levelList.stream()
+                                .sorted(
+                                        Comparator.comparing(ApprovalConfigLevelDTO::getApprovalOrder)
+                                ).toList()
+                );
+        }
 
         private void refreshGrid() {
+                configGrid.setItems(approvalConfigService.getAllConfigs());
+        }
 
-                        configGrid.setItems(
-                                approvalConfigService
-                                        .getAllConfigs()
-                        );
-                }
+        private void clearForm() {
 
-                private void clearForm() {
+                currentConfig = new ApprovalConfigDTO();
 
-                currentConfig =
-                        new ApprovalConfigDTO();
-
-                saveButton.setText(
-                        "Save Config"
-                );
+                saveButton.setText("Save Config");
 
                 configName.clear();
 

@@ -14,7 +14,6 @@ import com.example.views.InventoryManagementView;
 import com.example.views.InventoryRequestView;
 import com.example.views.IssueView;
 import com.example.views.MyCurrentStockView;
-import com.example.views.ProductTrackingView;
 import com.example.views.ReturnView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -27,9 +26,7 @@ import com.example.views.RequestTrackingView;
 
 public class SideMenu extends SideNav {
 
-    public SideMenu(
-            SecurityService securityService
-    ) {
+    public SideMenu(SecurityService securityService){
 
         String role = securityService.getAuthenticatedRole();
 

@@ -23,254 +23,196 @@ import jakarta.annotation.security.PermitAll;
 
 
 @PermitAll
-@Route(
-        value = "request-tracking",
-        layout = MainLayout.class
-)
+@Route(value = "request-tracking", layout = MainLayout.class)
 @PageTitle("Request Tracking")
 public class RequestTrackingView extends VerticalLayout {
 
-    private final RequestTrackingService requestTrackingService;
+        private final RequestTrackingService requestTrackingService;
 
-    private final ApprovalProgressService approvalProgressService;
+        private final ApprovalProgressService approvalProgressService;
 
-    private final SecurityService securityService;
+        private final SecurityService securityService;
 
-    private final Grid<RequestTrackingDTO> grid =
-            new Grid<>(
-                    RequestTrackingDTO.class,
-                    false
-            );
+        private final Grid<RequestTrackingDTO> grid = new Grid<>(RequestTrackingDTO.class, false);
 
-    public RequestTrackingView(
-            RequestTrackingService requestTrackingService,
-            ApprovalProgressService approvalProgressService,
-            SecurityService securityService
-    ) {
+        public RequestTrackingView(
+                RequestTrackingService requestTrackingService,
+                ApprovalProgressService approvalProgressService,
+                SecurityService securityService
+        ){
 
-        this.requestTrackingService =
-                requestTrackingService;
+                this.requestTrackingService = requestTrackingService;
 
-        this.approvalProgressService =
-                approvalProgressService;
+                this.approvalProgressService = approvalProgressService;
 
-        this.securityService =
-                securityService;
+                this.securityService = securityService;
 
-        setSizeFull();
+                setSizeFull();
 
-        setPadding(true);
+                setPadding(true);
 
-        setSpacing(true);
+                setSpacing(true);
 
-        add(
-                createHeader()
-        );
+                add(createHeader());
 
-        configureGrid();
+                configureGrid();
 
-        add(
-                grid
-        );
+                add(grid);
 
-        loadData();
-    }
+                loadData();
+        }
 
-    private HorizontalLayout createHeader() {
+        private HorizontalLayout createHeader() {
 
-        H2 title =
-                new H2(
-                        "Request Tracking"
+                H2 title = new H2("Request Tracking");
+
+                title.getStyle()
+
+                        .set("margin", "0")
+
+                        .set("font-size", "28px")
+
+                        .set("font-weight", "700")
+
+                        .set("color", "#0f172a");
+
+                Span description = new Span("Track request status, approvals and issued items");
+
+                description.getStyle()
+
+                        .set("color", "#64748b")
+
+                        .set("font-size", "14px");
+
+                VerticalLayout left = new VerticalLayout(title, description);
+
+                left.setPadding(true);
+
+                left.setSpacing(true);
+
+                HorizontalLayout header = new HorizontalLayout(left);
+
+                header.setWidthFull();
+
+                return header;
+        }
+
+        private void configureGrid() {
+
+                grid.addThemeVariants(
+
+                        GridVariant.LUMO_ROW_STRIPES,
+
+                        GridVariant.LUMO_COLUMN_BORDERS
                 );
 
-        title.getStyle()
+                grid.addColumn(
+                        RequestTrackingDTO::getRequestNumber
+                )
+                .setHeader("Request No")
+                .setAutoWidth(true);
 
-                .set("margin", "0")
+                grid.addColumn(
+                        RequestTrackingDTO::getEmployeeName
+                )
+                .setHeader("Requester")
+                .setAutoWidth(true);
 
-                .set("font-size", "28px")
+                grid.addColumn(
+                        RequestTrackingDTO::getDepartmentName
+                )
+                .setHeader("Department")
+                .setAutoWidth(true);
 
-                .set("font-weight", "700")
+                grid.addComponentColumn(dto -> {
 
-                .set("color", "#0f172a");
+                Span badge = new Span(dto.getRequestStatus().name());
 
-        Span description =
-                new Span(
-                        "Track request status, approvals and issued items"
-                );
+                String color = "#2563eb";
 
-        description.getStyle()
+                switch (dto.getRequestStatus()) {
 
-                .set("color", "#64748b")
+                        case APPROVED -> color = "#16a34a";
 
-                .set("font-size", "14px");
+                        case ISSUED -> color = "#0ea5e9";
 
-        VerticalLayout left =
-                new VerticalLayout(
-                        title,
-                        description
-                );
+                        case PARTIALLY_ISSUED -> color = "#f59e0b";
 
-        left.setPadding(true);
+                        case REJECTED -> color = "#dc2626";
 
-        left.setSpacing(true);
+                        case PENDING_APPROVAL -> color = "#f97316";
 
-        HorizontalLayout header =
-                new HorizontalLayout(
-                        left
-                );
+                        default -> color = "#64748b";
+                }
 
-        header.setWidthFull();
+                badge.getStyle()
 
-        return header;
-    }
+                        .set("background", color)
 
-    private void configureGrid() {
+                        .set("color", "white")
 
-        grid.addThemeVariants(
+                        .set("padding", "6px 14px")
 
-                GridVariant.LUMO_ROW_STRIPES,
+                        .set("border-radius", "20px")
 
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                        .set("font-size", "12px")
 
-        grid.addColumn(
-                RequestTrackingDTO::getRequestNumber
-        )
-        .setHeader("Request No")
-        .setAutoWidth(true);
+                        .set("font-weight", "600");
 
-        grid.addColumn(
-                RequestTrackingDTO::getEmployeeName
-        )
-        .setHeader("Requester")
-        .setAutoWidth(true);
+                return badge;
 
-        grid.addColumn(
-                RequestTrackingDTO::getDepartmentName
-        )
-        .setHeader("Department")
-        .setAutoWidth(true);
+                }).setHeader("Status");
 
-        grid.addComponentColumn(dto -> {
+                grid.addColumn(request -> {
 
-            Span badge =
-                    new Span(
-                            dto.getRequestStatus()
-                                    .name()
-                    );
+                                if(request.getRequestDate() == null) {
+                                        return "-";
+                                }
 
-            String color = "#2563eb";
+                                return request.getRequestDate()
+                                        .toLocalDate()
+                                        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                })
+                .setHeader("Request Date")
+                .setAutoWidth(true);
 
-            switch (dto.getRequestStatus()) {
+                grid.addComponentColumn(dto -> {
 
-                case APPROVED ->
-                        color = "#16a34a";
+                Button viewButton = new Button("View", VaadinIcon.EYE.create());
 
-                case ISSUED ->
-                        color = "#0ea5e9";
+                viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-                case PARTIALLY_ISSUED ->
-                        color = "#f59e0b";
+                viewButton.addClickListener(event -> {
 
-                case REJECTED ->
-                        color = "#dc2626";
+                        RequestTrackingDialog dialog = new RequestTrackingDialog(dto, approvalProgressService);
 
-                case PENDING_APPROVAL ->
-                        color = "#f97316";
+                        dialog.open();
+                });
 
-                default ->
-                        color = "#64748b";
-            }
+                return viewButton;
 
-            badge.getStyle()
+                }).setHeader("Action");
 
-                    .set("background", color)
+                grid.setSizeFull();
 
-                    .set("color", "white")
+                grid.getStyle()
 
-                    .set("padding", "6px 14px")
+                        .set("background", "white")
 
-                    .set("border-radius", "20px")
+                        .set("border-radius", "18px")
 
-                    .set("font-size", "12px")
+                        .set("overflow", "hidden")
 
-                    .set("font-weight", "600");
+                        .set("box-shadow",
+                                "0 6px 18px rgba(0,0,0,0.08)");
+        }
 
-            return badge;
+        private void loadData() {
 
-        }).setHeader("Status");
+                String username = securityService.getAuthenticatedUser();
 
-        grid.addColumn(request -> {
+                String role = securityService.getAuthenticatedRole();
 
-                        if(request.getRequestDate() == null) {
-                                return "-";
-                        }
-
-                        return request.getRequestDate()
-                                .toLocalDate()
-                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        })
-        .setHeader("Request Date")
-        .setAutoWidth(true);
-
-        grid.addComponentColumn(dto -> {
-
-            Button viewButton =
-                    new Button(
-                            "View",
-                            VaadinIcon.EYE.create()
-                    );
-
-            viewButton.addThemeVariants(
-                    ButtonVariant.LUMO_PRIMARY
-            );
-
-            viewButton.addClickListener(event -> {
-
-                RequestTrackingDialog dialog =
-                        new RequestTrackingDialog(
-                                dto,
-                                approvalProgressService
-                        );
-
-                dialog.open();
-            });
-
-            return viewButton;
-
-        }).setHeader("Action");
-
-        grid.setSizeFull();
-
-        grid.getStyle()
-
-                .set("background", "white")
-
-                .set("border-radius", "18px")
-
-                .set("overflow", "hidden")
-
-                .set("box-shadow",
-                        "0 6px 18px rgba(0,0,0,0.08)");
-    }
-
-    private void loadData() {
-
-        String username =
-                securityService
-                        .getAuthenticatedUser();
-
-        String role =
-                securityService
-                        .getAuthenticatedRole();
-
-        grid.setItems(
-
-                requestTrackingService
-                        .getTrackingRequests(
-                                username,
-                                role
-                        )
-        );
-    }
+                grid.setItems(requestTrackingService.getTrackingRequests(username, role));
+        }
 }

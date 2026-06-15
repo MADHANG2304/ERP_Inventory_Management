@@ -18,10 +18,7 @@ import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.security.RolesAllowed;
 
-@Route(
-        value = "my-current-stock",
-        layout = MainLayout.class
-)
+@Route(value = "my-current-stock", layout = MainLayout.class)
 @PageTitle("My Current Stock")
 @RolesAllowed({
         "EMPLOYEE",

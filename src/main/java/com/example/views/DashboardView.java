@@ -11,22 +11,17 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Dashboard")
-@RolesAllowed({
-        "SUPER_ADMIN",
-        "INVENTORY_ADMIN",
-        "EMPLOYEE",
-        "MANAGER"
-})
+@PermitAll
 public class DashboardView extends VerticalLayout {
 
     private final EmployeeRepository employeeRepository;
@@ -64,10 +59,7 @@ public class DashboardView extends VerticalLayout {
 
         Employee employee = employeeRepository.findByEmail(securityService.getAuthenticatedUser());
 
-        String displayName =
-                employee != null
-                        ? employee.getEmployeeName()
-                        : securityService.getAuthenticatedUser();
+        String displayName = employee != null ? employee.getEmployeeName() : securityService.getAuthenticatedUser();
 
 
         HorizontalLayout topSection = new HorizontalLayout();

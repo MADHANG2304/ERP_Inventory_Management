@@ -18,107 +18,64 @@ public class InventoryItemSpecification {
             String pattern = "%" + keyword.toLowerCase() + "%";
 
             return cb.or(
-                cb.like(
-                    cb.lower(
-                        root.get("itemName")), pattern
-                ),
-                cb.like(
-                    cb.lower(
-                        root.get("itemCode")), pattern
-                ),
-                cb.like(
-                    cb.lower(
-                        root.get("description")), pattern
-                )
+                cb.like(cb.lower(root.get("itemName")), pattern),
+
+                cb.like(cb.lower(root.get("itemCode")), pattern),
+
+                cb.like(cb.lower(root.get("description")), pattern)
             );
         };
     }
 
-    public static Specification<InventoryItem>
-    hasCategory(
-            Long categoryId
-    ) {
+    public static Specification<InventoryItem> hasCategory(Long categoryId){
 
         return (root, query, cb) -> {
 
             if(categoryId == null) {
-
                 return cb.conjunction();
             }
 
             return cb.equal(
-
-                    root.get("category")
-                            .get("categoryId"),
-
-                    categoryId
+                root.get("category").get("categoryId"), categoryId
             );
         };
     }
 
-    public static Specification<InventoryItem>
-    hasItemCode(
-            String itemCode
-    ) {
+    public static Specification<InventoryItem> hasItemCode(String itemCode){
 
         return (root, query, cb) -> {
 
-            if(itemCode == null
-                    || itemCode.isBlank()) {
-
+            if(itemCode == null || itemCode.isBlank()) {
                 return cb.conjunction();
             }
 
             return cb.like(
-
-                    cb.lower(
-                            root.get("itemCode")
-                    ),
-
-                    "%" +
-                            itemCode.toLowerCase()
-                            + "%"
+                    cb.lower(root.get("itemCode")), "%" + itemCode.toLowerCase() + "%"
             );
         };
     }
 
-    public static Specification<InventoryItem>
-    hasApprovalType(
-            ApprovalType approvalType
-    ) {
+    public static Specification<InventoryItem> hasApprovalType(ApprovalType approvalType){
 
         return (root, query, cb) -> {
 
             if(approvalType == null) {
-
                 return cb.conjunction();
             }
 
-            return cb.equal(
-
-                    root.get("approvalType"),
-                    approvalType
-            );
+            return cb.equal(root.get("approvalType"), approvalType);
         };
     }
 
-    public static Specification<InventoryItem>
-    hasStatus(
-            ItemStatus status
-    ) {
+    public static Specification<InventoryItem> hasStatus(ItemStatus status){
 
         return (root, query, cb) -> {
 
             if(status == null) {
-
                 return cb.conjunction();
             }
 
-            return cb.equal(
-
-                    root.get("status"),
-                    status
-            );
+            return cb.equal(root.get("status"), status);
         };
     }
 

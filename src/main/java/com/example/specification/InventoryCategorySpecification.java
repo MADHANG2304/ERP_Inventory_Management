@@ -16,13 +16,7 @@ public class InventoryCategorySpecification {
 
             String pattern = "%" + keyword.toLowerCase() + "%";
 
-            return cb.or(
-                cb.like(
-                    cb.lower(
-                        root.get("categoryName")
-                    ), pattern
-                )
-            );
+            return cb.or(cb.like(cb.lower(root.get("categoryName")), pattern));
         };
     }
 }

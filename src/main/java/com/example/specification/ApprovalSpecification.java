@@ -17,11 +17,9 @@ public class ApprovalSpecification {
             }
 
             return criteriaBuilder.like(
-
                     criteriaBuilder.lower(
                             root.get("request").get("requestNumber")
-                    ),
-                    "%" + requestNumber.toLowerCase()+ "%"
+                    ), "%" + requestNumber.toLowerCase()+ "%"
             );
         };
     }
@@ -34,9 +32,7 @@ public class ApprovalSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            return criteriaBuilder.equal(
-                    root.get("approvalStatus"), approvalStatus
-            );
+            return criteriaBuilder.equal(root.get("approvalStatus"), approvalStatus);
         };
     }
 
@@ -47,9 +43,7 @@ public class ApprovalSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            return criteriaBuilder.equal(
-                    root.get("approvalRole"), approvalRole
-            );
+            return criteriaBuilder.equal(root.get("approvalRole"), approvalRole);
         };
     }
 
@@ -60,9 +54,7 @@ public class ApprovalSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            return criteriaBuilder.equal(
-                    root.get("isCurrentLevel"), currentLevel
-            );
+            return criteriaBuilder.equal(root.get("isCurrentLevel"), currentLevel);
         };
     }
 

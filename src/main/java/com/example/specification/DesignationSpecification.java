@@ -16,20 +16,9 @@ public class DesignationSpecification {
             String pattern = "%" + keyword.toLowerCase() + "%";
 
             return cb.or(
+                    cb.like(cb.lower(root.get("designationName")), pattern),
 
-                    cb.like(
-                            cb.lower(
-                                    root.get("designationName")
-                            ),
-                            pattern
-                    ),
-
-                    cb.like(
-                            cb.lower(
-                                    root.get("designationCode")
-                            ),
-                            pattern
-                    )
+                    cb.like(cb.lower(root.get("designationCode")), pattern)
             );
         };
     }

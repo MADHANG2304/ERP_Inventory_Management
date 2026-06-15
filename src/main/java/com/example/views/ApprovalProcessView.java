@@ -36,10 +36,9 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "approval-process", layout = MainLayout.class)
 @PageTitle("Approval Process")
 @RolesAllowed({
-                "MANAGER",
-                "INVENTORY_ADMIN",
-                "SUPER_ADMIN",
-                "DEPARTMENT_HEAD"
+        "MANAGER",
+        "INVENTORY_ADMIN",
+        "SUPER_ADMIN"
 })
 public class ApprovalProcessView extends VerticalLayout {
 
@@ -50,8 +49,6 @@ public class ApprovalProcessView extends VerticalLayout {
         private final Grid<RequestApprovalDTO> grid = new Grid<>(RequestApprovalDTO.class, false);
 
         private final String username;
-
-        private final String userRole;
 
         private final TextField requestSearchField = new TextField();
 
@@ -64,20 +61,16 @@ public class ApprovalProcessView extends VerticalLayout {
         private final Button clearFilterButton = new Button("Clear");
 
         public ApprovalProcessView(
-
-                        ApprovalProcessService approvalProcessService,
-
-                        SecurityService securityService,
-
-                        InventoryRequestService inventoryRequestService) {
+                ApprovalProcessService approvalProcessService,
+                SecurityService securityService,
+                InventoryRequestService inventoryRequestService)
+        {
 
                 this.approvalProcessService = approvalProcessService;
 
                 this.inventoryRequestService = inventoryRequestService;
 
                 this.username = securityService.getAuthenticatedUser();
-
-                this.userRole = securityService.getAuthenticatedRole();
 
                 setSizeFull();
 
@@ -86,12 +79,9 @@ public class ApprovalProcessView extends VerticalLayout {
                 setSpacing(true);
 
                 getStyle()
+                        .set("background", "#f5f7fb")
 
-                                .set("background", "#f5f7fb")
-
-                                .set("padding", "20px");
-
-                // PAGE HEADER
+                        .set("padding", "20px");
 
                 H2 heading = new H2("Approval Requests");
 
@@ -108,20 +98,16 @@ public class ApprovalProcessView extends VerticalLayout {
                 Span subHeading = new Span("Manage pending approval requests");
 
                 subHeading.getStyle()
+                        
+                        .set("font-size", "15px")
 
-                                .set("font-size", "15px")
+                        .set("color", "#64748b");
 
-                                .set("color", "#64748b");
-
-                VerticalLayout headingLayout = new VerticalLayout(
-                                heading,
-                                subHeading);
+                VerticalLayout headingLayout = new VerticalLayout(heading, subHeading);
 
                 headingLayout.setPadding(true);
 
                 headingLayout.setSpacing(true);
-
-                // FILTERS
 
                 configureFilters();
 
@@ -133,56 +119,32 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 filterLayout.setAlignItems(Alignment.END);
 
-                // filterLayout.add(requestSearchField);
-
-                // if (userRole.equals("ROLE_SUPER_ADMIN")) {
-
-                //         filterLayout.add(
-                //                         statusFilter,
-                //                         roleFilter
-                //                         // currentLevelFilter
-                //                 );
-                // }
-
-                // filterLayout.add(clearFilterButton);
-
                 configureGrid();
 
                 add(
-                                headingLayout,
-                                filterLayout,
-                                grid);
+                        headingLayout,
+                        filterLayout,
+                        grid
+                );
 
                 refreshGrid();
         }
 
         private void configureGrid() {
 
-                grid.addThemeVariants(
+                grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
 
-                                GridVariant.LUMO_ROW_STRIPES,
+                grid.addColumn(RequestApprovalDTO::getRequestNumber).setHeader("Request No");
 
-                                GridVariant.LUMO_COLUMN_BORDERS);
+                grid.addColumn(RequestApprovalDTO::getApprovalOrder).setHeader("Level");
 
-                grid.addColumn(
-                                RequestApprovalDTO::getRequestNumber).setHeader("Request No");
-
-                grid.addColumn(
-                                RequestApprovalDTO::getApprovalOrder).setHeader("Level");
-
-                grid.addColumn(approval ->
-
-                approval.getApprovalRole()
-                                .name()
-
-                ).setHeader("Role");
+                grid.addColumn(approval -> approval.getApprovalRole().name()).setHeader("Role");
 
                 grid.addComponentColumn(approval -> {
 
                         Span badge = new Span(approval.getApprovalStatus().name());
 
                         badge.getStyle()
-
                                         .set("padding", "5px 12px")
 
                                         .set("border-radius", "12px")
@@ -195,20 +157,11 @@ public class ApprovalProcessView extends VerticalLayout {
 
                         switch (approval.getApprovalStatus()) {
 
-                                case PENDING ->
+                                case PENDING -> badge.getStyle().set("background", "#f59e0b");
 
-                                        badge.getStyle()
-                                                        .set("background", "#f59e0b");
+                                case APPROVED -> badge.getStyle().set("background", "#16a34a");
 
-                                case APPROVED ->
-
-                                        badge.getStyle()
-                                                        .set("background", "#16a34a");
-
-                                case REJECTED ->
-
-                                        badge.getStyle()
-                                                        .set("background", "#dc2626");
+                                case REJECTED -> badge.getStyle().set("background", "#dc2626");
                         }
 
                         return badge;
@@ -222,7 +175,6 @@ public class ApprovalProcessView extends VerticalLayout {
                         viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
                         viewButton.getStyle()
-
                                         .set("border-radius", "8px")
 
                                         .set("font-size", "13px");
@@ -238,7 +190,6 @@ public class ApprovalProcessView extends VerticalLayout {
                 grid.setHeight("700px");
 
                 grid.getStyle()
-
                                 .set("background", "white")
 
                                 .set("border-radius", "12px")
@@ -246,9 +197,7 @@ public class ApprovalProcessView extends VerticalLayout {
                                 .set("border", "1px solid #dbe2ea");
         }
 
-        private void openApprovalDialog(
-                RequestApprovalDTO approvalDTO
-        ) {
+        private void openApprovalDialog(RequestApprovalDTO approvalDTO){
 
                 Dialog dialog = new Dialog();
 
@@ -256,24 +205,14 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 dialog.setHeaderTitle("Approval Details");
 
-                InventoryRequestDTO request =
-                        inventoryRequestService
-                                .getRequestById(
-                                        approvalDTO.getRequestId()
-                                );
+                InventoryRequestDTO request = inventoryRequestService.getRequestById(approvalDTO.getRequestId());
 
-                Span requestInfo =
-                        new Span(
+                Span requestInfo = new Span(
+                                        "Request No : " + request.getRequestNumber()
 
-                                "Request No : "
-                                        + request.getRequestNumber()
+                                        + "     |     Requester : " + request.getEmployeeName()
 
-                                        + "     |     Requester : "
-                                        + request.getEmployeeName()
-
-                                        + "     |      Requester ID: ("
-                                        + request.getEmployeeId()
-                                        + ")"
+                                        + "     |      Requester ID: (" + request.getEmployeeId() + ")"
                         );
 
                 requestInfo.getStyle()
@@ -285,8 +224,7 @@ public class ApprovalProcessView extends VerticalLayout {
                         .set("color", "#475569");
 
 
-                Span remarksTitle =
-                        new Span("Remarks");
+                Span remarksTitle = new Span("Remarks");
 
                 remarksTitle.getStyle()
                         .set("font-weight", "700")
@@ -295,9 +233,7 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 Span remarksValue =
                         new Span(
-                                approvalDTO.getRemarks() == null
-                                        ? "-"
-                                        : approvalDTO.getRemarks()
+                                approvalDTO.getRemarks() == null ? "-" : approvalDTO.getRemarks()
                         );
 
                 remarksValue.getStyle()
@@ -310,33 +246,21 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 List<RequestItemDTO> approvalItems;
 
-                // First approver should see all requested items
                 if (approvalDTO.getApprovalOrder() == 1) {
 
-                        approvalItems =
-                                request.getRequestItems();
+                        approvalItems = request.getRequestItems();
 
                 } else {
 
-                        approvalItems =
-                                request.getRequestItems()
-
+                        approvalItems = request.getRequestItems()
                                         .stream()
-
                                         .filter(item ->
-
-                                                item.getApprovedQuantity() != null
-
-                                                &&
-
-                                                item.getApprovedQuantity() > 0
+                                                item.getApprovedQuantity() != null && item.getApprovedQuantity() > 0
                                         )
-
                                         .toList();
                 }
 
-                Grid<RequestItemDTO> itemGrid =
-                        new Grid<>(RequestItemDTO.class, false);
+                Grid<RequestItemDTO> itemGrid = new Grid<>(RequestItemDTO.class, false);
 
                 itemGrid.addThemeVariants(
                         GridVariant.LUMO_ROW_STRIPES,
@@ -345,18 +269,12 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 itemGrid.addComponentColumn(item -> {
 
-                        Checkbox checkbox =
-                                new Checkbox();
+                        Checkbox checkbox = new Checkbox();
 
-                        checkbox.setValue(
-                                item.getSelected()
-                        );
+                        checkbox.setValue(item.getSelected());
 
                         checkbox.addValueChangeListener(event ->
-
-                                item.setSelected(
-                                        event.getValue()
-                                )
+                                item.setSelected(event.getValue())
                         );
 
                         return checkbox;
@@ -377,101 +295,63 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 itemGrid.addComponentColumn(item -> {
 
-                        IntegerField approvedQty =
-                                new IntegerField();
+                        IntegerField approvedQty = new IntegerField();
 
                         approvedQty.setWidth("120px");
 
                         approvedQty.setMin(0);
 
-                        approvedQty.setValue(
-                                item.getApprovedQuantity()
-                        );
+                        approvedQty.setValue(item.getApprovedQuantity());
 
                         approvedQty.addValueChangeListener(event -> {
 
-                                Integer value =
-                                        event.getValue();
+                                Integer value = event.getValue();
 
                                 if(value == null) {
-
                                         value = 0;
                                 }
 
                                 if(value > item.getRequestedQuantity()) {
 
-                                        // approvedQty.setValue(
-                                        //         item.getRequestedQuantity()
-                                        // );
-
                                         NotificationUtil.warning(
-
                                                 "Approved quantity cannot exceed requested quantity, so actual value is considered"
                                         );
 
                                         approvedQty.setValue(
-                                                item.getApprovedQuantity() == null
-                                                        ? 0
-                                                        : item.getApprovedQuantity()
+                                                item.getApprovedQuantity() == null ? 0 : item.getApprovedQuantity()
                                         );
 
                                         return;
-                                        
-                                        // value = item.getRequestedQuantity();
                                 }
 
-                                item.setApprovedQuantity(
-                                        value
-                                );
+                                item.setApprovedQuantity(value);
                         });
 
                         return approvedQty;
 
                 }).setHeader("Approved Qty");
 
-                itemGrid.setItems(
-                        approvalItems
-                );
+                itemGrid.setItems(approvalItems);
 
                 itemGrid.setHeight("350px");
 
-                TextArea comments =
-                        new TextArea("Comments");
+                TextArea comments = new TextArea("Comments");
 
                 comments.setWidthFull();
 
-                comments.setPlaceholder(
-                        "Enter comments..."
-                );
+                comments.setPlaceholder("Enter comments...");
 
-                Button approveButton =
-                        new Button(
-                                "Approve",
-                                VaadinIcon.CHECK.create()
-                        );
+                Button approveButton = new Button("Approve", VaadinIcon.CHECK.create());
 
-                approveButton.addThemeVariants(
-                        ButtonVariant.LUMO_SUCCESS
-                );
+                approveButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
-                Button rejectButton =
-                        new Button(
-                                "Reject",
-                                VaadinIcon.CLOSE.create()
-                        );
+                Button rejectButton = new Button("Reject", VaadinIcon.CLOSE.create());
 
-                rejectButton.addThemeVariants(
-                        ButtonVariant.LUMO_ERROR
-                );
+                rejectButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-                Button cancelButton =
-                        new Button(
-                                "Close"
-                        );
+                Button cancelButton = new Button("Close");
 
-                cancelButton.addThemeVariants(
-                        ButtonVariant.LUMO_TERTIARY
-                );
+                cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
                 approveButton.addClickListener(event -> {
 
@@ -496,38 +376,24 @@ public class ApprovalProcessView extends VerticalLayout {
                 rejectButton.addClickListener(event -> {
 
                         try {
+                                approvalProcessService.rejectRequest(approvalDTO.getApprovalId(), comments.getValue());
 
-                                approvalProcessService
-                                        .rejectRequest(
-
-                                                approvalDTO.getApprovalId(),
-
-                                                comments.getValue()
-                                        );
-
-                                NotificationUtil.success(
-                                        "Request rejected successfully"
-                                );
+                                NotificationUtil.success("Request rejected successfully");
 
                                 dialog.close();
 
                                 refreshGrid();
 
                         } catch (Exception e) {
-
-                                NotificationUtil.error(
-                                        e.getMessage()
-                                );
+                                NotificationUtil.error(e.getMessage());
                         }
                 });
 
                 cancelButton.addClickListener(event -> {
-
                         dialog.close();
                 });
 
-                HorizontalLayout buttonLayout =
-                        new HorizontalLayout(
+                HorizontalLayout buttonLayout = new HorizontalLayout(
 
                                 cancelButton,
 
@@ -538,9 +404,7 @@ public class ApprovalProcessView extends VerticalLayout {
 
                 buttonLayout.setWidthFull();
 
-                buttonLayout.setJustifyContentMode(
-                        JustifyContentMode.END
-                );
+                buttonLayout.setJustifyContentMode(JustifyContentMode.END);
 
                 VerticalLayout layout =
                         new VerticalLayout(
@@ -625,7 +489,6 @@ public class ApprovalProcessView extends VerticalLayout {
         }
 
         private void refreshGrid() {
-
                 grid.setItems(approvalProcessService.getPendingApprovals(username));
         }
 }

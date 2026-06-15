@@ -11,8 +11,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("login")
 @PageTitle("Login | ERP")
-public class LoginView extends VerticalLayout
-        implements BeforeEnterObserver {
+public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     private final LoginForm loginForm = new LoginForm();
 

@@ -135,8 +135,7 @@ public class RequestTrackingDialog extends Dialog {
 
 
 
-        H3 approvalTitle =
-                new H3("Approval Timeline");
+        H3 approvalTitle = new H3("Approval Timeline");
 
         Grid<ApprovalProgressDTO> approvalGrid =
                 new Grid<>(

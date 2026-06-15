@@ -1,22 +1,26 @@
 package com.example.service;
 
-import com.example.dto.ReturnedItemDTO;
-import com.example.entity.*;
-import com.example.enums.AssetStatus;
-import com.example.enums.IssueStatus;
-import com.example.enums.ReferenceType;
-import com.example.enums.ReturnCondition;
-import com.example.enums.TransactionType;
-import com.example.repository.*;
-import com.example.security.SecurityService;
-
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.example.dto.ReturnedItemDTO;
+import com.example.entity.AssetItem;
+import com.example.entity.Employee;
+import com.example.entity.IssuedItem;
+import com.example.entity.ReturnedItem;
+import com.example.enums.AssetStatus;
+import com.example.enums.IssueStatus;
+import com.example.enums.ReturnCondition;
+import com.example.repository.AssetItemRepository;
+import com.example.repository.EmployeeRepository;
+import com.example.repository.IssuedItemRepository;
+import com.example.repository.ReturnedItemRepository;
+import com.example.security.SecurityService;
 
 @Service
 public class ReturnService {
@@ -24,10 +28,6 @@ public class ReturnService {
         private final IssuedItemRepository issuedItemRepository;
 
         private final ReturnedItemRepository returnedItemRepository;
-
-        private final InventoryStockRepository inventoryStockRepository;
-
-        private final InventoryTransactionRepository inventoryTransactionRepository;
 
         private final SecurityService securityService;
 
@@ -40,21 +40,15 @@ public class ReturnService {
         public ReturnService(
                 IssuedItemRepository issuedItemRepository,
                 ReturnedItemRepository returnedItemRepository,
-                InventoryStockRepository inventoryStockRepository,
-                InventoryTransactionRepository inventoryTransactionRepository,
                 SecurityService securityService,
                 EmployeeRepository employeeRepository,
                 AuditLogService auditLogService,
                 AssetItemRepository assetItemRepository
-                ){
+        ){
 
                 this.issuedItemRepository = issuedItemRepository;
 
                 this.returnedItemRepository = returnedItemRepository;
-
-                this.inventoryStockRepository = inventoryStockRepository;
-
-                this.inventoryTransactionRepository = inventoryTransactionRepository;
 
                 this.securityService = securityService;
 
@@ -68,7 +62,6 @@ public class ReturnService {
         public List<ReturnedItemDTO> getIssuedItemsForReturn() {
 
                 String username = securityService.getAuthenticatedUser();
-
                 String role = securityService.getAuthenticatedRole();
 
                 Employee loggedInUser = employeeRepository
@@ -189,9 +182,7 @@ public class ReturnService {
                                 &&
                                 (
                                         "SUPER_ADMIN".equals(employee.getRole().getRoleName())
-                                        
                                         ||
-                                        
                                         "INVENTORY_ADMIN".equals(employee.getRole().getRoleName())
                                 );
 
@@ -200,14 +191,11 @@ public class ReturnService {
                         .stream()
                         .filter(item ->
                                 isAdmin
-
                                 ||
-
                                 item.getIssuedItem().getIssuedToEmployee().getEmployeeId().equals(employee.getEmployeeId())
                         )
                         .sorted(Comparator.comparing(ReturnedItem::getReturnedDate).reversed())
                         .map(item -> {
-
                                 ReturnedItemDTO dto = new ReturnedItemDTO();
 
                                 dto.setIssuedItemId(item.getIssuedItem().getIssuedItemId());
@@ -218,27 +206,14 @@ public class ReturnService {
 
                                 dto.setReturnReferenceNumber(item.getReturnReferenceNumber());
 
-                                dto.setItemName(
-                                        item.getIssuedItem()
-                                                .getRequestItem()
-                                                .getItem()
-                                                .getItemName()
-                                );
+                                dto.setItemName(item.getIssuedItem().getRequestItem().getItem().getItemName());
 
-                                dto.setItemCode(
-                                        item.getIssuedItem()
-                                                .getRequestItem()
-                                                .getItem()
-                                                .getItemCode()
-                                );
+                                dto.setItemCode(item.getIssuedItem().getRequestItem().getItem().getItemCode());
 
                                 dto.setReturnQuantity(item.getReturnedQuantity());
 
                                 if(item.getIssuedItem().getAssetItem() != null) {
-
-                                        dto.setAssetReferenceNumber(
-                                                item.getIssuedItem().getAssetItem().getAssetReferenceNumber()
-                                        );
+                                        dto.setAssetReferenceNumber(item.getIssuedItem().getAssetItem().getAssetReferenceNumber());
                                 }
 
                                 dto.setIssueStatus(item.getIssuedItem().getIssueStatus());
@@ -252,9 +227,7 @@ public class ReturnService {
 
                 ReturnedItem returnedItem = returnedItemRepository
                                 .findById(returnedItemId)
-                                .orElseThrow(() ->
-                                        new RuntimeException("Returned item not found")
-                                );
+                                .orElseThrow(() -> new RuntimeException("Returned item not found"));
 
                 IssuedItem issuedItem = returnedItem.getIssuedItem();
 
@@ -265,50 +238,11 @@ public class ReturnService {
                         AssetItem asset = issuedItem.getAssetItem();
 
                         if(asset != null) {
-
                                 asset.setAssetStatus(AssetStatus.AVAILABLE);
-
                                 assetItemRepository.save(asset);
                         }
 
-                } 
-                // else {
-
-                //         InventoryStock stock =
-                //                 inventoryStockRepository
-                //                         .findAll()
-                //                         .stream()
-                //                         .filter(s ->
-
-                //                                 s.getItem().getItemId().equals(
-                //                                                 issuedItem.getRequestItem().getItem().getItemId()
-                //                                         )
-                //                         )
-                //                         .findFirst()
-                //                         .orElseThrow(() ->
-                //                                 new RuntimeException("Stock not found")
-                //                         );
-
-                //         if(returnedItem.getReturnCondition() == ReturnCondition.GOOD) {
-
-                //                 stock.setAvailableQuantity(
-                //                         stock.getAvailableQuantity() - returnedItem.getReturnedQuantity()
-                //                 );
-                //         }
-
-                //         else if(returnedItem.getReturnCondition() == ReturnCondition.DAMAGED) {
-
-                //                 stock.setDamagedQuantity(
-                //                         stock.getDamagedQuantity() - returnedItem.getReturnedQuantity()
-                //                 );
-                //         }
-
-                //         stock.setIssuedQuantity(
-                //                 stock.getIssuedQuantity() + returnedItem.getReturnedQuantity()
-                //         );
-
-                //         inventoryStockRepository.save(stock);
-                // }
+                }
 
                 issuedItem.setIssueStatus(IssueStatus.ISSUED);
 

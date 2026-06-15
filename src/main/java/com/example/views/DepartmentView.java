@@ -272,15 +272,11 @@ public class DepartmentView extends VerticalLayout {
                                                         searchField.getValue()));
                 });
 
-                HorizontalLayout toolbar = new HorizontalLayout(
-                                searchField);
+                HorizontalLayout toolbar = new HorizontalLayout(searchField);
 
                 toolbar.setWidthFull();
 
-                add(
-                                headerLayout,
-                                toolbar,
-                                grid);
+                add(headerLayout, toolbar, grid);
 
                 refreshGrid();
         }
